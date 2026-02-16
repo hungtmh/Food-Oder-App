@@ -1,0 +1,82 @@
+<resources>
+    <string name="app_name">Food Order App</string>
+
+    <!-- Chung -->
+    <string name="loading">Đang tải...</string>
+    <string name="error">Lỗi</string>
+    <string name="success">Thành công</string>
+    <string name="cancel">Hủy</string>
+    <string name="confirm">Xác nhận</string>
+    <string name="save">Lưu</string>
+    <string name="ok">OK</string>
+    <string name="yes">Có</string>
+    <string name="no">Không</string>
+
+    <!-- Đăng nhập -->
+    <string name="login_title">Đăng Nhập</string>
+    <string name="email_hint">Email…</string>
+    <string name="password_hint">Mật khẩu…</string>
+    <string name="btn_login">ĐĂNG NHẬP TÀI KHOẢN</string>
+    <string name="remember_me">Ghi nhớ đăng nhập</string>
+    <string name="forgot_password">Quên mật khẩu</string>
+    <string name="no_account">Chưa có tài khoản?</string>
+    <string name="register_link">Đăng Ký</string>
+    <string name="role_admin">Quản trị viên</string>
+    <string name="role_user">Người dùng</string>
+
+    <!-- Đăng ký -->
+    <string name="register_title">Đăng Ký</string>
+    <string name="full_name_hint">Họ và tên…</string>
+    <string name="phone_hint">Số điện thoại…</string>
+    <string name="confirm_password_hint">Xác nhận mật khẩu…</string>
+    <string name="btn_register">ĐĂNG KÝ TÀI KHOẢN</string>
+    <string name="has_account">Đã có tài khoản?</string>
+    <string name="login_link">Đăng Nhập</string>
+
+    <!-- Quên mật khẩu -->
+    <string name="forgot_password_title">Quên Mật Khẩu</string>
+    <string name="forgot_password_desc">Nhập email đã đăng ký, hệ thống sẽ tạo mã xác nhận 6 số để đặt lại mật khẩu.</string>
+    <string name="btn_send_reset">TẠO MÃ XÁC NHẬN</string>
+    <string name="back_to_login">Quay lại đăng nhập</string>
+
+    <!-- Đổi mật khẩu -->
+    <string name="change_password_title">Đổi Mật Khẩu</string>
+    <string name="current_password_hint">Mật khẩu hiện tại…</string>
+    <string name="new_password_hint">Mật khẩu mới…</string>
+    <string name="hint_new_password">Mật khẩu mới…</string>
+    <string name="confirm_new_password_hint">Xác nhận mật khẩu mới…</string>
+    <string name="btn_change_password">ĐỔI MẬT KHẨU</string>
+
+    <!-- Hồ sơ cá nhân -->
+    <string name="profile_title">Hồ Sơ Cá Nhân</string>
+    <string name="address_hint">Địa chỉ…</string>
+    <string name="btn_save_profile">LƯU THÔNG TIN</string>
+    <string name="btn_change_avatar">Đổi ảnh đại diện</string>
+    <string name="btn_logout">ĐĂNG XUẤT</string>
+    <string name="btn_change_pwd">Đổi mật khẩu</string>
+    <string name="email_cannot_change">Email không thể thay đổi</string>
+
+    <!-- Validation messages -->
+    <string name="error_email_required">Vui lòng nhập email</string>
+    <string name="error_email_invalid">Email không hợp lệ</string>
+    <string name="error_password_required">Vui lòng nhập mật khẩu</string>
+    <string name="error_password_short">Mật khẩu phải có ít nhất 6 ký tự</string>
+    <string name="error_password_mismatch">Mật khẩu xác nhận không khớp</string>
+    <string name="error_name_required">Vui lòng nhập họ và tên</string>
+    <string name="error_phone_invalid">Số điện thoại không hợp lệ</string>
+    <string name="error_login_failed">Đăng nhập thất bại. Kiểm tra email và mật khẩu.</string>
+    <string name="error_register_failed">Đăng ký thất bại. Vui lòng thử lại.</string>
+    <string name="error_network">Lỗi kết nối mạng. Vui lòng thử lại.</string>
+
+    <!-- Success messages -->
+    <string name="success_register">Đăng ký thành công! Vui lòng đăng nhập.</string>
+    <string name="success_reset_email">Link khôi phục mật khẩu đã được gửi vào email.</string>
+    <string name="success_change_password">Đổi mật khẩu thành công!</string>
+    <string name="success_update_profile">Cập nhật hồ sơ thành công!</string>
+    <string name="success_logout">Đăng xuất thành công!</string>
+
+    <!-- Dialog -->
+    <string name="logout_confirm_title">Xác nhận đăng xuất</string>
+    <string name="logout_confirm_message">Bạn có chắc chắn muốn đăng xuất?</string>
+    <string name="back">Quay lại</string>
+</resources>

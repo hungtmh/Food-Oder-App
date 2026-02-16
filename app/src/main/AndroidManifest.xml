@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Quyền truy cập Internet -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Food_Order_App"
+        android:usesCleartextTraffic="true">
+
+        <!-- Splash / Launcher -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Đăng nhập -->
+        <activity
+            android:name=".controller.LoginActivity"
+            android:exported="false" />
+
+        <!-- Đăng ký -->
+        <activity
+            android:name=".controller.RegisterActivity"
+            android:exported="false" />
+
+        <!-- Quên mật khẩu -->
+        <activity
+            android:name=".controller.ForgotPasswordActivity"
+            android:exported="false" />
+
+        <!-- Xác nhận mã reset password -->
+        <activity
+            android:name=".controller.VerifyResetCodeActivity"
+            android:exported="false" />
+
+        <!-- Đổi mật khẩu -->
+        <activity
+            android:name=".controller.ChangePasswordActivity"
+            android:exported="false" />
+
+        <!-- Hồ sơ cá nhân -->
+        <activity
+            android:name=".controller.ProfileActivity"
+            android:exported="false" />
+
+        <!-- Trang chủ -->
+        <activity
+            android:name=".controller.HomeActivity"
+            android:exported="false" />
+
+        <!-- Chi tiết món ăn -->
+        <activity
+            android:name=".controller.FoodDetailActivity"
+            android:exported="false" />
+
+        <!-- Giỏ hàng -->
+        <activity
+            android:name=".controller.CartActivity"
+            android:exported="false" />
+
+        <!-- Thanh toán -->
+        <activity
+            android:name=".controller.CheckoutActivity"
+            android:exported="false" />
+
+        <!-- Tìm kiếm -->
+        <activity
+            android:name=".controller.SearchActivity"
+            android:exported="false" />
+
+        <!-- Xác nhận đơn hàng -->
+        <activity
+            android:name=".controller.OrderConfirmationActivity"
+            android:exported="false" />
+
+        <!-- ==================== ADMIN ==================== -->
+
+        <!-- Trang chủ quản trị (Quản lý món ăn) -->
+        <activity
+            android:name=".controller.AdminHomeActivity"
+            android:exported="false" />
+
+        <!-- Thêm / Sửa món ăn -->
+        <activity
+            android:name=".controller.AdminAddEditFoodActivity"
+            android:exported="false" />
+
+        <!-- Quản lý phản hồi -->
+        <activity
+            android:name=".controller.AdminFeedbackActivity"
+            android:exported="false" />
+
+        <!-- Chi tiết phản hồi -->
+        <activity
+            android:name=".controller.AdminFeedbackDetailActivity"
+            android:exported="false" />
+
+        <!-- Quản lý đơn hàng -->
+        <activity
+            android:name=".controller.AdminOrdersActivity"
+            android:exported="false" />
+
+        <!-- Chi tiết đơn hàng -->
+        <activity
+            android:name=".controller.AdminOrderDetailActivity"
+            android:exported="false" />
+
+        <!-- Thống kê doanh thu -->
+        <activity
+            android:name=".controller.AdminRevenueActivity"
+            android:exported="false" />
+
+    </application>
+
+</manifest>
