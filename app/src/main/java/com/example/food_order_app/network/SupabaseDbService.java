@@ -249,4 +249,53 @@ public interface SupabaseDbService {
             @Query("created_at") String gteFilter,
             @QueryMap Map<String, String> extraFilters,
             @Query("select") String select);
+
+    // ==================== AI FEATURES: SENTIMENT ANALYSIS ====================
+    @GET("food_sentiment_stats")
+    Call<List<FoodSentimentStats>> getFoodSentimentStats(
+            @Query("order") String order);
+
+    @GET("food_sentiment_stats")
+    Call<List<FoodSentimentStats>> getFoodSentimentStatsByFood(
+            @Query("food_id") String foodIdFilter);
+
+    @GET("overall_sentiment_stats")
+    Call<List<OverallSentimentStats>> getOverallSentimentStats();
+
+    @Headers("Prefer: return=representation")
+    @PATCH("reviews")
+    Call<List<Review>> updateReviewSentiment(
+            @Query("id") String idFilter,
+            @Body Map<String, Object> updates);
+
+    @GET("reviews")
+    Call<List<Review>> getAllReviews(
+            @Query("select") String select,
+            @Query("order") String order);
+
+    // ==================== AI FEATURES: FOOD TRENDS ====================
+    @GET("food_trends")
+    Call<List<FoodTrend>> getFoodTrends(
+            @Query("select") String select,
+            @Query("order") String order);
+
+    @GET("food_trends")
+    Call<List<FoodTrend>> getFoodTrendsByType(
+            @Query("trend_type") String trendTypeFilter,
+            @Query("select") String select,
+            @Query("order") String order);
+
+    @Headers("Prefer: return=representation")
+    @POST("food_trends")
+    Call<List<FoodTrend>> createFoodTrend(@Body Map<String, Object> foodTrend);
+
+    @Headers("Prefer: return=representation")
+    @PATCH("food_trends")
+    Call<List<FoodTrend>> updateFoodTrend(
+            @Query("food_id") String foodIdFilter,
+            @Body Map<String, Object> updates);
+
+    @DELETE("food_trends")
+    Call<Void> deleteFoodTrend(
+            @Query("food_id") String foodIdFilter);
 }

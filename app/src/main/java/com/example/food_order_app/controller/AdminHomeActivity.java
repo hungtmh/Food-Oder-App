@@ -32,7 +32,7 @@ public class AdminHomeActivity extends AppCompatActivity implements AdminFoodAda
 
     private RecyclerView rvFoods;
     private EditText edtSearch;
-    private ImageView btnSearch;
+    private ImageView btnSearch, btnAIInsights;
     private TextView tvEmpty;
     private FloatingActionButton fabAdd;
     private BottomNavigationView bottomNav;
@@ -64,6 +64,7 @@ public class AdminHomeActivity extends AppCompatActivity implements AdminFoodAda
         rvFoods = findViewById(R.id.rvAdminFoods);
         edtSearch = findViewById(R.id.edtAdminSearch);
         btnSearch = findViewById(R.id.btnAdminSearch);
+        btnAIInsights = findViewById(R.id.btnAIInsights);
         tvEmpty = findViewById(R.id.tvAdminEmpty);
         fabAdd = findViewById(R.id.fabAddFood);
         bottomNav = findViewById(R.id.adminBottomNav);
@@ -76,6 +77,10 @@ public class AdminHomeActivity extends AppCompatActivity implements AdminFoodAda
     private void setupListeners() {
         fabAdd.setOnClickListener(v -> {
             startActivity(new Intent(this, AdminAddEditFoodActivity.class));
+        });
+        
+        btnAIInsights.setOnClickListener(v -> {
+            startActivity(new Intent(this, AIDashboardActivity.class));
         });
 
         btnSearch.setOnClickListener(v -> performSearch());

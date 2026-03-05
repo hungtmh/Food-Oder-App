@@ -124,6 +124,23 @@
             android:name=".controller.AdminRevenueActivity"
             android:exported="false" />
 
+        <!-- ==================== AI FEATURES ==================== -->
+
+        <!-- AI Dashboard -->
+        <activity
+            android:name=".controller.AIDashboardActivity"
+            android:exported="false" />
+
+        <!-- Thống kê cảm xúc -->
+        <activity
+            android:name=".controller.SentimentStatisticsActivity"
+            android:exported="false" />
+
+        <!-- Dự đoán xu hướng -->
+        <activity
+            android:name=".controller.FoodTrendPredictionActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>
