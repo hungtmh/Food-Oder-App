@@ -11,24 +11,43 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/primary"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:padding="16dp"
+        android:gravity="center_vertical"
         app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Quản lý món ăn"
-            android:textColor="@color/white"
-            android:textSize="10sp" />
+            android:layout_weight="1"
+            android:orientation="vertical">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Đồ ăn"
-            android:textColor="@color/white"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Quản lý món ăn"
+                android:textColor="@color/white"
+                android:textSize="10sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Đồ ăn"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/btnAIInsights"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_ai"
+            android:contentDescription="AI Insights"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="8dp"
+            android:clickable="true"
+            android:focusable="true"/>
     </LinearLayout>
 
     <!-- Search Bar -->
