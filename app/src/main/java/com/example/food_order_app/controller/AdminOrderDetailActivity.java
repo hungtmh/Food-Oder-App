@@ -45,9 +45,11 @@ public class AdminOrderDetailActivity extends AppCompatActivity {
     private OrderItemAdapter itemAdapter;
     private String orderId;
     private String currentStatus;
+    private String userId;
+    private String orderCode;
 
-    private static final String[] STATUS_VALUES = {"pending", "confirmed", "preparing", "delivering", "delivered", "cancelled"};
-    private static final String[] STATUS_LABELS = {"Chờ xác nhận", "Đang xử lý", "Đang chuẩn bị", "Đang giao", "Hoàn thành", "Đã hủy"};
+    private static final String[] STATUS_VALUES = {"pending", "confirmed", "delivered", "cancelled"};
+    private static final String[] STATUS_LABELS = {"Chờ xác nhận", "Đang xử lý", "Hoàn thành", "Đã hủy"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,8 +94,10 @@ public class AdminOrderDetailActivity extends AppCompatActivity {
     private void loadData() {
         orderId = getIntent().getStringExtra("order_id");
         currentStatus = getIntent().getStringExtra("order_status");
+        userId = getIntent().getStringExtra("order_user_id");
+        orderCode = getIntent().getStringExtra("order_code");
 
-        tvOrderCode.setText(getIntent().getStringExtra("order_code"));
+        tvOrderCode.setText(orderCode);
         tvCustomer.setText("Tên: " + getIntent().getStringExtra("order_customer"));
         tvPhone.setText("SĐT: " + getIntent().getStringExtra("order_phone"));
         tvAddress.setText("Địa chỉ: " + getIntent().getStringExtra("order_address"));
@@ -163,10 +167,14 @@ public class AdminOrderDetailActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<List<Order>> call, Response<List<Order>> response) {
                 if (response.isSuccessful()) {
+                    String statusLabel = STATUS_LABELS[spinnerStatus.getSelectedItemPosition()];
                     currentStatus = newStatus;
                     Toast.makeText(AdminOrderDetailActivity.this,
-                            "Đã cập nhật: " + STATUS_LABELS[spinnerStatus.getSelectedItemPosition()],
+                            "Đã cập nhật: " + statusLabel,
                             Toast.LENGTH_SHORT).show();
+
+                    // Gửi thông báo cho khách hàng
+                    sendNotificationToCustomer(newStatus, statusLabel);
                 } else {
                     Toast.makeText(AdminOrderDetailActivity.this, "Cập nhật thất bại", Toast.LENGTH_SHORT).show();
                 }
@@ -177,5 +185,56 @@ public class AdminOrderDetailActivity extends AppCompatActivity {
                 Toast.makeText(AdminOrderDetailActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void sendNotificationToCustomer(String newStatus, String statusLabel) {
+        if (userId == null || userId.isEmpty()) return;
+
+        String title = "Cập nhật đơn hàng " + (orderCode != null ? orderCode : "");
+        String message = getNotificationMessage(newStatus, statusLabel);
+
+        Map<String, Object> notifData = new HashMap<>();
+        notifData.put("user_id", userId);
+        notifData.put("order_id", orderId);
+        notifData.put("order_code", orderCode);
+        notifData.put("title", title);
+        notifData.put("message", message);
+        notifData.put("is_read", false);
+
+        dbService.createNotification(notifData).enqueue(new Callback<List<com.example.food_order_app.model.Notification>>() {
+            @Override
+            public void onResponse(Call<List<com.example.food_order_app.model.Notification>> call, Response<List<com.example.food_order_app.model.Notification>> response) {
+                if (response.isSuccessful()) {
+                    Toast.makeText(AdminOrderDetailActivity.this, "Đã gửi thông báo cho khách", Toast.LENGTH_SHORT).show();
+                } else {
+                    try {
+                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "unknown";
+                        android.util.Log.e("AdminOrderDetail", "Notification failed: " + response.code() + " - " + errorBody);
+                        Toast.makeText(AdminOrderDetailActivity.this, "Lỗi gửi thông báo: " + response.code(), Toast.LENGTH_SHORT).show();
+                    } catch (Exception e) {
+                        android.util.Log.e("AdminOrderDetail", "Error reading error body", e);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<com.example.food_order_app.model.Notification>> call, Throwable t) {
+                android.util.Log.e("AdminOrderDetail", "Notification request failed: " + t.getMessage());
+                Toast.makeText(AdminOrderDetailActivity.this, "Lỗi gửi thông báo: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private String getNotificationMessage(String status, String statusLabel) {
+        switch (status) {
+            case "confirmed":
+                return "Đơn hàng " + orderCode + " đã được xác nhận và đang xử lý.";
+            case "delivered":
+                return "Đơn hàng " + orderCode + " đã giao thành công. Cảm ơn bạn!";
+            case "cancelled":
+                return "Đơn hàng " + orderCode + " đã bị hủy. Vui lòng liên hệ nếu cần hỗ trợ.";
+            default:
+                return "Đơn hàng " + orderCode + " đã chuyển sang trạng thái: " + statusLabel + ".";
+        }
     }
 }

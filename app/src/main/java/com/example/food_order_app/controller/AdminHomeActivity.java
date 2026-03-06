@@ -145,7 +145,7 @@ public class AdminHomeActivity extends AppCompatActivity implements AdminFoodAda
 
             @Override
             public void onFailure(Call<List<Food>> call, Throwable t) {
-                Toast.makeText(AdminHomeActivity.this, "Lỗi tìm kiếm", Toast.LENGTH_SHORT).show();
+                Toast.makeText(AdminHomeActivity.this, "Lỗi tìm kiếm FTS", Toast.LENGTH_SHORT).show();
             }
         });
     }

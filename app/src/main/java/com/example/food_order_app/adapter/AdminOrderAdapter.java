@@ -58,8 +58,6 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Vi
         switch (status) {
             case "pending": return "Chờ xác nhận";
             case "confirmed": return "Đang xử lý";
-            case "preparing": return "Đang chuẩn bị";
-            case "delivering": return "Đang giao";
             case "delivered": return "Hoàn thành";
             case "cancelled": return "Đã hủy";
             default: return status;
@@ -70,9 +68,7 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Vi
         if (status == null) return R.drawable.bg_status_pending;
         switch (status) {
             case "pending": return R.drawable.bg_status_pending;
-            case "confirmed":
-            case "preparing": return R.drawable.bg_status_unread;
-            case "delivering": return R.drawable.bg_status_unread;
+            case "confirmed": return R.drawable.bg_status_unread;
             case "delivered": return R.drawable.bg_status_delivered;
             case "cancelled": return R.drawable.bg_status_unavailable;
             default: return R.drawable.bg_status_pending;

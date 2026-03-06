@@ -32,7 +32,7 @@ import retrofit2.Response;
 public class AdminAddEditFoodActivity extends AppCompatActivity {
 
     private TextView tvTitle;
-    private ImageView imgPreview;
+    private ImageView imgPreview, btnBack;
     private EditText edtImageUrl, edtName, edtPrice, edtDiscount, edtDescription;
     private Spinner spinnerCategory;
     private CheckBox cbPopular, cbRecommended, cbAvailable;
@@ -68,8 +68,11 @@ public class AdminAddEditFoodActivity extends AppCompatActivity {
 
     private void initViews() {
         tvTitle = findViewById(R.id.tvAddEditTitle);
+        btnBack = findViewById(R.id.btnBackAddEdit);
         imgPreview = findViewById(R.id.imgFoodPreview);
         edtImageUrl = findViewById(R.id.edtImageUrl);
+
+        btnBack.setOnClickListener(v -> finish());
         edtName = findViewById(R.id.edtFoodName);
         edtPrice = findViewById(R.id.edtFoodPrice);
         edtDiscount = findViewById(R.id.edtDiscount);

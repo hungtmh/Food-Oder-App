@@ -68,6 +68,9 @@ dependencies {
     // CircleImageView for profile avatar
     implementation(libs.circleimageview)
 
+    // MPAndroidChart for charts
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
     // JavaMail for sending emails
     implementation(libs.android.mail)
     implementation(libs.android.activation)

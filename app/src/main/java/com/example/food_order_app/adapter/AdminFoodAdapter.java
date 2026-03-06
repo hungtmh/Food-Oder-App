@@ -59,7 +59,7 @@ public class AdminFoodAdapter extends RecyclerView.Adapter<AdminFoodAdapter.View
 
     class ViewHolder extends RecyclerView.ViewHolder {
         ImageView imgFood;
-        TextView tvName, tvOriginalPrice, tvPrice, tvPopular, tvDesc;
+        TextView tvName, tvOriginalPrice, tvPrice, tvPopular, tvDesc, tvAvailability;
         ImageButton btnEdit, btnDelete;
 
         ViewHolder(@NonNull View itemView) {
@@ -70,6 +70,7 @@ public class AdminFoodAdapter extends RecyclerView.Adapter<AdminFoodAdapter.View
             tvPrice = itemView.findViewById(R.id.tvAdminFoodPrice);
             tvPopular = itemView.findViewById(R.id.tvAdminFoodPopular);
             tvDesc = itemView.findViewById(R.id.tvAdminFoodDesc);
+            tvAvailability = itemView.findViewById(R.id.tvAdminFoodAvailability);
             btnEdit = itemView.findViewById(R.id.btnEditFood);
             btnDelete = itemView.findViewById(R.id.btnDeleteFood);
         }
@@ -89,6 +90,15 @@ public class AdminFoodAdapter extends RecyclerView.Adapter<AdminFoodAdapter.View
             }
 
             tvPopular.setText("Phổ biến: " + (food.isPopular() ? "Có" : "Không"));
+
+            if (food.isAvailable()) {
+                tvAvailability.setText("Còn hàng");
+                tvAvailability.setTextColor(context.getResources().getColor(android.R.color.holo_green_dark));
+            } else {
+                tvAvailability.setText("Hết hàng");
+                tvAvailability.setTextColor(context.getResources().getColor(android.R.color.holo_red_dark));
+            }
+
             tvDesc.setText(food.getDescription());
 
             Glide.with(context).load(food.getImageUrl())

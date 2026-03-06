@@ -87,6 +87,11 @@
             android:name=".controller.OrderConfirmationActivity"
             android:exported="false" />
 
+        <!-- Thông báo -->
+        <activity
+            android:name=".controller.NotificationsActivity"
+            android:exported="false" />
+
         <!-- ==================== ADMIN ==================== -->
 
         <!-- Trang chủ quản trị (Quản lý món ăn) -->
@@ -122,6 +127,11 @@
         <!-- Thống kê doanh thu -->
         <activity
             android:name=".controller.AdminRevenueActivity"
+            android:exported="false" />
+
+        <!-- Thống kê đơn hàng -->
+        <activity
+            android:name=".controller.AdminOrderStatisticsActivity"
             android:exported="false" />
 
     </application>

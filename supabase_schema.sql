@@ -192,6 +192,22 @@ CREATE TABLE IF NOT EXISTS public.feedbacks (
 );
 
 -- ============================================
+-- 13. BẢNG NOTIFICATIONS
+-- ============================================
+CREATE TABLE IF NOT EXISTS public.notifications (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    order_id UUID REFERENCES public.orders(id) ON DELETE SET NULL,
+    order_code TEXT,
+    title TEXT NOT NULL,
+    message TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON public.notifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_created_at ON public.notifications(created_at DESC);
+
+-- ============================================
 -- TRIGGERS
 -- ============================================
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -235,7 +251,7 @@ DECLARE
 BEGIN
     FOR tbl IN SELECT unnest(ARRAY[
         'users','password_reset_codes','categories','foods','food_images',
-        'reviews','carts','cart_items','addresses','orders','order_items','search_history','feedbacks'
+        'reviews','carts','cart_items','addresses','orders','order_items','search_history','feedbacks','notifications'
     ])
     LOOP
         EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', tbl);

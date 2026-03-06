@@ -6,7 +6,9 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,6 +23,7 @@ import com.example.food_order_app.adapter.FoodAdapter;
 import com.example.food_order_app.adapter.SliderAdapter;
 import com.example.food_order_app.model.Category;
 import com.example.food_order_app.model.Food;
+import com.example.food_order_app.model.Notification;
 import com.example.food_order_app.network.RetrofitClient;
 import com.example.food_order_app.network.SupabaseDbService;
 import com.example.food_order_app.utils.SessionManager;
@@ -41,6 +44,8 @@ public class HomeActivity extends AppCompatActivity {
     private RecyclerView rvCategories, rvFoods;
     private BottomNavigationView bottomNav;
     private View searchBar;
+    private FrameLayout btnNotification;
+    private TextView tvNotifBadge;
 
     private SliderAdapter sliderAdapter;
     private CategoryAdapter categoryAdapter;
@@ -76,9 +81,15 @@ public class HomeActivity extends AppCompatActivity {
         rvFoods = findViewById(R.id.rvFoods);
         bottomNav = findViewById(R.id.bottomNav);
         searchBar = findViewById(R.id.searchBar);
+        btnNotification = findViewById(R.id.btnNotification);
+        tvNotifBadge = findViewById(R.id.tvNotifBadge);
 
         searchBar.setOnClickListener(v -> {
             startActivity(new Intent(this, SearchActivity.class));
+        });
+
+        btnNotification.setOnClickListener(v -> {
+            startActivity(new Intent(this, NotificationsActivity.class));
         });
 
         bottomNav.setOnItemSelectedListener(item -> {
@@ -261,6 +272,33 @@ public class HomeActivity extends AppCompatActivity {
         if (sliderRunnable != null) {
             sliderHandler.postDelayed(sliderRunnable, 3000);
         }
+        loadUnreadNotificationCount();
+    }
+
+    private void loadUnreadNotificationCount() {
+        String userId = sessionManager.getUserId();
+        if (userId == null) return;
+
+        dbService.getUnreadNotificationCount("eq." + userId, "eq.false", "id")
+                .enqueue(new Callback<List<Notification>>() {
+                    @Override
+                    public void onResponse(Call<List<Notification>> call, Response<List<Notification>> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            int count = response.body().size();
+                            if (count > 0) {
+                                tvNotifBadge.setText(count > 99 ? "99+" : String.valueOf(count));
+                                tvNotifBadge.setVisibility(View.VISIBLE);
+                            } else {
+                                tvNotifBadge.setVisibility(View.GONE);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<Notification>> call, Throwable t) {
+                        // Silent fail
+                    }
+                });
     }
 
     @Override

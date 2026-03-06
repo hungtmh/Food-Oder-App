@@ -242,6 +242,36 @@ public interface SupabaseDbService {
             @Query("order_id") String orderIdFilter,
             @Query("select") String select);
 
+    // ==================== NOTIFICATIONS ====================          
+    @Headers("Prefer: return=representation")
+    @POST("notifications")
+    Call<List<Notification>> createNotification(@Body Map<String, Object> notification);
+
+    @GET("notifications")
+    Call<List<Notification>> getUserNotifications(
+            @Query("user_id") String userIdFilter,
+            @Query("select") String select,
+            @Query("order") String order);
+
+    @Headers("Prefer: return=representation")
+    @PATCH("notifications")
+    Call<List<Notification>> markNotificationRead(
+            @Query("id") String idFilter,
+            @Body Map<String, Object> updates);
+
+    @Headers("Prefer: return=representation")
+    @PATCH("notifications")
+    Call<List<Notification>> markAllNotificationsRead(
+            @Query("user_id") String userIdFilter,
+            @Query("is_read") String isReadFilter,
+            @Body Map<String, Object> updates);
+
+    @GET("notifications")
+    Call<List<Notification>> getUnreadNotificationCount(
+            @Query("user_id") String userIdFilter,
+            @Query("is_read") String isReadFilter,
+            @Query("select") String select);
+
     // ==================== ADMIN: REVENUE ====================
     @GET("orders")
     Call<List<Order>> getOrdersByDateRange(
