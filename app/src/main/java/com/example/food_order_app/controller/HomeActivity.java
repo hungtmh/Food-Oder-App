@@ -1,12 +1,16 @@
 package com.example.food_order_app.controller;
 
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -41,6 +45,9 @@ public class HomeActivity extends AppCompatActivity {
     private RecyclerView rvCategories, rvFoods;
     private BottomNavigationView bottomNav;
     private View searchBar;
+    private LinearLayout layoutError;
+    private ScrollView scrollView;
+    private Button btnRetry;
 
     private SliderAdapter sliderAdapter;
     private CategoryAdapter categoryAdapter;
@@ -76,9 +83,18 @@ public class HomeActivity extends AppCompatActivity {
         rvFoods = findViewById(R.id.rvFoods);
         bottomNav = findViewById(R.id.bottomNav);
         searchBar = findViewById(R.id.searchBar);
+        layoutError = findViewById(R.id.layoutError);
+        scrollView = findViewById(R.id.scrollView);
+        btnRetry = findViewById(R.id.btnRetry);
 
         searchBar.setOnClickListener(v -> {
             startActivity(new Intent(this, SearchActivity.class));
+        });
+
+        btnRetry.setOnClickListener(v -> {
+            layoutError.setVisibility(View.GONE);
+            scrollView.setVisibility(View.VISIBLE);
+            loadData();
         });
 
         bottomNav.setOnItemSelectedListener(item -> {
@@ -137,7 +153,36 @@ public class HomeActivity extends AppCompatActivity {
         rvFoods.setAdapter(foodAdapter);
     }
 
+    private int loadFailCount = 0;
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+    }
+
+    private void showNetworkError() {
+        runOnUiThread(() -> {
+            scrollView.setVisibility(View.GONE);
+            layoutError.setVisibility(View.VISIBLE);
+        });
+    }
+
+    private void onLoadFailed() {
+        loadFailCount++;
+        // Nếu cả 3 API đều fail thì hiện lỗi
+        if (loadFailCount >= 3) {
+            showNetworkError();
+        }
+    }
+
     private void loadData() {
+        loadFailCount = 0;
+        if (!isNetworkAvailable()) {
+            showNetworkError();
+            Toast.makeText(this, "Không có kết nối mạng. Vui lòng kiểm tra WiFi/Data.", Toast.LENGTH_LONG).show();
+            return;
+        }
         loadPopularFoods();
         loadCategories();
         loadRecommendedFoods();
@@ -149,15 +194,26 @@ public class HomeActivity extends AppCompatActivity {
             public void onResponse(Call<List<Food>> call, Response<List<Food>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     List<Food> foods = response.body();
+                    Log.d(TAG, "loadPopularFoods: " + foods.size() + " items");
                     sliderAdapter.setFoods(foods);
                     setupDots(foods.size());
                     startAutoSlide(foods.size());
+                } else if (!response.isSuccessful()) {
+                    try {
+                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "null";
+                        Log.e(TAG, "loadPopularFoods HTTP " + response.code() + ": " + errorBody);
+                    } catch (Exception e) {
+                        Log.e(TAG, "loadPopularFoods HTTP " + response.code());
+                    }
+                } else {
+                    Log.w(TAG, "loadPopularFoods: body null");
                 }
             }
 
             @Override
             public void onFailure(Call<List<Food>> call, Throwable t) {
                 Log.e(TAG, "loadPopularFoods failed: " + t.getMessage());
+                onLoadFailed();
             }
         });
     }
@@ -167,7 +223,14 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<List<Category>> call, Response<List<Category>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    categories = response.body();
+                    // Lọc bỏ category "Tất cả" từ DB (đã được thêm vào code phía dưới)
+                    categories = new ArrayList<>();
+                    for (Category c : response.body()) {
+                        if (!"Tất cả".equals(c.getName())) {
+                            categories.add(c);
+                        }
+                    }
+                    Log.d(TAG, "loadCategories: " + categories.size() + " items");
                     // Add "Tất cả" at beginning
                     Category all = new Category();
                     all.setName("Tất cả");
@@ -175,12 +238,22 @@ public class HomeActivity extends AppCompatActivity {
                     withAll.add(all);
                     withAll.addAll(categories);
                     categoryAdapter.setCategories(withAll);
+                } else if (!response.isSuccessful()) {
+                    try {
+                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "null";
+                        Log.e(TAG, "loadCategories HTTP " + response.code() + ": " + errorBody);
+                    } catch (Exception e) {
+                        Log.e(TAG, "loadCategories HTTP " + response.code());
+                    }
+                } else {
+                    Log.w(TAG, "loadCategories: body null");
                 }
             }
 
             @Override
             public void onFailure(Call<List<Category>> call, Throwable t) {
                 Log.e(TAG, "loadCategories failed: " + t.getMessage());
+                onLoadFailed();
             }
         });
     }
@@ -190,13 +263,24 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<List<Food>> call, Response<List<Food>> response) {
                 if (response.isSuccessful() && response.body() != null) {
+                    Log.d(TAG, "loadRecommendedFoods: " + response.body().size() + " items");
                     foodAdapter.setFoods(response.body());
+                } else if (!response.isSuccessful()) {
+                    try {
+                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "null";
+                        Log.e(TAG, "loadRecommendedFoods HTTP " + response.code() + ": " + errorBody);
+                    } catch (Exception e) {
+                        Log.e(TAG, "loadRecommendedFoods HTTP " + response.code());
+                    }
+                } else {
+                    Log.w(TAG, "loadRecommendedFoods: body null");
                 }
             }
 
             @Override
             public void onFailure(Call<List<Food>> call, Throwable t) {
                 Log.e(TAG, "loadRecommendedFoods failed: " + t.getMessage());
+                onLoadFailed();
             }
         });
     }
@@ -206,7 +290,17 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<List<Food>> call, Response<List<Food>> response) {
                 if (response.isSuccessful() && response.body() != null) {
+                    Log.d(TAG, "loadFoodsByCategory: " + response.body().size() + " items");
                     foodAdapter.setFoods(response.body());
+                } else if (!response.isSuccessful()) {
+                    try {
+                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "null";
+                        Log.e(TAG, "loadFoodsByCategory HTTP " + response.code() + ": " + errorBody);
+                    } catch (Exception e) {
+                        Log.e(TAG, "loadFoodsByCategory HTTP " + response.code());
+                    }
+                } else {
+                    Log.w(TAG, "loadFoodsByCategory: body null");
                 }
             }
 
