@@ -116,8 +116,8 @@ public class OrderHistoryActivity extends AppCompatActivity
 
         for (int i = 0; i < buttons.length; i++) {
             boolean selected = currentFilter.equals(filters[i]);
-            buttons[i].setBackgroundResource(selected ? R.drawable.bg_category_selected : R.drawable.bg_category_normal);
-            buttons[i].setTextColor(getResources().getColor(selected ? R.color.white : R.color.text_primary));
+            buttons[i].setBackgroundResource(selected ? R.drawable.bg_category_selected : R.drawable.bg_button_outline);
+            buttons[i].setTextColor(getResources().getColor(selected ? R.color.white : R.color.primary));
         }
     }
 

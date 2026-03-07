@@ -137,7 +137,7 @@
                 android:nestedScrollingEnabled="false" />
         </LinearLayout>
 
-        <!-- Bottom: Toggle + Cancel button -->
+        <!-- Bottom: Toggle + Reorder + Cancel button -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -155,14 +155,29 @@
                 android:textColor="@color/primary"
                 android:textSize="13sp" />
 
+            <!-- Đặt lại: hiện với mọi đơn -->
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnReorder"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_button_outline"
+                android:minWidth="0dp"
+                android:paddingHorizontal="14dp"
+                android:text="🔄 Đặt lại"
+                android:textAllCaps="false"
+                android:textColor="@color/primary"
+                android:textSize="13sp" />
+
             <!-- Cancel button: only visible for pending orders -->
-            <Button
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btnCancelOrder"
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
+                android:layout_marginStart="8dp"
                 android:background="@drawable/bg_button_outline"
                 android:minWidth="0dp"
-                android:paddingHorizontal="16dp"
+                android:paddingHorizontal="14dp"
                 android:text="Hủy đơn"
                 android:textAllCaps="false"
                 android:textColor="@color/error"

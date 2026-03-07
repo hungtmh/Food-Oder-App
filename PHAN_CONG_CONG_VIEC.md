@@ -101,8 +101,8 @@
 | Thêm món vào giỏ     | Chọn số lượng, hiệu ứng thêm thành công           | ✅ Hoàn thành |
 | Xem giỏ hàng         | Danh sách món: Ảnh, Tên, Giá, Số lượng, Tổng tiền | ✅ Hoàn thành |
 | Thay đổi số lượng    | Tăng/giảm, tổng tiền tự động cập nhật             | ✅ Hoàn thành |
-| Xóa món khỏi giỏ     | Xóa từng món, vuốt để xóa, nút "Hoàn tác"         | ✅ Hoàn thành |
-| Xóa toàn bộ giỏ hàng | Xóa tất cả, có xác nhận                           | ⬜ Chưa làm   |
+| Xóa món khỏi giỏ     | Xóa từng món, vuốt trái để xóa, Snackbar Hoàn tác          | ✅ Hoàn thành |
+| Xóa toàn bộ giỏ hàng | Xóa tất cả, Snackbar Hoàn tác, tổng tiền reset về 0         | ✅ Hoàn thành |
 
 #### Nhóm 11: Đặt hàng
 
@@ -110,16 +110,16 @@
 | --------------------- | ------------------------------------------------------------ | ------------- |
 | Tạo đơn hàng          | Nhập tên, SĐT, địa chỉ, chọn thanh toán, ghi chú             | ✅ Hoàn thành |
 | Xác nhận đặt hàng     | Hiển thị mã đơn, thời gian dự kiến, nút xem đơn/về trang chủ | ✅ Hoàn thành |
-| Lưu địa chỉ giao hàng | Lưu nhiều địa chỉ, đặt mặc định, chọn nhanh                  | ⬜ Chưa làm   |
+| Lưu địa chỉ giao hàng | Lưu nhiều địa chỉ, đặt mặc định, chọn nhanh khi checkout         | ✅ Hoàn thành |
 
 #### Nhóm 12: Lịch sử đơn hàng
 
-| Tính năng                | Mô tả                                                            | Trạng thái  |
-| ------------------------ | ---------------------------------------------------------------- | ----------- |
-| Xem danh sách đơn đã đặt | Phân màu theo trạng thái (xám/trắng/đỏ), lọc                     | ⬜ Chưa làm |
-| Xem chi tiết đơn hàng    | Mã đơn, trạng thái, danh sách món, thông tin giao hàng, timeline | ⬜ Chưa làm |
-| Hủy đơn hàng             | Hủy khi "Chờ xác nhận", chọn lý do                               | ⬜ Chưa làm |
-| Đặt lại đơn hàng         | Đặt lại từ đơn cũ, chỉnh sửa trước khi đặt                       | ⬜ Chưa làm |
+| Tính năng                | Mô tả                                                            | Trạng thái    |
+| ------------------------ | ---------------------------------------------------------------- | ------------- |
+| Xem danh sách đơn đã đặt | Phân màu theo trạng thái, lọc theo tab (Tất cả/Chờ/Chế biến/Hủy) | ✅ Hoàn thành |
+| Xem chi tiết đơn hàng    | Mã đơn, trạng thái, danh sách món, thông tin giao hàng (expand)  | ✅ Hoàn thành |
+| Hủy đơn hàng             | Hủy khi "Chờ xác nhận", dialog xác nhận                          | ✅ Hoàn thành |
+| Đặt lại đơn hàng         | Thêm tất cả món vào giỏ, chuyển sang CartActivity để sửa & đặt   | ✅ Hoàn thành |
 
 #### Nhóm 18: Khuyến mãi & Mã giảm giá (User)
 
@@ -227,7 +227,7 @@
 | ---------- | -------------- | ------------- | ----------- | ------- |
 | **Hùng**   | 14             | 8             | 6           | 57%     |
 | **Cường**  | 9              | 4             | 5           | 44%     |
-| **Khoa**   | 14             | 5             | 9           | 36%     |
+| **Khoa**   | 14             | 11            | 3           | 57%     |
 | **Thắng**  | 16             | 9             | 7           | 56%     |
 | **Khải**   | 10             | 7             | 3           | 70%     |
 | **Tổng**   | **63**         | **29**        | **34**      | **46%** |

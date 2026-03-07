@@ -47,12 +47,14 @@ public class ProfileActivity extends AppCompatActivity {
     // Personal info section
     private LinearLayout sectionPersonalHeader, sectionPersonalContent;
     private ImageView ivExpandPersonal;
-    private EditText edtEmail, edtFullName, edtPhone, edtAddress;
+    private EditText edtEmail, edtFullName, edtPhone;
     private Button btnSaveProfile;
     private boolean isPersonalExpanded = false;
 
     // Orders section (navigates to OrderHistoryActivity)
     private LinearLayout sectionOrdersHeader;
+    // Address section
+    private LinearLayout sectionAddressHeader;
 
     // Action buttons
     private LinearLayout btnChangePassword, btnLogout;
@@ -88,11 +90,12 @@ public class ProfileActivity extends AppCompatActivity {
         edtEmail = findViewById(R.id.edtEmail);
         edtFullName = findViewById(R.id.edtFullName);
         edtPhone = findViewById(R.id.edtPhone);
-        edtAddress = findViewById(R.id.edtAddress);
         btnSaveProfile = findViewById(R.id.btnSaveProfile);
 
         // Orders section
         sectionOrdersHeader = findViewById(R.id.sectionOrdersHeader);
+        // Address section
+        sectionAddressHeader = findViewById(R.id.sectionAddressHeader);
 
         // Action buttons
         btnChangePassword = findViewById(R.id.btnChangePassword);
@@ -113,7 +116,6 @@ public class ProfileActivity extends AppCompatActivity {
         edtEmail.setText(sessionManager.getEmail());
         edtFullName.setText(fullName);
         edtPhone.setText(sessionManager.getPhone());
-        edtAddress.setText(sessionManager.getAddress());
 
         String avatarUrl = sessionManager.getAvatarUrl();
         if (avatarUrl != null && !avatarUrl.isEmpty()) {
@@ -142,6 +144,11 @@ public class ProfileActivity extends AppCompatActivity {
         // Orders: navigate to OrderHistoryActivity
         sectionOrdersHeader.setOnClickListener(v -> {
             startActivity(new Intent(ProfileActivity.this, OrderHistoryActivity.class));
+        });
+
+        // Address: navigate to AddressActivity
+        sectionAddressHeader.setOnClickListener(v -> {
+            startActivity(new Intent(ProfileActivity.this, AddressActivity.class));
         });
 
         // Save profile
@@ -189,7 +196,6 @@ public class ProfileActivity extends AppCompatActivity {
     private void handleSaveProfile() {
         String fullName = edtFullName.getText().toString().trim();
         String phone = edtPhone.getText().toString().trim();
-        String address = edtAddress.getText().toString().trim();
 
         if (!ValidationUtils.isEmpty(phone) && !ValidationUtils.isValidPhone(phone)) {
             edtPhone.setError(getString(R.string.error_phone_invalid));
@@ -204,10 +210,9 @@ public class ProfileActivity extends AppCompatActivity {
         Map<String, Object> updates = new HashMap<>();
         updates.put("full_name", fullName);
         updates.put("phone", phone);
-        updates.put("address", address);
 
         if (userId == null || userId.isEmpty()) {
-            updateByEmail(updates, fullName, phone, address);
+            updateByEmail(updates, fullName, phone);
             return;
         }
 
@@ -216,7 +221,7 @@ public class ProfileActivity extends AppCompatActivity {
             public void onResponse(Call<List<User>> call, Response<List<User>> response) {
                 progressDialog.dismiss();
                 if (response.isSuccessful()) {
-                    sessionManager.updateProfile(fullName, phone, address, null);
+                    sessionManager.updateProfile(fullName, phone, sessionManager.getAddress(), null);
                     tvProfileName.setText(fullName.isEmpty() ? "Người dùng" : fullName);
                     Toast.makeText(ProfileActivity.this,
                             getString(R.string.success_update_profile),
@@ -238,7 +243,7 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void updateByEmail(Map<String, Object> updates,
-                               String fullName, String phone, String address) {
+                               String fullName, String phone) {
         String email = sessionManager.getEmail();
         dbService.getUserByEmail("eq." + email, "*")
                 .enqueue(new Callback<List<User>>() {
@@ -251,7 +256,7 @@ public class ProfileActivity extends AppCompatActivity {
 
                             sessionManager.saveUserInfo(
                                     id, sessionManager.getAuthId(),
-                                    email, fullName, phone, address,
+                                    email, fullName, phone, sessionManager.getAddress(),
                                     user.getAvatarUrl(), user.getRole()
                             );
 
@@ -260,7 +265,7 @@ public class ProfileActivity extends AppCompatActivity {
                                 public void onResponse(Call<List<User>> call, Response<List<User>> response) {
                                     progressDialog.dismiss();
                                     if (response.isSuccessful()) {
-                                        sessionManager.updateProfile(fullName, phone, address, null);
+                                        sessionManager.updateProfile(fullName, phone, sessionManager.getAddress(), null);
                                         tvProfileName.setText(fullName.isEmpty() ? "Người dùng" : fullName);
                                         Toast.makeText(ProfileActivity.this,
                                                 getString(R.string.success_update_profile),

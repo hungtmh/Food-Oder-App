@@ -204,28 +204,6 @@
                     android:textColorHint="@color/text_hint"
                     android:textSize="14sp" />
 
-                <!-- Địa chỉ -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="4dp"
-                    android:text="Địa chỉ"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp" />
-
-                <EditText
-                    android:id="@+id/edtAddress"
-                    android:layout_width="match_parent"
-                    android:layout_height="44dp"
-                    android:layout_marginBottom="16dp"
-                    android:background="@drawable/bg_edit_text"
-                    android:hint="@string/address_hint"
-                    android:inputType="textPostalAddress"
-                    android:paddingHorizontal="12dp"
-                    android:textColor="@color/text_primary"
-                    android:textColorHint="@color/text_hint"
-                    android:textSize="14sp" />
-
                 <!-- Nút lưu -->
                 <Button
                     android:id="@+id/btnSaveProfile"
@@ -261,6 +239,40 @@
                     android:layout_marginStart="10dp"
                     android:layout_weight="1"
                     android:text="Quản lý đơn hàng"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:rotation="270"
+                    android:src="@drawable/ic_expand_more" />
+            </LinearLayout>
+
+            <!-- ============ SECTION: Địa chỉ giao hàng ============ -->
+            <LinearLayout
+                android:id="@+id/sectionAddressHeader"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_section_header"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="📍"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_weight="1"
+                    android:text="Địa chỉ giao hàng"
                     android:textColor="@color/text_primary"
                     android:textSize="15sp"
                     android:textStyle="bold" />
