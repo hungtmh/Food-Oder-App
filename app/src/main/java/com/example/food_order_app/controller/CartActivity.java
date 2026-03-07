@@ -131,7 +131,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
     }
 
     private void loadCartItems() {
-        dbService.getCartItems("eq." + cartId, null, "foods(*)").enqueue(new Callback<List<CartItem>>() {
+        dbService.getCartItems("eq." + cartId, null, "*,foods(*)").enqueue(new Callback<List<CartItem>>() {
             @Override
             public void onResponse(Call<List<CartItem>> call, Response<List<CartItem>> response) {
                 if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {

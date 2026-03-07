@@ -3,9 +3,13 @@ package com.example.food_order_app.controller;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.view.animation.RotateAnimation;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -13,10 +17,10 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.example.food_order_app.R;
+import com.example.food_order_app.model.User;
 import com.example.food_order_app.network.RetrofitClient;
 import com.example.food_order_app.network.SupabaseAuthService;
 import com.example.food_order_app.network.SupabaseDbService;
-import com.example.food_order_app.model.User;
 import com.example.food_order_app.utils.SessionManager;
 import com.example.food_order_app.utils.ValidationUtils;
 
@@ -30,16 +34,32 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 /**
- * Controller: Màn hình Hồ sơ cá nhân
+ * Controller: Màn hình Hồ sơ cá nhân với sections thu gọn
  */
 public class ProfileActivity extends AppCompatActivity {
+    private static final String TAG = "ProfileActivity";
 
+    // Header
     private ImageView btnBack, btnChangeAvatar;
     private CircleImageView imgAvatar;
+    private TextView tvProfileName;
+
+    // Personal info section
+    private LinearLayout sectionPersonalHeader, sectionPersonalContent;
+    private ImageView ivExpandPersonal;
     private EditText edtEmail, edtFullName, edtPhone, edtAddress;
-    private Button btnSaveProfile, btnChangePassword, btnLogout;
+    private Button btnSaveProfile;
+    private boolean isPersonalExpanded = false;
+
+    // Orders section (navigates to OrderHistoryActivity)
+    private LinearLayout sectionOrdersHeader;
+
+    // Action buttons
+    private LinearLayout btnChangePassword, btnLogout;
+
     private ProgressDialog progressDialog;
     private SessionManager sessionManager;
+    private SupabaseDbService dbService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,38 +67,54 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_profile);
 
         sessionManager = new SessionManager(this);
+        dbService = RetrofitClient.getDbService();
+
         initViews();
         loadUserData();
         setupListeners();
     }
 
     private void initViews() {
+        // Header
         btnBack = findViewById(R.id.btnBack);
         btnChangeAvatar = findViewById(R.id.btnChangeAvatar);
         imgAvatar = findViewById(R.id.imgAvatar);
+        tvProfileName = findViewById(R.id.tvProfileName);
+
+        // Personal info section
+        sectionPersonalHeader = findViewById(R.id.sectionPersonalHeader);
+        sectionPersonalContent = findViewById(R.id.sectionPersonalContent);
+        ivExpandPersonal = findViewById(R.id.ivExpandPersonal);
         edtEmail = findViewById(R.id.edtEmail);
         edtFullName = findViewById(R.id.edtFullName);
         edtPhone = findViewById(R.id.edtPhone);
         edtAddress = findViewById(R.id.edtAddress);
         btnSaveProfile = findViewById(R.id.btnSaveProfile);
+
+        // Orders section
+        sectionOrdersHeader = findViewById(R.id.sectionOrdersHeader);
+
+        // Action buttons
         btnChangePassword = findViewById(R.id.btnChangePassword);
         btnLogout = findViewById(R.id.btnLogout);
 
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage(getString(R.string.loading));
         progressDialog.setCancelable(false);
+
+        // Set initial expand state
+        updateSectionVisibility(sectionPersonalContent, ivExpandPersonal, isPersonalExpanded);
     }
 
-    /**
-     * Hiển thị thông tin user từ session
-     */
     private void loadUserData() {
+        String fullName = sessionManager.getFullName();
+        tvProfileName.setText(fullName != null && !fullName.isEmpty() ? fullName : "Người dùng");
+
         edtEmail.setText(sessionManager.getEmail());
-        edtFullName.setText(sessionManager.getFullName());
+        edtFullName.setText(fullName);
         edtPhone.setText(sessionManager.getPhone());
         edtAddress.setText(sessionManager.getAddress());
 
-        // Load avatar
         String avatarUrl = sessionManager.getAvatarUrl();
         if (avatarUrl != null && !avatarUrl.isEmpty()) {
             Glide.with(this)
@@ -93,26 +129,68 @@ public class ProfileActivity extends AppCompatActivity {
         btnBack.setOnClickListener(v -> finish());
 
         btnChangeAvatar.setOnClickListener(v -> {
-            // TODO: Implement image picker cho avatar
             Toast.makeText(this, "Chức năng đổi ảnh đại diện sẽ được cập nhật!",
                     Toast.LENGTH_SHORT).show();
         });
 
+        // Collapsible: Personal info
+        sectionPersonalHeader.setOnClickListener(v -> {
+            isPersonalExpanded = !isPersonalExpanded;
+            toggleSection(sectionPersonalContent, ivExpandPersonal, isPersonalExpanded);
+        });
+
+        // Orders: navigate to OrderHistoryActivity
+        sectionOrdersHeader.setOnClickListener(v -> {
+            startActivity(new Intent(ProfileActivity.this, OrderHistoryActivity.class));
+        });
+
+        // Save profile
         btnSaveProfile.setOnClickListener(v -> handleSaveProfile());
 
+        // Change password
         btnChangePassword.setOnClickListener(v -> {
             startActivity(new Intent(ProfileActivity.this, ChangePasswordActivity.class));
         });
 
+        // Logout
         btnLogout.setOnClickListener(v -> showLogoutConfirmation());
     }
+
+    // ============ SECTION TOGGLE ANIMATION ============
+
+    private void toggleSection(View content, ImageView arrow, boolean expanded) {
+        if (expanded) {
+            content.setVisibility(View.VISIBLE);
+            content.setAlpha(0f);
+            content.animate().alpha(1f).setDuration(200).start();
+        } else {
+            content.animate().alpha(0f).setDuration(200).withEndAction(() ->
+                    content.setVisibility(View.GONE)
+            ).start();
+        }
+
+        float fromDeg = expanded ? 0f : 180f;
+        float toDeg = expanded ? 180f : 0f;
+        RotateAnimation rotate = new RotateAnimation(fromDeg, toDeg,
+                RotateAnimation.RELATIVE_TO_SELF, 0.5f,
+                RotateAnimation.RELATIVE_TO_SELF, 0.5f);
+        rotate.setDuration(200);
+        rotate.setFillAfter(true);
+        arrow.startAnimation(rotate);
+    }
+
+    private void updateSectionVisibility(View content, ImageView arrow, boolean expanded) {
+        content.setVisibility(expanded ? View.VISIBLE : View.GONE);
+        arrow.setRotation(expanded ? 180f : 0f);
+    }
+
+    // ============ SAVE PROFILE ============
 
     private void handleSaveProfile() {
         String fullName = edtFullName.getText().toString().trim();
         String phone = edtPhone.getText().toString().trim();
         String address = edtAddress.getText().toString().trim();
 
-        // Validation (cho phép rỗng nhưng nếu có giá trị thì phải hợp lệ)
         if (!ValidationUtils.isEmpty(phone) && !ValidationUtils.isValidPhone(phone)) {
             edtPhone.setError(getString(R.string.error_phone_invalid));
             edtPhone.requestFocus();
@@ -121,9 +199,6 @@ public class ProfileActivity extends AppCompatActivity {
 
         progressDialog.show();
 
-        // Cập nhật trong bảng users
-        SupabaseDbService dbService = RetrofitClient.getDbService();
-        String bearerToken = sessionManager.getBearerToken();
         String userId = sessionManager.getUserId();
 
         Map<String, Object> updates = new HashMap<>();
@@ -132,20 +207,17 @@ public class ProfileActivity extends AppCompatActivity {
         updates.put("address", address);
 
         if (userId == null || userId.isEmpty()) {
-            // Nếu chưa có userId, tìm bằng email
-            updateByEmail(dbService, updates, fullName, phone, address);
+            updateByEmail(updates, fullName, phone, address);
             return;
         }
 
-        dbService.updateUser(
-                "eq." + userId, updates).enqueue(new Callback<List<User>>() {
+        dbService.updateUser("eq." + userId, updates).enqueue(new Callback<List<User>>() {
             @Override
             public void onResponse(Call<List<User>> call, Response<List<User>> response) {
                 progressDialog.dismiss();
-
                 if (response.isSuccessful()) {
-                    // Cập nhật session
                     sessionManager.updateProfile(fullName, phone, address, null);
+                    tvProfileName.setText(fullName.isEmpty() ? "Người dùng" : fullName);
                     Toast.makeText(ProfileActivity.this,
                             getString(R.string.success_update_profile),
                             Toast.LENGTH_SHORT).show();
@@ -165,11 +237,7 @@ public class ProfileActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * Cập nhật user qua email khi chưa có userId
-     */
-    private void updateByEmail(SupabaseDbService dbService,
-                               Map<String, Object> updates,
+    private void updateByEmail(Map<String, Object> updates,
                                String fullName, String phone, String address) {
         String email = sessionManager.getEmail();
         dbService.getUserByEmail("eq." + email, "*")
@@ -181,21 +249,19 @@ public class ProfileActivity extends AppCompatActivity {
                             User user = response.body().get(0);
                             String id = user.getId();
 
-                            // Lưu userId vào session
                             sessionManager.saveUserInfo(
                                     id, sessionManager.getAuthId(),
                                     email, fullName, phone, address,
                                     user.getAvatarUrl(), user.getRole()
                             );
 
-                            // Gọi lại update
-                            dbService.updateUser(
-                                    "eq." + id, updates).enqueue(new Callback<List<User>>() {
+                            dbService.updateUser("eq." + id, updates).enqueue(new Callback<List<User>>() {
                                 @Override
                                 public void onResponse(Call<List<User>> call, Response<List<User>> response) {
                                     progressDialog.dismiss();
                                     if (response.isSuccessful()) {
                                         sessionManager.updateProfile(fullName, phone, address, null);
+                                        tvProfileName.setText(fullName.isEmpty() ? "Người dùng" : fullName);
                                         Toast.makeText(ProfileActivity.this,
                                                 getString(R.string.success_update_profile),
                                                 Toast.LENGTH_SHORT).show();
@@ -232,9 +298,8 @@ public class ProfileActivity extends AppCompatActivity {
                 });
     }
 
-    /**
-     * Hiển thị dialog xác nhận đăng xuất
-     */
+    // ============ LOGOUT ============
+
     private void showLogoutConfirmation() {
         new AlertDialog.Builder(this)
                 .setTitle(getString(R.string.logout_confirm_title))
@@ -247,7 +312,6 @@ public class ProfileActivity extends AppCompatActivity {
     private void handleLogout() {
         progressDialog.show();
 
-        // Gọi Supabase Auth signout
         SupabaseAuthService authService = RetrofitClient.getAuthService();
         String bearerToken = sessionManager.getBearerToken();
 
@@ -260,7 +324,6 @@ public class ProfileActivity extends AppCompatActivity {
 
                 @Override
                 public void onFailure(Call<Void> call, Throwable t) {
-                    // Vẫn logout local kể cả khi API lỗi
                     performLogout();
                 }
             });

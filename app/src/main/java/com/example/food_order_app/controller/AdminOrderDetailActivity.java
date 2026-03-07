@@ -1,19 +1,19 @@
 package com.example.food_order_app.controller;
 
 import android.os.Bundle;
-import android.widget.ArrayAdapter;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.Spinner;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.food_order_app.R;
-import com.example.food_order_app.adapter.AdminOrderAdapter;
 import com.example.food_order_app.adapter.OrderItemAdapter;
 import com.example.food_order_app.model.Order;
 import com.example.food_order_app.model.OrderItem;
@@ -37,17 +37,15 @@ public class AdminOrderDetailActivity extends AppCompatActivity {
     private ImageView btnBack;
     private TextView tvOrderCode, tvCustomer, tvPhone, tvAddress, tvPayment, tvNote;
     private TextView tvSubtotal, tvDiscount, tvTotal, tvDate;
-    private Spinner spinnerStatus;
-    private Button btnUpdateStatus;
+    private TextView tvCurrentStatus, tvStatusMessage;
+    private LinearLayout layoutActionButtons;
+    private Button btnConfirmOrder, btnServeOrder, btnCancelOrder;
     private RecyclerView rvItems;
 
     private SupabaseDbService dbService;
     private OrderItemAdapter itemAdapter;
     private String orderId;
     private String currentStatus;
-
-    private static final String[] STATUS_VALUES = {"pending", "confirmed", "preparing", "delivering", "delivered", "cancelled"};
-    private static final String[] STATUS_LABELS = {"Chờ xác nhận", "Đang xử lý", "Đang chuẩn bị", "Đang giao", "Hoàn thành", "Đã hủy"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,21 +70,49 @@ public class AdminOrderDetailActivity extends AppCompatActivity {
         tvDiscount = findViewById(R.id.tvDetailDiscount);
         tvTotal = findViewById(R.id.tvDetailTotal);
         tvDate = findViewById(R.id.tvDetailOrderDate);
-        spinnerStatus = findViewById(R.id.spinnerOrderStatus);
-        btnUpdateStatus = findViewById(R.id.btnUpdateStatus);
+        tvCurrentStatus = findViewById(R.id.tvCurrentStatus);
+        tvStatusMessage = findViewById(R.id.tvStatusMessage);
+        layoutActionButtons = findViewById(R.id.layoutActionButtons);
+        btnConfirmOrder = findViewById(R.id.btnConfirmOrder);
+        btnServeOrder = findViewById(R.id.btnServeOrder);
+        btnCancelOrder = findViewById(R.id.btnCancelOrder);
         rvItems = findViewById(R.id.rvOrderItems);
 
         itemAdapter = new OrderItemAdapter(this);
         rvItems.setLayoutManager(new LinearLayoutManager(this));
         rvItems.setAdapter(itemAdapter);
 
-        // Setup status spinner
-        ArrayAdapter<String> statusAdapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_spinner_dropdown_item, STATUS_LABELS);
-        spinnerStatus.setAdapter(statusAdapter);
-
         btnBack.setOnClickListener(v -> finish());
-        btnUpdateStatus.setOnClickListener(v -> updateStatus());
+
+        // Confirm: pending -> processing
+        btnConfirmOrder.setOnClickListener(v -> {
+            new AlertDialog.Builder(this)
+                    .setTitle("Xác nhận đơn hàng")
+                    .setMessage("Bạn có chắc muốn xác nhận đơn hàng này?\nĐơn hàng sẽ chuyển sang trạng thái \"Chờ chế biến\".")
+                    .setPositiveButton("Xác nhận", (dialog, which) -> updateStatus("processing"))
+                    .setNegativeButton("Không", null)
+                    .show();
+        });
+
+        // Serve: processing -> served
+        btnServeOrder.setOnClickListener(v -> {
+            new AlertDialog.Builder(this)
+                    .setTitle("Phục vụ đơn hàng")
+                    .setMessage("Xác nhận đã phục vụ đơn hàng này?")
+                    .setPositiveButton("Đã phục vụ", (dialog, which) -> updateStatus("served"))
+                    .setNegativeButton("Không", null)
+                    .show();
+        });
+
+        // Cancel: pending/processing -> cancelled
+        btnCancelOrder.setOnClickListener(v -> {
+            new AlertDialog.Builder(this)
+                    .setTitle("Hủy đơn hàng")
+                    .setMessage("Bạn có chắc muốn hủy đơn hàng này?\nĐơn hàng sau khi hủy sẽ không thể khôi phục.")
+                    .setPositiveButton("Hủy đơn", (dialog, which) -> updateStatus("cancelled"))
+                    .setNegativeButton("Không", null)
+                    .show();
+        });
     }
 
     private void loadData() {
@@ -104,7 +130,7 @@ public class AdminOrderDetailActivity extends AppCompatActivity {
         String note = getIntent().getStringExtra("order_note");
         if (note != null && !note.isEmpty()) {
             tvNote.setText("Ghi chú: " + note);
-            tvNote.setVisibility(android.view.View.VISIBLE);
+            tvNote.setVisibility(View.VISIBLE);
         }
 
         NumberFormat nf = NumberFormat.getInstance(new Locale("vi", "VN"));
@@ -124,12 +150,67 @@ public class AdminOrderDetailActivity extends AppCompatActivity {
             tvDate.setText(getIntent().getStringExtra("order_date"));
         }
 
-        // Set spinner to current status
-        for (int i = 0; i < STATUS_VALUES.length; i++) {
-            if (STATUS_VALUES[i].equals(currentStatus)) {
-                spinnerStatus.setSelection(i);
+        // Update UI based on current status
+        updateStatusUI();
+    }
+
+    private void updateStatusUI() {
+        // Reset all buttons
+        btnConfirmOrder.setVisibility(View.GONE);
+        btnServeOrder.setVisibility(View.GONE);
+        btnCancelOrder.setVisibility(View.GONE);
+        tvStatusMessage.setVisibility(View.GONE);
+
+        // Set status badge
+        tvCurrentStatus.setText(getStatusText(currentStatus));
+        tvCurrentStatus.setBackgroundResource(getStatusBackground(currentStatus));
+
+        switch (currentStatus != null ? currentStatus : "") {
+            case "pending":
+                // Show: Xác nhận + Hủy
+                btnConfirmOrder.setVisibility(View.VISIBLE);
+                btnCancelOrder.setVisibility(View.VISIBLE);
                 break;
-            }
+
+            case "processing":
+                // Show: Phục vụ + Hủy
+                btnServeOrder.setVisibility(View.VISIBLE);
+                btnCancelOrder.setVisibility(View.VISIBLE);
+                break;
+
+            case "served":
+                // No buttons - order completed
+                tvStatusMessage.setText("✅ Đơn hàng đã được phục vụ hoàn tất");
+                tvStatusMessage.setVisibility(View.VISIBLE);
+                break;
+
+            case "cancelled":
+                // No buttons - order cancelled permanently
+                tvStatusMessage.setText("❌ Đơn hàng đã bị hủy, không thể thay đổi trạng thái");
+                tvStatusMessage.setVisibility(View.VISIBLE);
+                break;
+        }
+    }
+
+    private String getStatusText(String status) {
+        if (status == null) return "Không rõ";
+        switch (status) {
+            case "pending": return "Chờ xác nhận";
+            case "processing": return "Chờ chế biến";
+            case "served": return "Đã phục vụ";
+            case "cancelled": return "Đã hủy";
+            default: return status;
+        }
+    }
+
+    private int getStatusBackground(String status) {
+        if (status == null) return R.drawable.bg_status_pending;
+        switch (status) {
+            case "pending": return R.drawable.bg_status_pending;
+            case "processing": return R.drawable.bg_status_processing;
+            case "served": return R.drawable.bg_status_delivered;
+            case "cancelled": return R.drawable.bg_status_unavailable;
+            default: return R.drawable.bg_status_pending;
         }
     }
 
@@ -149,12 +230,11 @@ public class AdminOrderDetailActivity extends AppCompatActivity {
         });
     }
 
-    private void updateStatus() {
-        String newStatus = STATUS_VALUES[spinnerStatus.getSelectedItemPosition()];
-        if (newStatus.equals(currentStatus)) {
-            Toast.makeText(this, "Trạng thái không thay đổi", Toast.LENGTH_SHORT).show();
-            return;
-        }
+    private void updateStatus(String newStatus) {
+        // Disable buttons during update
+        btnConfirmOrder.setEnabled(false);
+        btnServeOrder.setEnabled(false);
+        btnCancelOrder.setEnabled(false);
 
         Map<String, Object> updates = new HashMap<>();
         updates.put("status", newStatus);
@@ -164,18 +244,27 @@ public class AdminOrderDetailActivity extends AppCompatActivity {
             public void onResponse(Call<List<Order>> call, Response<List<Order>> response) {
                 if (response.isSuccessful()) {
                     currentStatus = newStatus;
+                    updateStatusUI();
                     Toast.makeText(AdminOrderDetailActivity.this,
-                            "Đã cập nhật: " + STATUS_LABELS[spinnerStatus.getSelectedItemPosition()],
+                            "Đã cập nhật: " + getStatusText(newStatus),
                             Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(AdminOrderDetailActivity.this, "Cập nhật thất bại", Toast.LENGTH_SHORT).show();
+                    enableButtons();
                 }
             }
 
             @Override
             public void onFailure(Call<List<Order>> call, Throwable t) {
                 Toast.makeText(AdminOrderDetailActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                enableButtons();
             }
         });
+    }
+
+    private void enableButtons() {
+        btnConfirmOrder.setEnabled(true);
+        btnServeOrder.setEnabled(true);
+        btnCancelOrder.setEnabled(true);
     }
 }

@@ -87,6 +87,11 @@
             android:name=".controller.OrderConfirmationActivity"
             android:exported="false" />
 
+        <!-- Quản lý đơn hàng (User) -->
+        <activity
+            android:name=".controller.OrderHistoryActivity"
+            android:exported="false" />
+
         <!-- ==================== ADMIN ==================== -->
 
         <!-- Trang chủ quản trị (Quản lý món ăn) -->

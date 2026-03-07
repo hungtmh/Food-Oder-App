@@ -95,7 +95,7 @@ public class CheckoutActivity extends AppCompatActivity {
     private void loadCartItems() {
         if (cartId == null) return;
 
-        dbService.getCartItems("eq." + cartId, null, "foods(*)").enqueue(new Callback<List<CartItem>>() {
+        dbService.getCartItems("eq." + cartId, null, "*,foods(*)").enqueue(new Callback<List<CartItem>>() {
             @Override
             public void onResponse(Call<List<CartItem>> call, Response<List<CartItem>> response) {
                 if (response.isSuccessful() && response.body() != null) {

@@ -85,8 +85,8 @@ public class AdminOrdersActivity extends AppCompatActivity implements AdminOrder
             int id = v.getId();
             if (id == R.id.btnStatusAll) currentFilter = "all";
             else if (id == R.id.btnStatusPending) currentFilter = "pending";
-            else if (id == R.id.btnStatusConfirmed) currentFilter = "confirmed";
-            else if (id == R.id.btnStatusDelivered) currentFilter = "delivered";
+            else if (id == R.id.btnStatusConfirmed) currentFilter = "processing";
+            else if (id == R.id.btnStatusDelivered) currentFilter = "served";
             else if (id == R.id.btnStatusCancelled) currentFilter = "cancelled";
             updateFilterUI();
             filterOrders();
@@ -134,7 +134,7 @@ public class AdminOrdersActivity extends AppCompatActivity implements AdminOrder
 
     private void updateFilterUI() {
         Button[] buttons = {btnStatusAll, btnStatusPending, btnStatusConfirmed, btnStatusDelivered, btnStatusCancelled};
-        String[] filters = {"all", "pending", "confirmed", "delivered", "cancelled"};
+        String[] filters = {"all", "pending", "processing", "served", "cancelled"};
         for (int i = 0; i < buttons.length; i++) {
             boolean selected = currentFilter.equals(filters[i]);
             buttons[i].setBackgroundResource(selected ? R.drawable.bg_category_selected : R.drawable.bg_category_normal);
@@ -143,7 +143,7 @@ public class AdminOrdersActivity extends AppCompatActivity implements AdminOrder
     }
 
     private void loadOrders() {
-        dbService.getAllOrders("*", "created_at.desc").enqueue(new Callback<List<Order>>() {
+        dbService.getAllOrders("*,order_items(food_name,food_image,price,quantity)", "created_at.desc").enqueue(new Callback<List<Order>>() {
             @Override
             public void onResponse(Call<List<Order>> call, Response<List<Order>> response) {
                 if (response.isSuccessful() && response.body() != null) {
@@ -204,5 +204,11 @@ public class AdminOrdersActivity extends AppCompatActivity implements AdminOrder
         intent.putExtra("order_total", order.getTotalAmount());
         intent.putExtra("order_date", order.getCreatedAt());
         startActivity(intent);
+    }
+
+    @Override
+    public void onOrderStatusChanged() {
+        // Reload orders when status is changed from quick action buttons
+        loadOrders();
     }
 }
