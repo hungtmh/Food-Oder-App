@@ -60,24 +60,80 @@
                 android:textSize="15sp"
                 android:textStyle="bold" />
 
-            <Spinner
-                android:id="@+id/spinnerOrderStatus"
-                android:layout_width="match_parent"
-                android:layout_height="44dp"
+            <!-- Current status display -->
+            <TextView
+                android:id="@+id/tvCurrentStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:background="@drawable/bg_edit_text"
-                android:paddingHorizontal="8dp" />
-
-            <Button
-                android:id="@+id/btnUpdateStatus"
-                android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:layout_marginTop="8dp"
-                android:background="@drawable/bg_button_primary"
-                android:text="Cập nhật trạng thái"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="4dp"
                 android:textColor="@color/white"
                 android:textSize="14sp"
-                android:textAllCaps="false" />
+                android:textStyle="bold" />
+
+            <!-- Action buttons container - shows different buttons based on status -->
+            <LinearLayout
+                android:id="@+id/layoutActionButtons"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal"
+                android:gravity="center">
+
+                <!-- Confirm button (shown for pending) -->
+                <Button
+                    android:id="@+id/btnConfirmOrder"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:background="@drawable/bg_button_primary"
+                    android:text="✓  Xác nhận"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:textAllCaps="false"
+                    android:visibility="gone" />
+
+                <!-- Serve button (shown for processing) -->
+                <Button
+                    android:id="@+id/btnServeOrder"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:background="@drawable/bg_button_primary"
+                    android:text="🍽  Phục vụ"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:textAllCaps="false"
+                    android:visibility="gone" />
+
+                <!-- Cancel button (shown for pending & processing) -->
+                <Button
+                    android:id="@+id/btnCancelOrder"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:background="@drawable/bg_button_danger"
+                    android:text="✕  Hủy đơn"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:textAllCaps="false"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <!-- Status message for completed/cancelled orders -->
+            <TextView
+                android:id="@+id/tvStatusMessage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center"
+                android:textSize="13sp"
+                android:textColor="@color/text_hint"
+                android:visibility="gone" />
         </LinearLayout>
 
         <!-- Customer info -->

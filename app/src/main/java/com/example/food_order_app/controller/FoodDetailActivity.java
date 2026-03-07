@@ -166,7 +166,7 @@ public class FoodDetailActivity extends AppCompatActivity {
     }
 
     private void loadReviews() {
-        dbService.getReviews("eq." + foodId, "users(full_name,avatar_url)", "created_at.desc").enqueue(new Callback<List<Review>>() {
+        dbService.getReviews("eq." + foodId, "*,users(full_name,avatar_url)", "created_at.desc").enqueue(new Callback<List<Review>>() {
             @Override
             public void onResponse(Call<List<Review>> call, Response<List<Review>> response) {
                 if (response.isSuccessful() && response.body() != null) {
@@ -234,7 +234,7 @@ public class FoodDetailActivity extends AppCompatActivity {
 
     private void addItemToCart(String cartId) {
         // Check if item already exists
-        dbService.getCartItems("eq." + cartId, "eq." + foodId, "foods(*)").enqueue(new Callback<List<CartItem>>() {
+        dbService.getCartItems("eq." + cartId, "eq." + foodId, "*,foods(*)").enqueue(new Callback<List<CartItem>>() {
             @Override
             public void onResponse(Call<List<CartItem>> call, Response<List<CartItem>> response) {
                 if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {

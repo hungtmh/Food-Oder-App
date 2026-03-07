@@ -20,7 +20,8 @@ public class Review {
     @SerializedName("sentiment_score")
     private double sentimentScore;
 
-    // Joined field
+    // Joined field (Supabase returns with table name "users")
+    @SerializedName("users")
     private User user;
 
     public Review() {}

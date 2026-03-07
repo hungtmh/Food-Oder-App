@@ -2,6 +2,8 @@ package com.example.food_order_app.model;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.util.List;
+
 public class Order {
     @SerializedName("id")
     private String id;
@@ -31,6 +33,8 @@ public class Order {
     private String estimatedDelivery;
     @SerializedName("created_at")
     private String createdAt;
+    @SerializedName("order_items")
+    private List<OrderItem> orderItems;
 
     public Order() {}
 
@@ -61,4 +65,6 @@ public class Order {
     public String getEstimatedDelivery() { return estimatedDelivery; }
     public void setEstimatedDelivery(String estimatedDelivery) { this.estimatedDelivery = estimatedDelivery; }
     public String getCreatedAt() { return createdAt; }
+    public List<OrderItem> getOrderItems() { return orderItems; }
+    public void setOrderItems(List<OrderItem> orderItems) { this.orderItems = orderItems; }
 }
