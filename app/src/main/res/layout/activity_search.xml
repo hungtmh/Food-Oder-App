@@ -50,49 +50,67 @@
     </LinearLayout>
 
     <!-- Sort/Filter bar -->
-    <LinearLayout
+    <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/surface"
-        android:orientation="horizontal"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="8dp">
+        android:scrollbars="none">
 
-        <TextView
-            android:id="@+id/tvSortPrice"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/bg_category_normal"
-            android:paddingHorizontal="14dp"
-            android:paddingVertical="6dp"
-            android:layout_marginEnd="8dp"
-            android:text="Giá ↕"
-            android:textColor="@color/text_secondary"
-            android:textSize="13sp" />
+            android:orientation="horizontal"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="8dp">
 
-        <TextView
-            android:id="@+id/tvSortRating"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bg_category_normal"
-            android:paddingHorizontal="14dp"
-            android:paddingVertical="6dp"
-            android:layout_marginEnd="8dp"
-            android:text="Đánh giá ↕"
-            android:textColor="@color/text_secondary"
-            android:textSize="13sp" />
+            <TextView
+                android:id="@+id/tvSortPriceLow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_category_normal"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="6dp"
+                android:layout_marginEnd="8dp"
+                android:text="Giá: Thấp → Cao"
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp" />
 
-        <TextView
-            android:id="@+id/tvSortDiscount"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bg_category_normal"
-            android:paddingHorizontal="14dp"
-            android:paddingVertical="6dp"
-            android:text="Giảm giá"
-            android:textColor="@color/text_secondary"
-            android:textSize="13sp" />
-    </LinearLayout>
+            <TextView
+                android:id="@+id/tvSortPriceHigh"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_category_normal"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="6dp"
+                android:layout_marginEnd="8dp"
+                android:text="Giá: Cao → Thấp"
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/tvSortRating"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_category_normal"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="6dp"
+                android:layout_marginEnd="8dp"
+                android:text="Đánh giá cao nhất"
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/tvSortNewest"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_category_normal"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="6dp"
+                android:text="Mới nhất"
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp" />
+        </LinearLayout>
+    </HorizontalScrollView>
 
     <!-- Category filter -->
     <androidx.recyclerview.widget.RecyclerView

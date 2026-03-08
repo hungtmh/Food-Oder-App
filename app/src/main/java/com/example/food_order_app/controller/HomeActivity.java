@@ -108,7 +108,7 @@ public class HomeActivity extends AppCompatActivity {
                 Toast.makeText(this, "Tính năng đang phát triển", Toast.LENGTH_SHORT).show();
                 return true;
             } else if (id == R.id.nav_contact) {
-                Toast.makeText(this, "Tính năng đang phát triển", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(this, ContactActivity.class));
                 return true;
             } else if (id == R.id.nav_account) {
                 startActivity(new Intent(this, ProfileActivity.class));
