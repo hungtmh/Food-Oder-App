@@ -43,7 +43,7 @@ public class SearchActivity extends AppCompatActivity {
 
     private EditText etSearch;
     private ImageView btnClearSearch;
-    private TextView btnBack, tvSortPrice, tvSortRating, tvSortDiscount, tvNoResults, tvClearHistory;
+    private TextView btnBack, tvSortPriceLow, tvSortPriceHigh, tvSortRating, tvSortNewest, tvNoResults, tvClearHistory;
     private RecyclerView rvSearchResults, rvSearchCategories, rvSearchHistory;
     private View searchHistorySection;
 
@@ -56,9 +56,8 @@ public class SearchActivity extends AppCompatActivity {
     private List<Food> filteredFoods = new ArrayList<>();
     private String selectedCategoryId = null;
 
-    // Sort states: 0=none, 1=asc, 2=desc
-    private int sortPriceState = 0;
-    private int sortRatingState = 0;
+    // Sort: 0=none, 1=price_asc, 2=price_desc, 3=rating_desc, 4=newest
+    private int currentSort = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,9 +76,10 @@ public class SearchActivity extends AppCompatActivity {
         etSearch = findViewById(R.id.etSearch);
         btnClearSearch = findViewById(R.id.btnClearSearch);
         btnBack = findViewById(R.id.btnBack);
-        tvSortPrice = findViewById(R.id.tvSortPrice);
+        tvSortPriceLow = findViewById(R.id.tvSortPriceLow);
+        tvSortPriceHigh = findViewById(R.id.tvSortPriceHigh);
         tvSortRating = findViewById(R.id.tvSortRating);
-        tvSortDiscount = findViewById(R.id.tvSortDiscount);
+        tvSortNewest = findViewById(R.id.tvSortNewest);
         tvNoResults = findViewById(R.id.tvNoResults);
         tvClearHistory = findViewById(R.id.tvClearHistory);
         rvSearchResults = findViewById(R.id.rvSearchResults);
@@ -140,27 +140,28 @@ public class SearchActivity extends AppCompatActivity {
         });
 
         // Sort buttons
-        tvSortPrice.setOnClickListener(v -> {
-            sortPriceState = (sortPriceState + 1) % 3;
-            sortRatingState = 0;
+        tvSortPriceLow.setOnClickListener(v -> {
+            currentSort = (currentSort == 1) ? 0 : 1;
+            updateSortUI();
+            applyFilters();
+        });
+
+        tvSortPriceHigh.setOnClickListener(v -> {
+            currentSort = (currentSort == 2) ? 0 : 2;
             updateSortUI();
             applyFilters();
         });
 
         tvSortRating.setOnClickListener(v -> {
-            sortRatingState = (sortRatingState + 1) % 3;
-            sortPriceState = 0;
+            currentSort = (currentSort == 3) ? 0 : 3;
             updateSortUI();
             applyFilters();
         });
 
-        tvSortDiscount.setOnClickListener(v -> {
-            sortPriceState = 0;
-            sortRatingState = 0;
-            // Sort by discount desc
-            Collections.sort(filteredFoods, (a, b) -> b.getDiscountPercent() - a.getDiscountPercent());
-            foodAdapter.setFoods(filteredFoods);
+        tvSortNewest.setOnClickListener(v -> {
+            currentSort = (currentSort == 4) ? 0 : 4;
             updateSortUI();
+            applyFilters();
         });
 
         tvClearHistory.setOnClickListener(v -> {
@@ -214,16 +215,23 @@ public class SearchActivity extends AppCompatActivity {
         }
 
         // Sort
-        if (sortPriceState == 1) {
-            Collections.sort(filteredFoods, (a, b) -> Double.compare(a.getDiscountedPrice(), b.getDiscountedPrice()));
-        } else if (sortPriceState == 2) {
-            Collections.sort(filteredFoods, (a, b) -> Double.compare(b.getDiscountedPrice(), a.getDiscountedPrice()));
-        }
-
-        if (sortRatingState == 1) {
-            Collections.sort(filteredFoods, (a, b) -> Double.compare(a.getAvgRating(), b.getAvgRating()));
-        } else if (sortRatingState == 2) {
-            Collections.sort(filteredFoods, (a, b) -> Double.compare(b.getAvgRating(), a.getAvgRating()));
+        switch (currentSort) {
+            case 1: // Price low → high
+                Collections.sort(filteredFoods, (a, b) -> Double.compare(a.getDiscountedPrice(), b.getDiscountedPrice()));
+                break;
+            case 2: // Price high → low
+                Collections.sort(filteredFoods, (a, b) -> Double.compare(b.getDiscountedPrice(), a.getDiscountedPrice()));
+                break;
+            case 3: // Highest rated
+                Collections.sort(filteredFoods, (a, b) -> Double.compare(b.getAvgRating(), a.getAvgRating()));
+                break;
+            case 4: // Newest
+                Collections.sort(filteredFoods, (a, b) -> {
+                    String dateA = a.getCreatedAt() != null ? a.getCreatedAt() : "";
+                    String dateB = b.getCreatedAt() != null ? b.getCreatedAt() : "";
+                    return dateB.compareTo(dateA);
+                });
+                break;
         }
 
         foodAdapter.setFoods(filteredFoods);
@@ -231,17 +239,18 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     private void updateSortUI() {
-        String priceText = "Giá";
-        if (sortPriceState == 1) priceText = "Giá ↑";
-        else if (sortPriceState == 2) priceText = "Giá ↓";
-        else priceText = "Giá ↕";
-        tvSortPrice.setText(priceText);
+        TextView[] sortButtons = {tvSortPriceLow, tvSortPriceHigh, tvSortRating, tvSortNewest};
+        int[] sortValues = {1, 2, 3, 4};
 
-        String ratingText = "Đánh giá";
-        if (sortRatingState == 1) ratingText = "Đánh giá ↑";
-        else if (sortRatingState == 2) ratingText = "Đánh giá ↓";
-        else ratingText = "Đánh giá ↕";
-        tvSortRating.setText(ratingText);
+        for (int i = 0; i < sortButtons.length; i++) {
+            if (currentSort == sortValues[i]) {
+                sortButtons[i].setBackgroundResource(R.drawable.bg_category_selected);
+                sortButtons[i].setTextColor(getResources().getColor(R.color.white));
+            } else {
+                sortButtons[i].setBackgroundResource(R.drawable.bg_category_normal);
+                sortButtons[i].setTextColor(getResources().getColor(R.color.text_secondary));
+            }
+        }
     }
 
     private void loadCategories() {

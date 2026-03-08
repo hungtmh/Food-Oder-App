@@ -34,6 +34,18 @@
                 android:textColor="@color/text_primary"
                 android:textSize="14sp" />
 
+            <ImageView
+                android:id="@+id/btnDetailFavorite"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="top|end"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="60dp"
+                android:padding="8dp"
+                android:background="@drawable/bg_category_normal"
+                android:src="@drawable/ic_favorite_border"
+                android:contentDescription="Yêu thích" />
+
             <TextView
                 android:id="@+id/tvDetailDiscount"
                 android:layout_width="wrap_content"
