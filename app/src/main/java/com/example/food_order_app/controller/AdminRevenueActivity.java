@@ -94,10 +94,22 @@ public class AdminRevenueActivity extends AppCompatActivity {
         btnDateFrom.setOnClickListener(v -> showDatePicker(true));
         btnDateTo.setOnClickListener(v -> showDatePicker(false));
 
-        btnToday.setOnClickListener(v -> { setToday(); loadRevenue(); });
-        btnThisMonth.setOnClickListener(v -> { setThisMonth(); loadRevenue(); });
-        btnLastMonth.setOnClickListener(v -> { setLastMonth(); loadRevenue(); });
-        btnApplyFilter.setOnClickListener(v -> loadRevenue());
+        btnToday.setOnClickListener(v -> {
+            setToday();
+            loadRevenue();
+        });
+        btnThisMonth.setOnClickListener(v -> {
+            setThisMonth();
+            loadRevenue();
+        });
+        btnLastMonth.setOnClickListener(v -> {
+            setLastMonth();
+            loadRevenue();
+        });
+        btnApplyFilter.setOnClickListener(v -> {
+            Toast.makeText(this, "Đang tải dữ liệu...", Toast.LENGTH_SHORT).show();
+            loadRevenue();
+        });
     }
 
     private void showDatePicker(boolean isFrom) {
@@ -152,22 +164,21 @@ public class AdminRevenueActivity extends AppCompatActivity {
                 null, // no status filter – get all
                 "gte." + fromStr,
                 extraFilters,
-                "*"
-        ).enqueue(new Callback<List<Order>>() {
-            @Override
-            public void onResponse(Call<List<Order>> call, Response<List<Order>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    processOrders(response.body());
-                } else {
-                    resetStats();
-                }
-            }
+                "*").enqueue(new Callback<List<Order>>() {
+                    @Override
+                    public void onResponse(Call<List<Order>> call, Response<List<Order>> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            processOrders(response.body());
+                        } else {
+                            resetStats();
+                        }
+                    }
 
-            @Override
-            public void onFailure(Call<List<Order>> call, Throwable t) {
-                Toast.makeText(AdminRevenueActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<List<Order>> call, Throwable t) {
+                        Toast.makeText(AdminRevenueActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     private void processOrders(List<Order> orders) {
@@ -179,7 +190,8 @@ public class AdminRevenueActivity extends AppCompatActivity {
 
         for (Order order : orders) {
             String status = order.getStatus();
-            if (status == null) status = "";
+            if (status == null)
+                status = "";
 
             switch (status) {
                 case "pending":
@@ -226,7 +238,8 @@ public class AdminRevenueActivity extends AppCompatActivity {
         // Build filter: order_id=in.(id1,id2,...)
         StringBuilder sb = new StringBuilder("in.(");
         for (int i = 0; i < orderIds.size(); i++) {
-            if (i > 0) sb.append(",");
+            if (i > 0)
+                sb.append(",");
             sb.append(orderIds.get(i));
         }
         sb.append(")");
@@ -255,8 +268,8 @@ public class AdminRevenueActivity extends AppCompatActivity {
         for (OrderItem item : items) {
             String name = item.getFoodName();
             if (!qtyMap.containsKey(name)) {
-                qtyMap.put(name, new int[]{0});
-                revMap.put(name, new double[]{0});
+                qtyMap.put(name, new int[] { 0 });
+                revMap.put(name, new double[] { 0 });
             }
             qtyMap.get(name)[0] += item.getQuantity();
             revMap.get(name)[0] += item.getSubtotal();

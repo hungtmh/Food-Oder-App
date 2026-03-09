@@ -158,22 +158,22 @@ public class AdminOrderStatisticsActivity extends AppCompatActivity {
                 null,
                 "gte." + fromStr,
                 extraFilters,
-                "*"
-        ).enqueue(new Callback<List<Order>>() {
-            @Override
-            public void onResponse(Call<List<Order>> call, Response<List<Order>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    processOrders(response.body());
-                } else {
-                    resetAll();
-                }
-            }
+                "*").enqueue(new Callback<List<Order>>() {
+                    @Override
+                    public void onResponse(Call<List<Order>> call, Response<List<Order>> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            processOrders(response.body());
+                        } else {
+                            resetAll();
+                        }
+                    }
 
-            @Override
-            public void onFailure(Call<List<Order>> call, Throwable t) {
-                Toast.makeText(AdminOrderStatisticsActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<List<Order>> call, Throwable t) {
+                        Toast.makeText(AdminOrderStatisticsActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT)
+                                .show();
+                    }
+                });
     }
 
     private void processOrders(List<Order> orders) {
@@ -181,7 +181,8 @@ public class AdminOrderStatisticsActivity extends AppCompatActivity {
         int pending = 0, confirmed = 0, delivered = 0, cancelled = 0;
         double revenue = 0;
 
-        // For bar chart: group by date (LinkedHashMap giữ thứ tự thêm vào = thứ tự thời gian)
+        // For bar chart: group by date (LinkedHashMap giữ thứ tự thêm vào = thứ tự thời
+        // gian)
         SimpleDateFormat dateKeyFormat = new SimpleDateFormat("dd/MM", Locale.getDefault());
         SimpleDateFormat sortKeyFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         LinkedHashMap<String, Integer> dailyOrders = new LinkedHashMap<>();
@@ -200,7 +201,8 @@ public class AdminOrderStatisticsActivity extends AppCompatActivity {
 
         for (Order order : orders) {
             String status = order.getStatus();
-            if (status == null) status = "";
+            if (status == null)
+                status = "";
 
             switch (status) {
                 case "pending":
@@ -227,7 +229,8 @@ public class AdminOrderStatisticsActivity extends AppCompatActivity {
                         dailyOrders.put(dateStr, dailyOrders.get(dateStr) + 1);
                     }
                 }
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
         }
 
         // Update summary
@@ -361,7 +364,8 @@ public class AdminOrderStatisticsActivity extends AppCompatActivity {
         dataSet.setValueFormatter(new ValueFormatter() {
             @Override
             public String getFormattedValue(float value) {
-                if (value == 0) return "";
+                if (value == 0)
+                    return "";
                 return String.valueOf((int) value);
             }
         });

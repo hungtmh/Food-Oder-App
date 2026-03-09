@@ -33,7 +33,7 @@ public class AdminHomeActivity extends AppCompatActivity implements AdminFoodAda
     private RecyclerView rvFoods;
     private EditText edtSearch;
     private ImageView btnSearch;
-    private TextView tvEmpty;
+    private TextView tvEmpty;       
     private FloatingActionButton fabAdd;
     private BottomNavigationView bottomNav;
 
