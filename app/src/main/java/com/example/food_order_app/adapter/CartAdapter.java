@@ -41,11 +41,18 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
     }
 
     public void removeItem(int position) {
-        if (position < cartItems.size()) {
+        if (position >= 0 && position < cartItems.size()) {
             cartItems.remove(position);
             notifyItemRemoved(position);
             notifyItemRangeChanged(position, cartItems.size());
         }
+    }
+
+    public void addItemAt(int position, CartItem item) {
+        int safePos = Math.max(0, Math.min(position, cartItems.size()));
+        cartItems.add(safePos, item);
+        notifyItemInserted(safePos);
+        notifyItemRangeChanged(safePos, cartItems.size());
     }
 
     public List<CartItem> getCartItems() { return cartItems; }
@@ -108,7 +115,10 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
             });
 
             btnDelete.setOnClickListener(v -> {
-                listener.onRemoveItem(item, position);
+                int pos = getAdapterPosition();
+                if (pos != RecyclerView.NO_ID) {
+                    listener.onRemoveItem(cartItems.get(pos), pos);
+                }
             });
         }
     }

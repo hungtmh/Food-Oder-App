@@ -319,4 +319,30 @@ public interface SupabaseDbService {
     @DELETE("food_trends")
     Call<Void> deleteFoodTrend(
             @Query("food_id") String foodIdFilter);
+
+    // ==================== ADDRESSES ====================
+    @GET("addresses")
+    Call<List<Address>> getAddresses(
+            @Query("user_id") String userIdFilter,
+            @Query("order") String order);
+
+    @Headers("Prefer: return=representation")
+    @POST("addresses")
+    Call<List<Address>> createAddress(@Body Map<String, Object> address);
+
+    @Headers("Prefer: return=representation")
+    @PATCH("addresses")
+    Call<List<Address>> updateAddress(
+            @Query("id") String idFilter,
+            @Body Map<String, Object> updates);
+
+    @Headers("Prefer: return=representation")
+    @PATCH("addresses")
+    Call<List<Address>> clearDefaultAddresses(
+            @Query("user_id") String userIdFilter,
+            @Body Map<String, Object> updates);
+
+    @DELETE("addresses")
+    Call<Void> deleteAddress(
+            @Query("id") String idFilter);
 }

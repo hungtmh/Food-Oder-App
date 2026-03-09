@@ -102,6 +102,11 @@
             android:name=".controller.FavoritesActivity"
             android:exported="false" />
 
+        <!-- Địa chỉ giao hàng -->
+        <activity
+            android:name=".controller.AddressActivity"
+            android:exported="false" />
+
         <!-- ==================== ADMIN ==================== -->
 
         <!-- Trang chủ quản trị (Quản lý món ăn) -->

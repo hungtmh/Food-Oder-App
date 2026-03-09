@@ -47,7 +47,7 @@
             android:orientation="horizontal"
             android:padding="10dp">
 
-            <Button
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btnFilterAll"
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
@@ -60,55 +60,55 @@
                 android:textColor="@color/white"
                 android:textSize="13sp" />
 
-            <Button
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btnFilterPending"
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
                 android:layout_marginEnd="8dp"
-                android:background="@drawable/bg_category_normal"
+                android:background="@drawable/bg_button_outline"
                 android:minWidth="0dp"
                 android:paddingHorizontal="16dp"
                 android:text="Chờ xác nhận"
                 android:textAllCaps="false"
-                android:textColor="@color/text_primary"
+                android:textColor="@color/primary"
                 android:textSize="13sp" />
 
-            <Button
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btnFilterProcessing"
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
                 android:layout_marginEnd="8dp"
-                android:background="@drawable/bg_category_normal"
+                android:background="@drawable/bg_button_outline"
                 android:minWidth="0dp"
                 android:paddingHorizontal="16dp"
                 android:text="Chờ chế biến"
                 android:textAllCaps="false"
-                android:textColor="@color/text_primary"
+                android:textColor="@color/primary"
                 android:textSize="13sp" />
 
-            <Button
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btnFilterServed"
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
                 android:layout_marginEnd="8dp"
-                android:background="@drawable/bg_category_normal"
+                android:background="@drawable/bg_button_outline"
                 android:minWidth="0dp"
                 android:paddingHorizontal="16dp"
                 android:text="Đã phục vụ"
                 android:textAllCaps="false"
-                android:textColor="@color/text_primary"
+                android:textColor="@color/primary"
                 android:textSize="13sp" />
 
-            <Button
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btnFilterCancelled"
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
-                android:background="@drawable/bg_category_normal"
+                android:background="@drawable/bg_button_outline"
                 android:minWidth="0dp"
                 android:paddingHorizontal="16dp"
                 android:text="Đã hủy"
                 android:textAllCaps="false"
-                android:textColor="@color/text_primary"
+                android:textColor="@color/primary"
                 android:textSize="13sp" />
         </LinearLayout>
     </HorizontalScrollView>

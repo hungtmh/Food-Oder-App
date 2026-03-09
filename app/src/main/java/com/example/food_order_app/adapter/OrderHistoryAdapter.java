@@ -1,6 +1,7 @@
 package com.example.food_order_app.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -15,10 +17,13 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.food_order_app.R;
+import com.example.food_order_app.controller.CartActivity;
+import com.example.food_order_app.model.Cart;
 import com.example.food_order_app.model.Order;
 import com.example.food_order_app.model.OrderItem;
 import com.example.food_order_app.network.RetrofitClient;
 import com.example.food_order_app.network.SupabaseDbService;
+import com.example.food_order_app.utils.SessionManager;
 
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -124,7 +129,7 @@ public class OrderHistoryAdapter extends RecyclerView.Adapter<OrderHistoryAdapte
         TextView tvPaymentMethod, tvOrderTotal, tvToggleDetails;
         LinearLayout layoutOrderItems;
         RecyclerView rvOrderItems;
-        Button btnCancelOrder;
+        Button btnCancelOrder, btnReorder;
 
         OrderViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -138,6 +143,7 @@ public class OrderHistoryAdapter extends RecyclerView.Adapter<OrderHistoryAdapte
             layoutOrderItems = itemView.findViewById(R.id.layoutOrderItems);
             rvOrderItems = itemView.findViewById(R.id.rvOrderItems);
             btnCancelOrder = itemView.findViewById(R.id.btnCancelOrder);
+            btnReorder = itemView.findViewById(R.id.btnReorder);
 
             rvOrderItems.setLayoutManager(new LinearLayoutManager(context));
         }
@@ -178,6 +184,9 @@ public class OrderHistoryAdapter extends RecyclerView.Adapter<OrderHistoryAdapte
             } else {
                 btnCancelOrder.setVisibility(View.GONE);
             }
+
+            // Reorder button
+            btnReorder.setOnClickListener(v -> reorder(order));
 
             // Expand/collapse state
             boolean isExpanded = Boolean.TRUE.equals(expandedState.get(order.getId()));
@@ -251,6 +260,101 @@ public class OrderHistoryAdapter extends RecyclerView.Adapter<OrderHistoryAdapte
                     Log.e(TAG, "loadOrderItems failed: " + t.getMessage());
                 }
             });
+        }
+
+        private void reorder(Order order) {
+            SessionManager sm = new SessionManager(context);
+            String userId = sm.getUserId();
+            if (userId == null) {
+                Toast.makeText(context, "Vui lòng đăng nhập", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            btnReorder.setEnabled(false);
+            // Use cached items if available, else load from API
+            if (orderItemsCache.containsKey(order.getId())) {
+                getOrCreateCartAndAdd(userId, orderItemsCache.get(order.getId()));
+            } else {
+                dbService.getOrderItems("eq." + order.getId(), "*").enqueue(new Callback<List<OrderItem>>() {
+                    @Override
+                    public void onResponse(Call<List<OrderItem>> call, Response<List<OrderItem>> response) {
+                        if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                            getOrCreateCartAndAdd(userId, response.body());
+                        } else {
+                            btnReorder.setEnabled(true);
+                            Toast.makeText(context, "Không tìm thấy món trong đơn hàng", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                    @Override
+                    public void onFailure(Call<List<OrderItem>> call, Throwable t) {
+                        btnReorder.setEnabled(true);
+                        Toast.makeText(context, "Lỗi tải đơn hàng", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        }
+
+        private void getOrCreateCartAndAdd(String userId, List<OrderItem> items) {
+            dbService.getCart("eq." + userId).enqueue(new Callback<List<Cart>>() {
+                @Override
+                public void onResponse(Call<List<Cart>> call, Response<List<Cart>> response) {
+                    if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                        addAllToCart(response.body().get(0).getId(), items);
+                    } else {
+                        Map<String, String> cartData = new HashMap<>();
+                        cartData.put("user_id", userId);
+                        dbService.createCart(cartData).enqueue(new Callback<List<Cart>>() {
+                            @Override
+                            public void onResponse(Call<List<Cart>> c, Response<List<Cart>> r) {
+                                if (r.isSuccessful() && r.body() != null && !r.body().isEmpty()) {
+                                    addAllToCart(r.body().get(0).getId(), items);
+                                } else {
+                                    btnReorder.setEnabled(true);
+                                    Toast.makeText(context, "Lỗi tạo giỏ hàng", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                            @Override
+                            public void onFailure(Call<List<Cart>> c, Throwable t) {
+                                btnReorder.setEnabled(true);
+                            }
+                        });
+                    }
+                }
+                @Override
+                public void onFailure(Call<List<Cart>> call, Throwable t) {
+                    btnReorder.setEnabled(true);
+                }
+            });
+        }
+
+        private void addAllToCart(String cartId, List<OrderItem> items) {
+            int[] done = {0};
+            int total = items.size();
+            for (OrderItem item : items) {
+                Map<String, Object> data = new HashMap<>();
+                data.put("cart_id", cartId);
+                data.put("food_id", item.getFoodId());
+                data.put("quantity", item.getQuantity());
+                dbService.addCartItem(data).enqueue(new Callback<Void>() {
+                    @Override
+                    public void onResponse(Call<Void> call, Response<Void> response) {
+                        done[0]++;
+                        if (done[0] == total) navigateToCart();
+                    }
+                    @Override
+                    public void onFailure(Call<Void> call, Throwable t) {
+                        done[0]++;
+                        if (done[0] == total) navigateToCart();
+                    }
+                });
+            }
+        }
+
+        private void navigateToCart() {
+            btnReorder.setEnabled(true);
+            Toast.makeText(context, "Đã thêm vào giỏ hàng! Kiểm tra và đặt lại.", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(context, CartActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(intent);
         }
 
         private void setOrderItemsAdapter(List<OrderItem> items) {
