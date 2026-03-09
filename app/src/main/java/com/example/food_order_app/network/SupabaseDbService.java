@@ -162,6 +162,27 @@ public interface SupabaseDbService {
     Call<Void> deleteSearchHistory(
             @Query("user_id") String userIdFilter);
 
+    // ==================== FAVORITES ====================
+    @GET("favorites")
+    Call<List<Favorite>> getFavorites(
+            @Query("user_id") String userIdFilter,
+            @Query("select") String select,
+            @Query("order") String order);
+
+    @GET("favorites")
+    Call<List<Favorite>> checkFavorite(
+            @Query("user_id") String userIdFilter,
+            @Query("food_id") String foodIdFilter);
+
+    @Headers("Prefer: return=representation")
+    @POST("favorites")
+    Call<List<Favorite>> addFavorite(@Body Map<String, String> favorite);
+
+    @DELETE("favorites")
+    Call<Void> removeFavorite(
+            @Query("user_id") String userIdFilter,
+            @Query("food_id") String foodIdFilter);
+
     // ==================== ADMIN: FOODS ====================
     @GET("foods")
     Call<List<Food>> getAdminAllFoods(

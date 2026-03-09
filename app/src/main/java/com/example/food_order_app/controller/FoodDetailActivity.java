@@ -23,6 +23,7 @@ import com.example.food_order_app.R;
 import com.example.food_order_app.adapter.ReviewAdapter;
 import com.example.food_order_app.model.Cart;
 import com.example.food_order_app.model.CartItem;
+import com.example.food_order_app.model.Favorite;
 import com.example.food_order_app.model.Food;
 import com.example.food_order_app.model.Review;
 import com.example.food_order_app.network.RetrofitClient;
@@ -43,6 +44,7 @@ public class FoodDetailActivity extends AppCompatActivity {
     private static final String TAG = "FoodDetailActivity";
 
     private ImageView imgFoodDetail;
+    private ImageView btnDetailFavorite;
     private TextView btnBack, tvDetailDiscount, tvDetailName, tvDetailRating, tvDetailReviewCount;
     private TextView tvDetailDiscountedPrice, tvDetailOriginalPrice, tvDetailDescription;
     private TextView tvDetailQuantity, tvWriteReview, tvNoReviews;
@@ -58,6 +60,7 @@ public class FoodDetailActivity extends AppCompatActivity {
     private Food currentFood;
     private int quantity = 1;
     private String foodId;
+    private boolean isFavorite = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,11 +80,13 @@ public class FoodDetailActivity extends AppCompatActivity {
         initViews();
         loadFoodDetail();
         loadReviews();
+        checkFavoriteStatus();
     }
 
     private void initViews() {
         imgFoodDetail = findViewById(R.id.imgFoodDetail);
         btnBack = findViewById(R.id.btnBack);
+        btnDetailFavorite = findViewById(R.id.btnDetailFavorite);
         tvDetailDiscount = findViewById(R.id.tvDetailDiscount);
         tvDetailName = findViewById(R.id.tvDetailName);
         tvDetailRating = findViewById(R.id.tvDetailRating);
@@ -118,6 +123,70 @@ public class FoodDetailActivity extends AppCompatActivity {
         btnAddToCart.setOnClickListener(v -> addToCart());
 
         tvWriteReview.setOnClickListener(v -> showReviewDialog());
+
+        btnDetailFavorite.setOnClickListener(v -> toggleFavorite());
+    }
+
+    private void checkFavoriteStatus() {
+        if (!sessionManager.isLoggedIn()) return;
+        dbService.checkFavorite("eq." + sessionManager.getUserId(), "eq." + foodId)
+                .enqueue(new Callback<List<Favorite>>() {
+                    @Override
+                    public void onResponse(Call<List<Favorite>> call, Response<List<Favorite>> response) {
+                        if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                            isFavorite = true;
+                            btnDetailFavorite.setImageResource(R.drawable.ic_favorite_filled);
+                        }
+                    }
+                    @Override
+                    public void onFailure(Call<List<Favorite>> call, Throwable t) {
+                        Log.e(TAG, "checkFavorite failed: " + t.getMessage());
+                    }
+                });
+    }
+
+    private void toggleFavorite() {
+        if (!sessionManager.isLoggedIn()) {
+            Toast.makeText(this, "Vui lòng đăng nhập", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String userId = sessionManager.getUserId();
+
+        if (isFavorite) {
+            dbService.removeFavorite("eq." + userId, "eq." + foodId).enqueue(new Callback<Void>() {
+                @Override
+                public void onResponse(Call<Void> call, Response<Void> response) {
+                    if (response.isSuccessful()) {
+                        isFavorite = false;
+                        btnDetailFavorite.setImageResource(R.drawable.ic_favorite_border);
+                        Toast.makeText(FoodDetailActivity.this, "Đã bỏ yêu thích", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                @Override
+                public void onFailure(Call<Void> call, Throwable t) {
+                    Log.e(TAG, "removeFavorite failed: " + t.getMessage());
+                }
+            });
+        } else {
+            java.util.Map<String, String> data = new java.util.HashMap<>();
+            data.put("user_id", userId);
+            data.put("food_id", foodId);
+            dbService.addFavorite(data).enqueue(new Callback<List<Favorite>>() {
+                @Override
+                public void onResponse(Call<List<Favorite>> call, Response<List<Favorite>> response) {
+                    if (response.isSuccessful()) {
+                        isFavorite = true;
+                        btnDetailFavorite.setImageResource(R.drawable.ic_favorite_filled);
+                        Toast.makeText(FoodDetailActivity.this, "Đã thêm vào yêu thích ❤", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                @Override
+                public void onFailure(Call<List<Favorite>> call, Throwable t) {
+                    Log.e(TAG, "addFavorite failed: " + t.getMessage());
+                }
+            });
+        }
     }
 
     private void loadFoodDetail() {

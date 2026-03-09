@@ -56,6 +56,9 @@ public class ProfileActivity extends AppCompatActivity {
     // Address section
     private LinearLayout sectionAddressHeader;
 
+    // Favorites section (navigates to FavoritesActivity)
+    private LinearLayout sectionFavoritesHeader;
+
     // Action buttons
     private LinearLayout btnChangePassword, btnLogout;
 
@@ -96,6 +99,9 @@ public class ProfileActivity extends AppCompatActivity {
         sectionOrdersHeader = findViewById(R.id.sectionOrdersHeader);
         // Address section
         sectionAddressHeader = findViewById(R.id.sectionAddressHeader);
+
+        // Favorites section
+        sectionFavoritesHeader = findViewById(R.id.sectionFavoritesHeader);
 
         // Action buttons
         btnChangePassword = findViewById(R.id.btnChangePassword);
@@ -149,6 +155,11 @@ public class ProfileActivity extends AppCompatActivity {
         // Address: navigate to AddressActivity
         sectionAddressHeader.setOnClickListener(v -> {
             startActivity(new Intent(ProfileActivity.this, AddressActivity.class));
+        });
+
+        // Favorites: navigate to FavoritesActivity
+        sectionFavoritesHeader.setOnClickListener(v -> {
+            startActivity(new Intent(ProfileActivity.this, FavoritesActivity.class));
         });
 
         // Save profile
