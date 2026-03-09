@@ -1,17 +1,21 @@
 package com.example.food_order_app.controller;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.food_order_app.R;
+import com.example.food_order_app.model.Address;
 import com.example.food_order_app.model.Cart;
 import com.example.food_order_app.model.CartItem;
 import com.example.food_order_app.model.Order;
@@ -33,10 +37,19 @@ import retrofit2.Response;
 public class CheckoutActivity extends AppCompatActivity {
     private static final String TAG = "CheckoutActivity";
 
-    private EditText etReceiverName, etPhone, etAddress, etNote;
+    // Address card views
+    private LinearLayout layoutSelectedAddress, layoutAddressDetail;
+    private TextView tvNoAddressHint, tvSelectedName, tvSelectedPhone, tvSelectedAddress;
+    // Note + payment
+    private EditText etNote;
     private RadioGroup rgPayment;
     private TextView btnBack, tvSubtotal, tvDiscount, tvTotalAmount;
-    private Button btnPlaceOrder;
+    private Button btnPlaceOrder, btnPickAddress;
+
+    private static final int REQ_PICK_ADDRESS = 1001;
+
+    // Selected address fields
+    private String selectedReceiverName, selectedPhone, selectedAddressText;
 
     private SupabaseDbService dbService;
     private SessionManager sessionManager;
@@ -59,14 +72,17 @@ public class CheckoutActivity extends AppCompatActivity {
         totalAmount = getIntent().getDoubleExtra("total_amount", 0);
 
         initViews();
-        prefillUserInfo();
+        loadDefaultAddress();
         loadCartItems();
     }
 
     private void initViews() {
-        etReceiverName = findViewById(R.id.etReceiverName);
-        etPhone = findViewById(R.id.etPhone);
-        etAddress = findViewById(R.id.etAddress);
+        layoutSelectedAddress = findViewById(R.id.layoutSelectedAddress);
+        layoutAddressDetail = findViewById(R.id.layoutAddressDetail);
+        tvNoAddressHint = findViewById(R.id.tvNoAddressHint);
+        tvSelectedName = findViewById(R.id.tvSelectedName);
+        tvSelectedPhone = findViewById(R.id.tvSelectedPhone);
+        tvSelectedAddress = findViewById(R.id.tvSelectedAddress);
         etNote = findViewById(R.id.etNote);
         rgPayment = findViewById(R.id.rgPayment);
         btnBack = findViewById(R.id.btnBack);
@@ -74,28 +90,60 @@ public class CheckoutActivity extends AppCompatActivity {
         tvDiscount = findViewById(R.id.tvDiscount);
         tvTotalAmount = findViewById(R.id.tvTotalAmount);
         btnPlaceOrder = findViewById(R.id.btnPlaceOrder);
+        btnPickAddress = findViewById(R.id.btnPickAddress);
 
         btnBack.setOnClickListener(v -> finish());
         btnPlaceOrder.setOnClickListener(v -> placeOrder());
+        btnPickAddress.setOnClickListener(v -> {
+            Intent intent = new Intent(this, AddressActivity.class);
+            intent.putExtra(AddressActivity.EXTRA_PICK_MODE, true);
+            startActivityForResult(intent, REQ_PICK_ADDRESS);
+        });
 
         tvSubtotal.setText(nf.format(totalAmount) + " VNĐ");
         tvTotalAmount.setText(nf.format(totalAmount) + " VNĐ");
+        showNoAddress();
     }
 
-    private void prefillUserInfo() {
-        String name = sessionManager.getFullName();
-        String phone = sessionManager.getPhone();
-        String address = sessionManager.getAddress();
+    private void loadDefaultAddress() {
+        String userId = sessionManager.getUserId();
+        if (userId == null) return;
+        dbService.getAddresses("eq." + userId, "is_default.desc,created_at.asc")
+                .enqueue(new Callback<List<Address>>() {
+                    @Override
+                    public void onResponse(Call<List<Address>> call, Response<List<Address>> response) {
+                        if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                            Address addr = response.body().get(0);
+                            applyAddress(addr.getReceiverName(), addr.getPhone(), addr.getAddress());
+                        }
+                    }
+                    @Override
+                    public void onFailure(Call<List<Address>> call, Throwable t) {
+                        Log.e(TAG, "loadDefaultAddress failed: " + t.getMessage());
+                    }
+                });
+    }
 
-        if (name != null && !name.isEmpty()) etReceiverName.setText(name);
-        if (phone != null && !phone.isEmpty()) etPhone.setText(phone);
-        if (address != null && !address.isEmpty()) etAddress.setText(address);
+    private void applyAddress(String name, String phone, String address) {
+        selectedReceiverName = name;
+        selectedPhone = phone;
+        selectedAddressText = address;
+        tvSelectedName.setText(name);
+        tvSelectedPhone.setText("📞 " + phone);
+        tvSelectedAddress.setText("📍 " + address);
+        tvNoAddressHint.setVisibility(View.GONE);
+        layoutAddressDetail.setVisibility(View.VISIBLE);
+    }
+
+    private void showNoAddress() {
+        tvNoAddressHint.setVisibility(View.VISIBLE);
+        layoutAddressDetail.setVisibility(View.GONE);
     }
 
     private void loadCartItems() {
         if (cartId == null) return;
 
-        dbService.getCartItems("eq." + cartId, null, "foods(*)").enqueue(new Callback<List<CartItem>>() {
+        dbService.getCartItems("eq." + cartId, null, "*,foods(*)").enqueue(new Callback<List<CartItem>>() {
             @Override
             public void onResponse(Call<List<CartItem>> call, Response<List<CartItem>> response) {
                 if (response.isSuccessful() && response.body() != null) {
@@ -119,15 +167,11 @@ public class CheckoutActivity extends AppCompatActivity {
     }
 
     private void placeOrder() {
-        String receiverName = etReceiverName.getText().toString().trim();
-        String phone = etPhone.getText().toString().trim();
-        String address = etAddress.getText().toString().trim();
-        String note = etNote.getText().toString().trim();
-
-        if (receiverName.isEmpty() || phone.isEmpty() || address.isEmpty()) {
-            Toast.makeText(this, "Vui lòng điền đầy đủ thông tin giao hàng", Toast.LENGTH_SHORT).show();
+        if (selectedReceiverName == null || selectedPhone == null || selectedAddressText == null) {
+            Toast.makeText(this, "Vui lòng chọn địa chỉ giao hàng", Toast.LENGTH_SHORT).show();
             return;
         }
+        String note = etNote.getText().toString().trim();
 
         if (cartItems == null || cartItems.isEmpty()) {
             Toast.makeText(this, "Giỏ hàng trống", Toast.LENGTH_SHORT).show();
@@ -143,9 +187,9 @@ public class CheckoutActivity extends AppCompatActivity {
         Map<String, Object> orderData = new HashMap<>();
         orderData.put("user_id", sessionManager.getUserId());
         orderData.put("order_code", orderCode);
-        orderData.put("receiver_name", receiverName);
-        orderData.put("phone", phone);
-        orderData.put("address", address);
+        orderData.put("receiver_name", selectedReceiverName);
+        orderData.put("phone", selectedPhone);
+        orderData.put("address", selectedAddressText);
         orderData.put("payment_method", paymentMethod);
         orderData.put("note", note);
         orderData.put("subtotal", totalAmount);
@@ -237,4 +281,17 @@ public class CheckoutActivity extends AppCompatActivity {
         btnPlaceOrder.setEnabled(true);
         btnPlaceOrder.setText("Xác nhận đặt hàng");
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQ_PICK_ADDRESS && resultCode == Activity.RESULT_OK && data != null) {
+            applyAddress(
+                    data.getStringExtra(AddressActivity.RESULT_RECEIVER_NAME),
+                    data.getStringExtra(AddressActivity.RESULT_PHONE),
+                    data.getStringExtra(AddressActivity.RESULT_ADDRESS)
+            );
+        }
+    }
 }
+

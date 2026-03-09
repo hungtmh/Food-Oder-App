@@ -19,6 +19,10 @@ public class Feedback {
     private String createdAt;
     @SerializedName("updated_at")
     private String updatedAt;
+    @SerializedName("sentiment")
+    private String sentiment; // positive, negative, neutral
+    @SerializedName("sentiment_score")
+    private double sentimentScore;
 
     // Joined field
     @SerializedName("users")
@@ -42,4 +46,8 @@ public class Feedback {
     public String getUpdatedAt() { return updatedAt; }
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
+    public String getSentiment() { return sentiment; }
+    public void setSentiment(String sentiment) { this.sentiment = sentiment; }
+    public double getSentimentScore() { return sentimentScore; }
+    public void setSentimentScore(double sentimentScore) { this.sentimentScore = sentimentScore; }
 }

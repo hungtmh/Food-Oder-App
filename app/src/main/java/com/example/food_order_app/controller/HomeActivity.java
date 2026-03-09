@@ -1,14 +1,16 @@
 package com.example.food_order_app.controller;
 
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
-import android.widget.FrameLayout;
+import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.TextView;
+import android.widget.ScrollView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,7 +25,6 @@ import com.example.food_order_app.adapter.FoodAdapter;
 import com.example.food_order_app.adapter.SliderAdapter;
 import com.example.food_order_app.model.Category;
 import com.example.food_order_app.model.Food;
-import com.example.food_order_app.model.Notification;
 import com.example.food_order_app.network.RetrofitClient;
 import com.example.food_order_app.network.SupabaseDbService;
 import com.example.food_order_app.utils.SessionManager;
@@ -44,8 +45,9 @@ public class HomeActivity extends AppCompatActivity {
     private RecyclerView rvCategories, rvFoods;
     private BottomNavigationView bottomNav;
     private View searchBar;
-    private FrameLayout btnNotification;
-    private TextView tvNotifBadge;
+    private LinearLayout layoutError;
+    private ScrollView scrollView;
+    private Button btnRetry;
 
     private SliderAdapter sliderAdapter;
     private CategoryAdapter categoryAdapter;
@@ -81,15 +83,18 @@ public class HomeActivity extends AppCompatActivity {
         rvFoods = findViewById(R.id.rvFoods);
         bottomNav = findViewById(R.id.bottomNav);
         searchBar = findViewById(R.id.searchBar);
-        btnNotification = findViewById(R.id.btnNotification);
-        tvNotifBadge = findViewById(R.id.tvNotifBadge);
+        layoutError = findViewById(R.id.layoutError);
+        scrollView = findViewById(R.id.scrollView);
+        btnRetry = findViewById(R.id.btnRetry);
 
         searchBar.setOnClickListener(v -> {
             startActivity(new Intent(this, SearchActivity.class));
         });
 
-        btnNotification.setOnClickListener(v -> {
-            startActivity(new Intent(this, NotificationsActivity.class));
+        btnRetry.setOnClickListener(v -> {
+            layoutError.setVisibility(View.GONE);
+            scrollView.setVisibility(View.VISIBLE);
+            loadData();
         });
 
         bottomNav.setOnItemSelectedListener(item -> {
@@ -103,7 +108,7 @@ public class HomeActivity extends AppCompatActivity {
                 Toast.makeText(this, "Tính năng đang phát triển", Toast.LENGTH_SHORT).show();
                 return true;
             } else if (id == R.id.nav_contact) {
-                Toast.makeText(this, "Tính năng đang phát triển", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(this, ContactActivity.class));
                 return true;
             } else if (id == R.id.nav_account) {
                 startActivity(new Intent(this, ProfileActivity.class));
@@ -148,7 +153,36 @@ public class HomeActivity extends AppCompatActivity {
         rvFoods.setAdapter(foodAdapter);
     }
 
+    private int loadFailCount = 0;
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+    }
+
+    private void showNetworkError() {
+        runOnUiThread(() -> {
+            scrollView.setVisibility(View.GONE);
+            layoutError.setVisibility(View.VISIBLE);
+        });
+    }
+
+    private void onLoadFailed() {
+        loadFailCount++;
+        // Nếu cả 3 API đều fail thì hiện lỗi
+        if (loadFailCount >= 3) {
+            showNetworkError();
+        }
+    }
+
     private void loadData() {
+        loadFailCount = 0;
+        if (!isNetworkAvailable()) {
+            showNetworkError();
+            Toast.makeText(this, "Không có kết nối mạng. Vui lòng kiểm tra WiFi/Data.", Toast.LENGTH_LONG).show();
+            return;
+        }
         loadPopularFoods();
         loadCategories();
         loadRecommendedFoods();
@@ -160,15 +194,26 @@ public class HomeActivity extends AppCompatActivity {
             public void onResponse(Call<List<Food>> call, Response<List<Food>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     List<Food> foods = response.body();
+                    Log.d(TAG, "loadPopularFoods: " + foods.size() + " items");
                     sliderAdapter.setFoods(foods);
                     setupDots(foods.size());
                     startAutoSlide(foods.size());
+                } else if (!response.isSuccessful()) {
+                    try {
+                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "null";
+                        Log.e(TAG, "loadPopularFoods HTTP " + response.code() + ": " + errorBody);
+                    } catch (Exception e) {
+                        Log.e(TAG, "loadPopularFoods HTTP " + response.code());
+                    }
+                } else {
+                    Log.w(TAG, "loadPopularFoods: body null");
                 }
             }
 
             @Override
             public void onFailure(Call<List<Food>> call, Throwable t) {
                 Log.e(TAG, "loadPopularFoods failed: " + t.getMessage());
+                onLoadFailed();
             }
         });
     }
@@ -178,7 +223,14 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<List<Category>> call, Response<List<Category>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    categories = response.body();
+                    // Lọc bỏ category "Tất cả" từ DB (đã được thêm vào code phía dưới)
+                    categories = new ArrayList<>();
+                    for (Category c : response.body()) {
+                        if (!"Tất cả".equals(c.getName())) {
+                            categories.add(c);
+                        }
+                    }
+                    Log.d(TAG, "loadCategories: " + categories.size() + " items");
                     // Add "Tất cả" at beginning
                     Category all = new Category();
                     all.setName("Tất cả");
@@ -186,12 +238,22 @@ public class HomeActivity extends AppCompatActivity {
                     withAll.add(all);
                     withAll.addAll(categories);
                     categoryAdapter.setCategories(withAll);
+                } else if (!response.isSuccessful()) {
+                    try {
+                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "null";
+                        Log.e(TAG, "loadCategories HTTP " + response.code() + ": " + errorBody);
+                    } catch (Exception e) {
+                        Log.e(TAG, "loadCategories HTTP " + response.code());
+                    }
+                } else {
+                    Log.w(TAG, "loadCategories: body null");
                 }
             }
 
             @Override
             public void onFailure(Call<List<Category>> call, Throwable t) {
                 Log.e(TAG, "loadCategories failed: " + t.getMessage());
+                onLoadFailed();
             }
         });
     }
@@ -201,13 +263,24 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<List<Food>> call, Response<List<Food>> response) {
                 if (response.isSuccessful() && response.body() != null) {
+                    Log.d(TAG, "loadRecommendedFoods: " + response.body().size() + " items");
                     foodAdapter.setFoods(response.body());
+                } else if (!response.isSuccessful()) {
+                    try {
+                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "null";
+                        Log.e(TAG, "loadRecommendedFoods HTTP " + response.code() + ": " + errorBody);
+                    } catch (Exception e) {
+                        Log.e(TAG, "loadRecommendedFoods HTTP " + response.code());
+                    }
+                } else {
+                    Log.w(TAG, "loadRecommendedFoods: body null");
                 }
             }
 
             @Override
             public void onFailure(Call<List<Food>> call, Throwable t) {
                 Log.e(TAG, "loadRecommendedFoods failed: " + t.getMessage());
+                onLoadFailed();
             }
         });
     }
@@ -217,7 +290,17 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<List<Food>> call, Response<List<Food>> response) {
                 if (response.isSuccessful() && response.body() != null) {
+                    Log.d(TAG, "loadFoodsByCategory: " + response.body().size() + " items");
                     foodAdapter.setFoods(response.body());
+                } else if (!response.isSuccessful()) {
+                    try {
+                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "null";
+                        Log.e(TAG, "loadFoodsByCategory HTTP " + response.code() + ": " + errorBody);
+                    } catch (Exception e) {
+                        Log.e(TAG, "loadFoodsByCategory HTTP " + response.code());
+                    }
+                } else {
+                    Log.w(TAG, "loadFoodsByCategory: body null");
                 }
             }
 
@@ -272,33 +355,6 @@ public class HomeActivity extends AppCompatActivity {
         if (sliderRunnable != null) {
             sliderHandler.postDelayed(sliderRunnable, 3000);
         }
-        loadUnreadNotificationCount();
-    }
-
-    private void loadUnreadNotificationCount() {
-        String userId = sessionManager.getUserId();
-        if (userId == null) return;
-
-        dbService.getUnreadNotificationCount("eq." + userId, "eq.false", "id")
-                .enqueue(new Callback<List<Notification>>() {
-                    @Override
-                    public void onResponse(Call<List<Notification>> call, Response<List<Notification>> response) {
-                        if (response.isSuccessful() && response.body() != null) {
-                            int count = response.body().size();
-                            if (count > 0) {
-                                tvNotifBadge.setText(count > 99 ? "99+" : String.valueOf(count));
-                                tvNotifBadge.setVisibility(View.VISIBLE);
-                            } else {
-                                tvNotifBadge.setVisibility(View.GONE);
-                            }
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<List<Notification>> call, Throwable t) {
-                        // Silent fail
-                    }
-                });
     }
 
     @Override

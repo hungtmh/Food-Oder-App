@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Food Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp">
+
+            <ImageView
+                android:id="@+id/ivFoodImage"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:scaleType="centerCrop"
+                android:contentDescription="Food Image"
+                android:background="@color/background"/>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="12dp">
+
+                <TextView
+                    android:id="@+id/tvFoodName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tên món ăn"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:maxLines="1"
+                    android:ellipsize="end"/>
+
+                <TextView
+                    android:id="@+id/tvTrendType"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🔥 Hot Seller"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="4dp"/>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvConfidence"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="85%"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="@color/primary"/>
+        </LinearLayout>
+
+        <!-- Metrics -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:background="#F5F5F5"
+            android:padding="12dp"
+            android:layout_marginBottom="8dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <TextView
+                    android:id="@+id/tvSalesTrend"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="+25%"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#4CAF50"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Xu hướng bán"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_secondary"/>
+            </LinearLayout>
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:background="@color/text_hint"/>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <TextView
+                    android:id="@+id/tvSentimentTrend"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0.85"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#FF9800"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Cảm xúc"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_secondary"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Notes -->
+        <TextView
+            android:id="@+id/tvNotes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ghi chú dự đoán"
+            android:textSize="13sp"
+            android:textColor="@color/text_secondary"
+            android:lineSpacingExtra="2dp"
+            android:visibility="gone"/>
+
+        <TextView
+            android:id="@+id/tvPredictionPeriod"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Dự đoán cho 30 ngày tới"
+            android:textSize="12sp"
+            android:textColor="@color/text_hint"
+            android:layout_marginTop="4dp"/>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

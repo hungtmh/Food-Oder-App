@@ -144,7 +144,7 @@ CREATE TABLE IF NOT EXISTS public.orders (
     subtotal DECIMAL(12,0) NOT NULL DEFAULT 0,
     discount_amount DECIMAL(12,0) NOT NULL DEFAULT 0,
     total_amount DECIMAL(12,0) NOT NULL DEFAULT 0,
-    status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'preparing', 'delivering', 'delivered', 'cancelled')),
+    status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'served', 'cancelled')),
     estimated_delivery TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()

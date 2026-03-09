@@ -87,9 +87,24 @@
             android:name=".controller.OrderConfirmationActivity"
             android:exported="false" />
 
-        <!-- Thông báo -->
+        <!-- Quản lý đơn hàng (User) -->
         <activity
-            android:name=".controller.NotificationsActivity"
+            android:name=".controller.OrderHistoryActivity"
+            android:exported="false" />
+
+        <!-- Liên hệ -->
+        <activity
+            android:name=".controller.ContactActivity"
+            android:exported="false" />
+
+        <!-- Món yêu thích -->
+        <activity
+            android:name=".controller.FavoritesActivity"
+            android:exported="false" />
+
+        <!-- Địa chỉ giao hàng -->
+        <activity
+            android:name=".controller.AddressActivity"
             android:exported="false" />
 
         <!-- ==================== ADMIN ==================== -->
@@ -129,9 +144,21 @@
             android:name=".controller.AdminRevenueActivity"
             android:exported="false" />
 
-        <!-- Thống kê đơn hàng -->
+        <!-- ==================== AI FEATURES ==================== -->
+
+        <!-- AI Dashboard -->
         <activity
-            android:name=".controller.AdminOrderStatisticsActivity"
+            android:name=".controller.AIDashboardActivity"
+            android:exported="false" />
+
+        <!-- Thống kê cảm xúc -->
+        <activity
+            android:name=".controller.SentimentStatisticsActivity"
+            android:exported="false" />
+
+        <!-- Dự đoán xu hướng -->
+        <activity
+            android:name=".controller.FoodTrendPredictionActivity"
             android:exported="false" />
 
     </application>

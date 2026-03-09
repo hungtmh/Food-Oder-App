@@ -15,8 +15,13 @@ public class Review {
     private String comment;
     @SerializedName("created_at")
     private String createdAt;
+    @SerializedName("sentiment")
+    private String sentiment; // positive, negative, neutral
+    @SerializedName("sentiment_score")
+    private double sentimentScore;
 
-    // Joined field
+    // Joined field (Supabase returns with table name "users")
+    @SerializedName("users")
     private User user;
 
     public Review() {}
@@ -35,4 +40,8 @@ public class Review {
     public String getCreatedAt() { return createdAt; }
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
+    public String getSentiment() { return sentiment; }
+    public void setSentiment(String sentiment) { this.sentiment = sentiment; }
+    public double getSentimentScore() { return sentimentScore; }
+    public void setSentimentScore(double sentimentScore) { this.sentimentScore = sentimentScore; }
 }

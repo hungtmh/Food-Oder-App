@@ -162,6 +162,27 @@ public interface SupabaseDbService {
     Call<Void> deleteSearchHistory(
             @Query("user_id") String userIdFilter);
 
+    // ==================== FAVORITES ====================
+    @GET("favorites")
+    Call<List<Favorite>> getFavorites(
+            @Query("user_id") String userIdFilter,
+            @Query("select") String select,
+            @Query("order") String order);
+
+    @GET("favorites")
+    Call<List<Favorite>> checkFavorite(
+            @Query("user_id") String userIdFilter,
+            @Query("food_id") String foodIdFilter);
+
+    @Headers("Prefer: return=representation")
+    @POST("favorites")
+    Call<List<Favorite>> addFavorite(@Body Map<String, String> favorite);
+
+    @DELETE("favorites")
+    Call<Void> removeFavorite(
+            @Query("user_id") String userIdFilter,
+            @Query("food_id") String foodIdFilter);
+
     // ==================== ADMIN: FOODS ====================
     @GET("foods")
     Call<List<Food>> getAdminAllFoods(
@@ -279,4 +300,79 @@ public interface SupabaseDbService {
             @Query("created_at") String gteFilter,
             @QueryMap Map<String, String> extraFilters,
             @Query("select") String select);
+
+    // ==================== AI FEATURES: SENTIMENT ANALYSIS ====================
+    @GET("food_sentiment_stats")
+    Call<List<FoodSentimentStats>> getFoodSentimentStats(
+            @Query("order") String order);
+
+    @GET("food_sentiment_stats")
+    Call<List<FoodSentimentStats>> getFoodSentimentStatsByFood(
+            @Query("food_id") String foodIdFilter);
+
+    @GET("overall_sentiment_stats")
+    Call<List<OverallSentimentStats>> getOverallSentimentStats();
+
+    @Headers("Prefer: return=representation")
+    @PATCH("reviews")
+    Call<List<Review>> updateReviewSentiment(
+            @Query("id") String idFilter,
+            @Body Map<String, Object> updates);
+
+    @GET("reviews")
+    Call<List<Review>> getAllReviews(
+            @Query("select") String select,
+            @Query("order") String order);
+
+    // ==================== AI FEATURES: FOOD TRENDS ====================
+    @GET("food_trends")
+    Call<List<FoodTrend>> getFoodTrends(
+            @Query("select") String select,
+            @Query("order") String order);
+
+    @GET("food_trends")
+    Call<List<FoodTrend>> getFoodTrendsByType(
+            @Query("trend_type") String trendTypeFilter,
+            @Query("select") String select,
+            @Query("order") String order);
+
+    @Headers("Prefer: return=representation")
+    @POST("food_trends")
+    Call<List<FoodTrend>> createFoodTrend(@Body Map<String, Object> foodTrend);
+
+    @Headers("Prefer: return=representation")
+    @PATCH("food_trends")
+    Call<List<FoodTrend>> updateFoodTrend(
+            @Query("food_id") String foodIdFilter,
+            @Body Map<String, Object> updates);
+
+    @DELETE("food_trends")
+    Call<Void> deleteFoodTrend(
+            @Query("food_id") String foodIdFilter);
+
+    // ==================== ADDRESSES ====================
+    @GET("addresses")
+    Call<List<Address>> getAddresses(
+            @Query("user_id") String userIdFilter,
+            @Query("order") String order);
+
+    @Headers("Prefer: return=representation")
+    @POST("addresses")
+    Call<List<Address>> createAddress(@Body Map<String, Object> address);
+
+    @Headers("Prefer: return=representation")
+    @PATCH("addresses")
+    Call<List<Address>> updateAddress(
+            @Query("id") String idFilter,
+            @Body Map<String, Object> updates);
+
+    @Headers("Prefer: return=representation")
+    @PATCH("addresses")
+    Call<List<Address>> clearDefaultAddresses(
+            @Query("user_id") String userIdFilter,
+            @Body Map<String, Object> updates);
+
+    @DELETE("addresses")
+    Call<Void> deleteAddress(
+            @Query("id") String idFilter);
 }

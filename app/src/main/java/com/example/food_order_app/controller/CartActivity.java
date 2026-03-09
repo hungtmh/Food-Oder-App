@@ -9,10 +9,20 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.snackbar.Snackbar;
 
 import com.example.food_order_app.R;
 import com.example.food_order_app.adapter.CartAdapter;
@@ -23,6 +33,7 @@ import com.example.food_order_app.network.SupabaseDbService;
 import com.example.food_order_app.utils.SessionManager;
 
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -78,6 +89,66 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
         rvCartItems.setLayoutManager(new LinearLayoutManager(this));
         rvCartItems.setAdapter(cartAdapter);
 
+        ItemTouchHelper.SimpleCallback swipeCallback = new ItemTouchHelper.SimpleCallback(
+                0, ItemTouchHelper.LEFT) {
+            private final Paint bgPaint = new Paint();
+
+            @Override
+            public boolean onMove(@NonNull RecyclerView r,
+                                  @NonNull RecyclerView.ViewHolder v,
+                                  @NonNull RecyclerView.ViewHolder t) { return false; }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                int pos = viewHolder.getAdapterPosition();
+                List<CartItem> items = cartAdapter.getCartItems();
+                if (pos != RecyclerView.NO_ID && pos < items.size()) {
+                    deleteItemWithUndo(items.get(pos), pos);
+                }
+            }
+
+            @Override
+            public void onChildDraw(@NonNull Canvas c,
+                                    @NonNull RecyclerView recyclerView,
+                                    @NonNull RecyclerView.ViewHolder viewHolder,
+                                    float dX, float dY,
+                                    int actionState, boolean isCurrentlyActive) {
+                View itemView = viewHolder.itemView;
+                // Fade trash icon on item theo tỉ lệ kéo
+                View btnDelete = itemView.findViewById(R.id.btnDeleteItem);
+                if (btnDelete != null) {
+                    float fraction = Math.min(1f, Math.abs(dX) / (itemView.getWidth() * 0.4f));
+                    btnDelete.setAlpha(1f - fraction);
+                }
+
+                if (dX < 0) {
+                    bgPaint.setColor(ContextCompat.getColor(CartActivity.this, R.color.error));
+                    RectF bg = new RectF(
+                            itemView.getRight() + dX,
+                            itemView.getTop() + 4f,
+                            itemView.getRight(),
+                            itemView.getBottom() - 4f);
+                    c.drawRoundRect(bg, 16f, 16f, bgPaint);
+
+                    Drawable icon = ContextCompat.getDrawable(CartActivity.this, R.drawable.ic_delete);
+                    if (icon != null) {
+                        int iconSize = icon.getIntrinsicHeight();
+                        int margin = (itemView.getHeight() - iconSize) / 2;
+                        int iconTop = itemView.getTop() + margin;
+                        int iconRight = itemView.getRight() - margin;
+                        icon.setBounds(iconRight - iconSize, iconTop, iconRight, iconTop + iconSize);
+                        icon.setTint(Color.WHITE);
+                        icon.draw(c);
+                    }
+                } else {
+                    // Khôi phục alpha khi không kéo
+                    if (btnDelete != null) btnDelete.setAlpha(1f);
+                }
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+            }
+        };
+        new ItemTouchHelper(swipeCallback).attachToRecyclerView(rvCartItems);
+
         btnBack.setOnClickListener(v -> finish());
 
         btnContinueShopping.setOnClickListener(v -> finish());
@@ -94,11 +165,11 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
         });
 
         tvClearCart.setOnClickListener(v -> {
-            if (cartId == null) return;
-            new AlertDialog.Builder(this)
+            if (cartAdapter.getCartItems().isEmpty()) return;
+            new androidx.appcompat.app.AlertDialog.Builder(this)
                     .setTitle("Xóa giỏ hàng")
-                    .setMessage("Bạn có chắc muốn xóa tất cả?")
-                    .setPositiveButton("Xóa", (d, w) -> clearCart())
+                    .setMessage("Bạn có chắc muốn xóa tất cả món?")
+                    .setPositiveButton("Xóa", (d, w) -> clearCartWithUndo())
                     .setNegativeButton("Hủy", null)
                     .show();
         });
@@ -131,7 +202,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
     }
 
     private void loadCartItems() {
-        dbService.getCartItems("eq." + cartId, null, "foods(*)").enqueue(new Callback<List<CartItem>>() {
+        dbService.getCartItems("eq." + cartId, null, "*,foods(*)").enqueue(new Callback<List<CartItem>>() {
             @Override
             public void onResponse(Call<List<CartItem>> call, Response<List<CartItem>> response) {
                 if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
@@ -172,36 +243,71 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
 
     @Override
     public void onRemoveItem(CartItem item, int position) {
-        dbService.deleteCartItem("eq." + item.getId()).enqueue(new Callback<Void>() {
-            @Override
-            public void onResponse(Call<Void> call, Response<Void> response) {
-                cartAdapter.removeItem(position);
-                updateTotal();
-                if (cartAdapter.getCartItems().isEmpty()) {
-                    showEmptyState();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<Void> call, Throwable t) {
-                Log.e(TAG, "deleteItem failed: " + t.getMessage());
-            }
-        });
+        deleteItemWithUndo(item, position);
     }
 
-    private void clearCart() {
-        dbService.clearCart("eq." + cartId).enqueue(new Callback<Void>() {
-            @Override
-            public void onResponse(Call<Void> call, Response<Void> response) {
-                cartAdapter.setCartItems(new java.util.ArrayList<>());
-                showEmptyState();
-            }
+    private void deleteItemWithUndo(CartItem item, int position) {
+        String itemName = item.getFood() != null ? item.getFood().getName() : "món ăn";
+        cartAdapter.removeItem(position);
+        updateTotal();
+        if (cartAdapter.getCartItems().isEmpty()) showEmptyState();
 
-            @Override
-            public void onFailure(Call<Void> call, Throwable t) {
-                Log.e(TAG, "clearCart failed: " + t.getMessage());
-            }
-        });
+        Snackbar.make(findViewById(android.R.id.content),
+                "Dã xóa: " + itemName, Snackbar.LENGTH_LONG)
+                .setAction("Hoàn tác", v -> {
+                    cartAdapter.addItemAt(position, item);
+                    updateTotal();
+                    showCartItems();
+                })
+                .addCallback(new Snackbar.Callback() {
+                    @Override
+                    public void onDismissed(Snackbar sb, int event) {
+                        if (event != DISMISS_EVENT_ACTION) {
+                            dbService.deleteCartItem("eq." + item.getId())
+                                    .enqueue(new Callback<Void>() {
+                                        @Override
+                                        public void onResponse(Call<Void> call, Response<Void> response) {}
+                                        @Override
+                                        public void onFailure(Call<Void> call, Throwable t) {
+                                            Log.e(TAG, "deleteItem failed: " + t.getMessage());
+                                        }
+                                    });
+                        }
+                    }
+                }).show();
+    }
+
+    private void clearCartWithUndo() {
+        if (cartId == null || cartAdapter.getCartItems().isEmpty()) return;
+        List<CartItem> backup = new ArrayList<>(cartAdapter.getCartItems());
+
+        cartAdapter.setCartItems(new ArrayList<>());
+        showEmptyState();
+        updateTotal();
+
+        Snackbar.make(findViewById(android.R.id.content),
+                "Dã xóa toàn bộ giỏ hàng", Snackbar.LENGTH_LONG)
+                .setAction("Hoàn tác", v -> {
+                    cartAdapter.setCartItems(backup);
+                    showCartItems();
+                    updateTotal();
+                })
+                .addCallback(new Snackbar.Callback() {
+                    @Override
+                    public void onDismissed(Snackbar sb, int event) {
+                        if (event != DISMISS_EVENT_ACTION) {
+                            dbService.clearCart("eq." + cartId)
+                                    .enqueue(new Callback<Void>() {
+                                        @Override
+                                        public void onResponse(Call<Void> call, Response<Void> response) {}
+                                        @Override
+                                        public void onFailure(Call<Void> call, Throwable t) {
+                                            Log.e(TAG, "clearCart failed: " + t.getMessage());
+                                        }
+                                    });
+                        }
+                    }
+                }).show();
     }
 
     private double calculateTotal() {
