@@ -39,6 +39,7 @@ public class AdminOrdersActivity extends AppCompatActivity implements AdminOrder
     private TextView tvEmpty, tvStats;
     private BottomNavigationView bottomNav;
     private FloatingActionButton fabRevenue;
+    private ImageView btnOrderStatistics;
     private Button btnStatusAll, btnStatusPending, btnStatusConfirmed, btnStatusDelivered, btnStatusCancelled;
 
     private AdminOrderAdapter adapter;
@@ -76,6 +77,7 @@ public class AdminOrdersActivity extends AppCompatActivity implements AdminOrder
         btnStatusDelivered = findViewById(R.id.btnStatusDelivered);
         btnStatusCancelled = findViewById(R.id.btnStatusCancelled);
         fabRevenue = findViewById(R.id.fabRevenue);
+        btnOrderStatistics = findViewById(R.id.btnOrderStatistics);
 
         adapter = new AdminOrderAdapter(this, this);
         rvOrders.setLayoutManager(new LinearLayoutManager(this));
@@ -111,6 +113,9 @@ public class AdminOrdersActivity extends AppCompatActivity implements AdminOrder
 
         fabRevenue.setOnClickListener(v ->
                 startActivity(new Intent(this, AdminRevenueActivity.class)));
+
+        btnOrderStatistics.setOnClickListener(v ->
+                startActivity(new Intent(this, AdminOrderStatisticsActivity.class)));
 
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();

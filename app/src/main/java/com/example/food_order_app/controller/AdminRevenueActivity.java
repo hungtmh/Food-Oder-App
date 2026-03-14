@@ -25,23 +25,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-
-import android.graphics.Color;
-import com.github.mikephil.charting.charts.BarChart;
-import com.github.mikephil.charting.charts.PieChart;
-import com.github.mikephil.charting.components.XAxis;
-import com.github.mikephil.charting.data.BarData;
-import com.github.mikephil.charting.data.BarDataSet;
-import com.github.mikephil.charting.data.BarEntry;
-import com.github.mikephil.charting.data.PieData;
-import com.github.mikephil.charting.data.PieDataSet;
-import com.github.mikephil.charting.data.PieEntry;
-import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
-import com.github.mikephil.charting.formatter.ValueFormatter;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -55,8 +41,6 @@ public class AdminRevenueActivity extends AppCompatActivity {
     private TextView tvStatTotal, tvStatPending, tvStatConfirmed, tvStatDelivering, tvStatDelivered, tvStatCancelled;
     private RecyclerView rvTopFoods;
     private TextView tvNoTopFoods;
-    private PieChart pieChartStatus;
-    private BarChart barChartTimeline;
 
     private SupabaseDbService dbService;
     private TopFoodAdapter topFoodAdapter;
@@ -77,8 +61,6 @@ public class AdminRevenueActivity extends AppCompatActivity {
 
         // Default: today
         setToday();
-        setupPieChart();
-        setupBarChart();
         loadRevenue();
     }
 
@@ -102,8 +84,6 @@ public class AdminRevenueActivity extends AppCompatActivity {
 
         tvNoTopFoods = findViewById(R.id.tvNoTopFoods);
         rvTopFoods = findViewById(R.id.rvTopFoods);
-        pieChartStatus = findViewById(R.id.pieChartStatus);
-        barChartTimeline = findViewById(R.id.barChartTimeline);
 
         topFoodAdapter = new TopFoodAdapter(this);
         rvTopFoods.setLayoutManager(new LinearLayoutManager(this));
@@ -217,22 +197,6 @@ public class AdminRevenueActivity extends AppCompatActivity {
 
         List<String> deliveredOrderIds = new ArrayList<>();
 
-        // For bar chart: group by date
-        SimpleDateFormat dateKeyFormat = new SimpleDateFormat("dd/MM", Locale.getDefault());
-        SimpleDateFormat sortKeyFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        LinkedHashMap<String, Integer> dailyOrders = new LinkedHashMap<>();
-        Map<String, String> displayToSortKey = new HashMap<>();
-
-        // Pre-fill all dates in range
-        Calendar cal = (Calendar) dateFrom.clone();
-        while (!cal.after(dateTo)) {
-            String displayKey = dateKeyFormat.format(cal.getTime());
-            String sortKey = sortKeyFormat.format(cal.getTime());
-            dailyOrders.put(sortKey, 0);
-            displayToSortKey.put(sortKey, displayKey);
-            cal.add(Calendar.DAY_OF_MONTH, 1);
-        }
-
         for (Order order : orders) {
             String status = order.getStatus();
             if (status == null)
@@ -254,18 +218,6 @@ public class AdminRevenueActivity extends AppCompatActivity {
                     cancelled++;
                     break;
             }
-
-            // Parse date for bar chart
-            try {
-                String createdAt = order.getCreatedAt();
-                if (createdAt != null && createdAt.length() >= 10) {
-                    String dateStr = createdAt.substring(0, 10);
-                    if (dailyOrders.containsKey(dateStr)) {
-                        dailyOrders.put(dateStr, dailyOrders.get(dateStr) + 1);
-                    }
-                }
-            } catch (Exception ignored) {
-            }
         }
 
         deliveredCount = delivered;
@@ -279,10 +231,6 @@ public class AdminRevenueActivity extends AppCompatActivity {
         tvStatDelivering.setText(String.valueOf(delivering));
         tvStatDelivered.setText(String.valueOf(delivered));
         tvStatCancelled.setText(String.valueOf(cancelled));
-
-        // Update charts
-        updatePieChart(pending, confirmed, delivered, cancelled);
-        updateBarChart(dailyOrders, displayToSortKey);
 
         // Load top foods from delivered orders
         if (!deliveredOrderIds.isEmpty()) {
@@ -370,153 +318,5 @@ public class AdminRevenueActivity extends AppCompatActivity {
         topFoodAdapter.setItems(new ArrayList<>());
         tvNoTopFoods.setVisibility(android.view.View.VISIBLE);
         rvTopFoods.setVisibility(android.view.View.GONE);
-        pieChartStatus.clear();
-        pieChartStatus.invalidate();
-        barChartTimeline.clear();
-        barChartTimeline.invalidate();
-    }
-
-    // ==================== PIE CHART ====================
-
-    private void setupPieChart() {
-        pieChartStatus.setUsePercentValues(true);
-        pieChartStatus.getDescription().setEnabled(false);
-        pieChartStatus.setDrawHoleEnabled(true);
-        pieChartStatus.setHoleColor(Color.WHITE);
-        pieChartStatus.setHoleRadius(45f);
-        pieChartStatus.setTransparentCircleRadius(50f);
-        pieChartStatus.setDrawEntryLabels(true);
-        pieChartStatus.setEntryLabelColor(Color.BLACK);
-        pieChartStatus.setEntryLabelTextSize(10f);
-        pieChartStatus.getLegend().setEnabled(true);
-        pieChartStatus.getLegend().setTextSize(11f);
-        pieChartStatus.setNoDataText("Chưa có dữ liệu");
-        pieChartStatus.animateY(800);
-    }
-
-    private void updatePieChart(int pending, int confirmed, int delivered, int cancelled) {
-        List<PieEntry> entries = new ArrayList<>();
-        List<Integer> colors = new ArrayList<>();
-
-        if (pending > 0) {
-            entries.add(new PieEntry(pending, "Chờ xác nhận"));
-            colors.add(Color.parseColor("#FF9800"));
-        }
-        if (confirmed > 0) {
-            entries.add(new PieEntry(confirmed, "Đang xử lý"));
-            colors.add(Color.parseColor("#2196F3"));
-        }
-        if (delivered > 0) {
-            entries.add(new PieEntry(delivered, "Hoàn thành"));
-            colors.add(Color.parseColor("#4CAF50"));
-        }
-        if (cancelled > 0) {
-            entries.add(new PieEntry(cancelled, "Đã hủy"));
-            colors.add(Color.parseColor("#F44336"));
-        }
-
-        if (entries.isEmpty()) {
-            pieChartStatus.clear();
-            pieChartStatus.setNoDataText("Không có đơn hàng");
-            pieChartStatus.invalidate();
-            return;
-        }
-
-        PieDataSet dataSet = new PieDataSet(entries, "");
-        dataSet.setColors(colors);
-        dataSet.setSliceSpace(2f);
-        dataSet.setValueTextSize(12f);
-        dataSet.setValueTextColor(Color.WHITE);
-        dataSet.setValueFormatter(new ValueFormatter() {
-            @Override
-            public String getFormattedValue(float value) {
-                return String.format("%.0f%%", value);
-            }
-        });
-
-        PieData data = new PieData(dataSet);
-        pieChartStatus.setData(data);
-        pieChartStatus.setCenterText("Tổng\n" + (pending + confirmed + delivered + cancelled));
-        pieChartStatus.setCenterTextSize(14f);
-        pieChartStatus.invalidate();
-    }
-
-    // ==================== BAR CHART ====================
-
-    private void setupBarChart() {
-        barChartTimeline.getDescription().setEnabled(false);
-        barChartTimeline.setDrawGridBackground(false);
-        barChartTimeline.setDrawBarShadow(false);
-        barChartTimeline.setFitBars(true);
-        barChartTimeline.setPinchZoom(false);
-        barChartTimeline.setDoubleTapToZoomEnabled(false);
-        barChartTimeline.getLegend().setEnabled(false);
-        barChartTimeline.setNoDataText("Chưa có dữ liệu");
-        barChartTimeline.animateY(800);
-
-        XAxis xAxis = barChartTimeline.getXAxis();
-        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        xAxis.setGranularity(1f);
-        xAxis.setDrawGridLines(false);
-        xAxis.setTextSize(10f);
-        xAxis.setLabelRotationAngle(-45f);
-
-        barChartTimeline.getAxisLeft().setAxisMinimum(0f);
-        barChartTimeline.getAxisLeft().setGranularity(1f);
-        barChartTimeline.getAxisLeft().setTextSize(10f);
-        barChartTimeline.getAxisRight().setEnabled(false);
-    }
-
-    private void updateBarChart(LinkedHashMap<String, Integer> dailyOrders, Map<String, String> displayToSortKey) {
-        List<BarEntry> entries = new ArrayList<>();
-        List<String> labels = new ArrayList<>();
-        int index = 0;
-
-        for (Map.Entry<String, Integer> entry : dailyOrders.entrySet()) {
-            entries.add(new BarEntry(index, entry.getValue()));
-            String displayLabel = displayToSortKey.containsKey(entry.getKey())
-                    ? displayToSortKey.get(entry.getKey())
-                    : entry.getKey();
-            labels.add(displayLabel);
-            index++;
-        }
-
-        if (entries.isEmpty()) {
-            barChartTimeline.clear();
-            barChartTimeline.invalidate();
-            return;
-        }
-
-        BarDataSet dataSet = new BarDataSet(entries, "Đơn hàng");
-        dataSet.setColor(Color.parseColor("#E53935"));
-        dataSet.setValueTextSize(10f);
-        dataSet.setValueFormatter(new ValueFormatter() {
-            @Override
-            public String getFormattedValue(float value) {
-                if (value == 0)
-                    return "";
-                return String.valueOf((int) value);
-            }
-        });
-
-        BarData data = new BarData(dataSet);
-        data.setBarWidth(0.7f);
-
-        barChartTimeline.setData(data);
-
-        XAxis xAxis = barChartTimeline.getXAxis();
-        xAxis.setValueFormatter(new IndexAxisValueFormatter(labels));
-        xAxis.setLabelCount(Math.min(labels.size(), 10), false);
-
-        if (labels.size() > 10) {
-            barChartTimeline.setVisibleXRangeMaximum(10);
-            barChartTimeline.moveViewToX(entries.size() - 10);
-        } else {
-            barChartTimeline.setVisibleXRangeMaximum(labels.size());
-            barChartTimeline.moveViewToX(0);
-        }
-
-        barChartTimeline.notifyDataSetChanged();
-        barChartTimeline.invalidate();
     }
 }
