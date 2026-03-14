@@ -127,6 +127,10 @@ public class AdminHomeActivity extends AppCompatActivity implements AdminFoodAda
             int id = item.getItemId();
             if (id == R.id.nav_admin_food) {
                 return true;
+            } else if (id == R.id.nav_admin_revenue) {
+                startActivity(new Intent(this, AdminReportStatisticsActivity.class));
+                overridePendingTransition(0, 0);
+                return true;
             } else if (id == R.id.nav_admin_feedback) {
                 startActivity(new Intent(this, AdminFeedbackActivity.class));
                 overridePendingTransition(0, 0);

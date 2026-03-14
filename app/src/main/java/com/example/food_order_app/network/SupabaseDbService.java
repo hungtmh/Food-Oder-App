@@ -21,6 +21,12 @@ public interface SupabaseDbService {
             @Query("email") String emailFilter,
             @Query("select") String select);
 
+    @GET("users")
+    Call<List<User>> getUsersByRole(
+            @Query("role") String roleFilter,
+            @Query("select") String select,
+            @Query("order") String order);
+
     @Headers("Prefer: return=representation")
     @POST("users")
     Call<List<User>> createUser(@Body User user);

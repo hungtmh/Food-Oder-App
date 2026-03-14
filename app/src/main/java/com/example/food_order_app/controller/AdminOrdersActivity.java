@@ -124,6 +124,11 @@ public class AdminOrdersActivity extends AppCompatActivity implements AdminOrder
                 overridePendingTransition(0, 0);
                 finish();
                 return true;
+            } else if (id == R.id.nav_admin_revenue) {
+                startActivity(new Intent(this, AdminReportStatisticsActivity.class));
+                overridePendingTransition(0, 0);
+                finish();
+                return true;
             } else if (id == R.id.nav_admin_feedback) {
                 startActivity(new Intent(this, AdminFeedbackActivity.class));
                 overridePendingTransition(0, 0);

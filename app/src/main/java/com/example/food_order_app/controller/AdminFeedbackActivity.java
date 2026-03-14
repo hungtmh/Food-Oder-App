@@ -89,6 +89,11 @@ public class AdminFeedbackActivity extends AppCompatActivity implements AdminFee
                 overridePendingTransition(0, 0);
                 finish();
                 return true;
+            } else if (id == R.id.nav_admin_revenue) {
+                startActivity(new Intent(this, AdminReportStatisticsActivity.class));
+                overridePendingTransition(0, 0);
+                finish();
+                return true;
             } else if (id == R.id.nav_admin_feedback) {
                 return true;
             } else if (id == R.id.nav_admin_orders) {
