@@ -1,8 +1,10 @@
 package com.example.food_order_app.controller;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -34,7 +36,7 @@ import retrofit2.Response;
 
 public class AdminOrderDetailActivity extends AppCompatActivity {
 
-    private ImageView btnBack;
+    private ImageButton btnBack;
     private TextView tvOrderCode, tvCustomer, tvPhone, tvAddress, tvPayment, tvNote;
     private TextView tvSubtotal, tvDiscount, tvTotal, tvDate;
     private TextView tvCurrentStatus, tvStatusMessage;
@@ -82,13 +84,18 @@ public class AdminOrderDetailActivity extends AppCompatActivity {
         rvItems.setLayoutManager(new LinearLayoutManager(this));
         rvItems.setAdapter(itemAdapter);
 
-        btnBack.setOnClickListener(v -> finish());
+        // Set back button listener
+        btnBack.setOnClickListener(v -> {
+            Log.d("AdminOrderDetail", "Back button CLICKED");
+            finish();
+        });
 
         // Confirm: pending -> processing
         btnConfirmOrder.setOnClickListener(v -> {
             new AlertDialog.Builder(this)
                     .setTitle("Xác nhận đơn hàng")
-                    .setMessage("Bạn có chắc muốn xác nhận đơn hàng này?\nĐơn hàng sẽ chuyển sang trạng thái \"Chờ chế biến\".")
+                    .setMessage(
+                            "Bạn có chắc muốn xác nhận đơn hàng này?\nĐơn hàng sẽ chuyển sang trạng thái \"Chờ chế biến\".")
                     .setPositiveButton("Xác nhận", (dialog, which) -> updateStatus("processing"))
                     .setNegativeButton("Không", null)
                     .show();
@@ -141,7 +148,8 @@ public class AdminOrderDetailActivity extends AppCompatActivity {
         // Format date
         try {
             String dateStr = getIntent().getStringExtra("order_date");
-            if (dateStr != null && dateStr.length() > 19) dateStr = dateStr.substring(0, 19);
+            if (dateStr != null && dateStr.length() > 19)
+                dateStr = dateStr.substring(0, 19);
             SimpleDateFormat input = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
             SimpleDateFormat output = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
             Date date = input.parse(dateStr);
@@ -193,24 +201,36 @@ public class AdminOrderDetailActivity extends AppCompatActivity {
     }
 
     private String getStatusText(String status) {
-        if (status == null) return "Không rõ";
+        if (status == null)
+            return "Không rõ";
         switch (status) {
-            case "pending": return "Chờ xác nhận";
-            case "processing": return "Chờ chế biến";
-            case "served": return "Đã phục vụ";
-            case "cancelled": return "Đã hủy";
-            default: return status;
+            case "pending":
+                return "Chờ xác nhận";
+            case "processing":
+                return "Chờ chế biến";
+            case "served":
+                return "Đã phục vụ";
+            case "cancelled":
+                return "Đã hủy";
+            default:
+                return status;
         }
     }
 
     private int getStatusBackground(String status) {
-        if (status == null) return R.drawable.bg_status_pending;
+        if (status == null)
+            return R.drawable.bg_status_pending;
         switch (status) {
-            case "pending": return R.drawable.bg_status_pending;
-            case "processing": return R.drawable.bg_status_processing;
-            case "served": return R.drawable.bg_status_delivered;
-            case "cancelled": return R.drawable.bg_status_unavailable;
-            default: return R.drawable.bg_status_pending;
+            case "pending":
+                return R.drawable.bg_status_pending;
+            case "processing":
+                return R.drawable.bg_status_processing;
+            case "served":
+                return R.drawable.bg_status_delivered;
+            case "cancelled":
+                return R.drawable.bg_status_unavailable;
+            default:
+                return R.drawable.bg_status_pending;
         }
     }
 
@@ -245,6 +265,10 @@ public class AdminOrderDetailActivity extends AppCompatActivity {
                 if (response.isSuccessful()) {
                     currentStatus = newStatus;
                     updateStatusUI();
+                    
+                    // Send notification
+                    sendNotification(newStatus);
+                    
                     Toast.makeText(AdminOrderDetailActivity.this,
                             "Đã cập nhật: " + getStatusText(newStatus),
                             Toast.LENGTH_SHORT).show();
@@ -258,6 +282,49 @@ public class AdminOrderDetailActivity extends AppCompatActivity {
             public void onFailure(Call<List<Order>> call, Throwable t) {
                 Toast.makeText(AdminOrderDetailActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 enableButtons();
+            }
+        });
+    }
+
+    private void sendNotification(String newStatus) {
+        String userId = getIntent().getStringExtra("order_user_id");
+        String orderCode = getIntent().getStringExtra("order_code");
+        if (userId == null || orderCode == null) return;
+
+        String title = "Cập nhật đơn hàng " + orderCode;
+        String message = "";
+
+        switch (newStatus) {
+            case "processing":
+                message = "Đơn hàng của bạn đã được xác nhận và đang được chế biến.";
+                break;
+            case "served":
+                message = "Đơn hàng của bạn đã làm xong và sẵn sàng phục vụ!";
+                break;
+            case "cancelled":
+                message = "Rất tiếc, đơn hàng của bạn đã bị hủy.";
+                break;
+            default:
+                return;
+        }
+
+        Map<String, Object> notif = new HashMap<>();
+        notif.put("user_id", userId);
+        notif.put("order_id", orderId);
+        notif.put("order_code", orderCode);
+        notif.put("title", title);
+        notif.put("message", message);
+        notif.put("is_read", false);
+
+        dbService.createNotification(notif).enqueue(new Callback<List<com.example.food_order_app.model.Notification>>() {
+            @Override
+            public void onResponse(Call<List<com.example.food_order_app.model.Notification>> call, Response<List<com.example.food_order_app.model.Notification>> response) {
+                // Silently succeed
+            }
+
+            @Override
+            public void onFailure(Call<List<com.example.food_order_app.model.Notification>> call, Throwable t) {
+                // Silently fail
             }
         });
     }

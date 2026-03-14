@@ -3,6 +3,7 @@ package com.example.food_order_app.controller;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -22,7 +23,10 @@ import com.example.food_order_app.utils.SessionManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.text.Normalizer;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -36,10 +40,13 @@ public class AdminHomeActivity extends AppCompatActivity implements AdminFoodAda
     private TextView tvEmpty;
     private FloatingActionButton fabAdd;
     private BottomNavigationView bottomNav;
+    private Button btnFilterAll, btnFilterAvailable, btnFilterUnavailable, btnFilterPopular, btnFilterDiscount;
 
     private AdminFoodAdapter adapter;
     private SupabaseDbService dbService;
     private SessionManager sessionManager;
+    private List<Food> allFoods = new ArrayList<>();
+    private String currentFilter = "all";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +79,12 @@ public class AdminHomeActivity extends AppCompatActivity implements AdminFoodAda
         adapter = new AdminFoodAdapter(this, this);
         rvFoods.setLayoutManager(new LinearLayoutManager(this));
         rvFoods.setAdapter(adapter);
+
+        btnFilterAll = findViewById(R.id.btnFilterAll);
+        btnFilterAvailable = findViewById(R.id.btnFilterAvailable);
+        btnFilterUnavailable = findViewById(R.id.btnFilterUnavailable);
+        btnFilterPopular = findViewById(R.id.btnFilterPopular);
+        btnFilterDiscount = findViewById(R.id.btnFilterDiscount);
     }
 
     private void setupListeners() {
@@ -92,6 +105,23 @@ public class AdminHomeActivity extends AppCompatActivity implements AdminFoodAda
             }
             return false;
         });
+
+        // Filter button click handlers
+        android.view.View.OnClickListener filterClick = v -> {
+            int id = v.getId();
+            if (id == R.id.btnFilterAll) currentFilter = "all";
+            else if (id == R.id.btnFilterAvailable) currentFilter = "available";
+            else if (id == R.id.btnFilterUnavailable) currentFilter = "unavailable";
+            else if (id == R.id.btnFilterPopular) currentFilter = "popular";
+            else if (id == R.id.btnFilterDiscount) currentFilter = "discount";
+            updateFilterUI();
+            performSearch();
+        };
+        btnFilterAll.setOnClickListener(filterClick);
+        btnFilterAvailable.setOnClickListener(filterClick);
+        btnFilterUnavailable.setOnClickListener(filterClick);
+        btnFilterPopular.setOnClickListener(filterClick);
+        btnFilterDiscount.setOnClickListener(filterClick);
 
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
@@ -118,9 +148,9 @@ public class AdminHomeActivity extends AppCompatActivity implements AdminFoodAda
             @Override
             public void onResponse(Call<List<Food>> call, Response<List<Food>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    List<Food> foods = response.body();
-                    adapter.setFoods(foods);
-                    tvEmpty.setVisibility(foods.isEmpty() ? android.view.View.VISIBLE : android.view.View.GONE);
+                    allFoods = response.body();
+                    adapter.setFoods(allFoods);
+                    tvEmpty.setVisibility(allFoods.isEmpty() ? android.view.View.VISIBLE : android.view.View.GONE);
                 }
             }
 
@@ -132,27 +162,71 @@ public class AdminHomeActivity extends AppCompatActivity implements AdminFoodAda
     }
 
     private void performSearch() {
-        String query = edtSearch.getText().toString().trim();
-        if (query.isEmpty()) {
-            loadFoods();
-            return;
-        }
+        String query = removeDiacritics(edtSearch.getText().toString().trim().toLowerCase());
 
-        dbService.adminSearchFoods("ilike.*" + query + "*", "*").enqueue(new Callback<List<Food>>() {
-            @Override
-            public void onResponse(Call<List<Food>> call, Response<List<Food>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    List<Food> foods = response.body();
-                    adapter.setFoods(foods);
-                    tvEmpty.setVisibility(foods.isEmpty() ? android.view.View.VISIBLE : android.view.View.GONE);
+        // First apply filter
+        List<Food> filtered = filterFoods(allFoods);
+
+        // Then apply search if query is not empty
+        if (!query.isEmpty()) {
+            List<Food> results = new ArrayList<>();
+            for (Food food : filtered) {
+                if (food.getName() != null && removeDiacritics(food.getName().toLowerCase()).contains(query)) {
+                    results.add(food);
+                    continue;
+                }
+                if (food.getDescription() != null && removeDiacritics(food.getDescription().toLowerCase()).contains(query)) {
+                    results.add(food);
                 }
             }
+            filtered = results;
+        }
 
-            @Override
-            public void onFailure(Call<List<Food>> call, Throwable t) {
-                Toast.makeText(AdminHomeActivity.this, "Lỗi tìm kiếm", Toast.LENGTH_SHORT).show();
+        adapter.setFoods(filtered);
+        tvEmpty.setVisibility(filtered.isEmpty() ? android.view.View.VISIBLE : android.view.View.GONE);
+    }
+
+    private List<Food> filterFoods(List<Food> foods) {
+        if (currentFilter.equals("all")) return foods;
+
+        List<Food> filtered = new ArrayList<>();
+        for (Food food : foods) {
+            switch (currentFilter) {
+                case "available":
+                    if (food.isAvailable()) filtered.add(food);
+                    break;
+                case "unavailable":
+                    if (!food.isAvailable()) filtered.add(food);
+                    break;
+                case "popular":
+                    if (food.isPopular()) filtered.add(food);
+                    break;
+                case "discount":
+                    if (food.getDiscountPercent() > 0) filtered.add(food);
+                    break;
             }
-        });
+        }
+        return filtered;
+    }
+
+    private void updateFilterUI() {
+        Button[] buttons = {btnFilterAll, btnFilterAvailable, btnFilterUnavailable, btnFilterPopular, btnFilterDiscount};
+        String[] filters = {"all", "available", "unavailable", "popular", "discount"};
+        for (int i = 0; i < buttons.length; i++) {
+            boolean selected = currentFilter.equals(filters[i]);
+            buttons[i].setBackgroundResource(selected ? R.drawable.bg_category_selected : R.drawable.bg_category_normal);
+            buttons[i].setTextColor(getResources().getColor(selected ? R.color.white : R.color.text_primary));
+        }
+    }
+
+    private static final Pattern DIACRITICS_PATTERN = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+
+    private String removeDiacritics(String input) {
+        if (input == null) return "";
+        String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
+        String result = DIACRITICS_PATTERN.matcher(normalized).replaceAll("");
+        result = result.replace('đ', 'd').replace('Đ', 'D');
+        return result;
     }
 
     @Override

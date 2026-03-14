@@ -2,6 +2,7 @@ package com.example.food_order_app.controller;
 
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
@@ -29,7 +30,8 @@ import retrofit2.Response;
 
 public class AdminFeedbackDetailActivity extends AppCompatActivity {
 
-    private ImageView btnBack, imgAvatar;
+    private ImageButton btnBack;
+    private ImageView imgAvatar;
     private TextView tvUserName, tvEmail, tvStatus, tvDate, tvSubject, tvContent;
     private RatingBar ratingBar;
     private Button btnDelete;
