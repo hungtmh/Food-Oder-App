@@ -20,3 +20,12 @@ Dưới đây là bảng tổng hợp liền mạch toàn bộ các chức năng
 | 14 | Thống kê doanh thu (Admin) | Xây dựng bộ lọc tính toán doanh thu bán ra theo từng ngày cụ thể hoặc theo một khoảng thời gian nhất định do quản trị viên chọn. Thống kê và hiển thị danh sách các món ăn có lượt bán cao nhất. | Thắng | 100% | 14/03/2026 |
 | 15 | Quản lý phản hồi (Admin) | Danh sách tiếp nhận mọi nhận xét và đánh giá của khách hàng. Phân quyền cho quản trị viên đọc, rà soát và xóa các nội dung phản hồi. | Ninh Văn Khải | 100% | 09/03/2026 |
 | 16 | Phân tích AI Insights (Admin) | Sử dụng AI để phân tích sắc thái biểu cảm của các nhận xét từ người dùng (Tích cực, tiêu cực, trung lập). Trực quan hóa dữ liệu bằng Dashboard và gợi ý các xu hướng món ăn sắp tới. | Ninh Văn Khải | 100% | 13/03/2026 |
+
+## MỤC TIÊU CHO TUẦN TỚI (GOALS FOR NEXT WEEK)
+
+| Hạng mục (Item) | Mô tả chi tiết (Description) | Hạn hoàn thành (Due Date) | Người phụ trách (Responsibility) |
+| --- | --- | --- | --- |
+| Tích hợp thanh toán ví điện tử | Nghiên cứu và triển khai API thanh toán trực tuyến qua MoMo hoặc ZaloPay. | 21/03/2026 | Nguyễn Anh Khoa |
+| Hệ thống mã giảm giá (Coupon) | Xây dựng tính năng cho phép người dùng nhập mã giảm giá khi thanh toán và giao diện quản lý mã cho Admin. | 20/03/2026 | Thắng |
+| Thông báo đẩy (Notification) | Tích hợp thông báo đẩy (Firebase Cloud Messaging) để báo cáo trạng thái đơn hàng đến người dùng theo thời gian thực. | 22/03/2026 | Trần Mạnh Hùng |
+| Kiểm thử và tối ưu (Testing) | Tiếp tục rà soát lỗi (bugs) trên các thiết bị thực tế, tối ưu hóa giao diện và hiệu năng tải dữ liệu từ Supabase. | 24/03/2026 | Cả nhóm |
