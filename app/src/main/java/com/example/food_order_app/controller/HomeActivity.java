@@ -45,6 +45,8 @@ public class HomeActivity extends AppCompatActivity {
     private RecyclerView rvCategories, rvFoods;
     private BottomNavigationView bottomNav;
     private View searchBar;
+    private View btnNotification;
+    private android.widget.TextView tvNotifBadge;
     private LinearLayout layoutError;
     private ScrollView scrollView;
     private Button btnRetry;
@@ -83,12 +85,18 @@ public class HomeActivity extends AppCompatActivity {
         rvFoods = findViewById(R.id.rvFoods);
         bottomNav = findViewById(R.id.bottomNav);
         searchBar = findViewById(R.id.searchBar);
+        btnNotification = findViewById(R.id.btnNotification);
+        tvNotifBadge = findViewById(R.id.tvNotifBadge);
         layoutError = findViewById(R.id.layoutError);
         scrollView = findViewById(R.id.scrollView);
         btnRetry = findViewById(R.id.btnRetry);
 
         searchBar.setOnClickListener(v -> {
             startActivity(new Intent(this, SearchActivity.class));
+        });
+
+        btnNotification.setOnClickListener(v -> {
+            startActivity(new Intent(this, NotificationsActivity.class));
         });
 
         btnRetry.setOnClickListener(v -> {
@@ -317,6 +325,32 @@ public class HomeActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    private void loadUnreadNotificationCount() {
+        String userId = sessionManager.getUserId();
+        if (userId == null) return;
+
+        dbService.getUnreadNotificationCount("eq." + userId, "eq.false", "id")
+                .enqueue(new Callback<List<com.example.food_order_app.model.Notification>>() {
+                    @Override
+                    public void onResponse(Call<List<com.example.food_order_app.model.Notification>> call, Response<List<com.example.food_order_app.model.Notification>> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            int count = response.body().size();
+                            if (count > 0) {
+                                tvNotifBadge.setText(String.valueOf(count));
+                                tvNotifBadge.setVisibility(View.VISIBLE);
+                            } else {
+                                tvNotifBadge.setVisibility(View.GONE);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<com.example.food_order_app.model.Notification>> call, Throwable t) {
+                        // Silent fail for badge
+                    }
+                });
+    }
+
     // Slider dots
     private void setupDots(int count) {
         dotsIndicator.removeAllViews();
@@ -355,6 +389,7 @@ public class HomeActivity extends AppCompatActivity {
         if (sliderRunnable != null) {
             sliderHandler.postDelayed(sliderRunnable, 3000);
         }
+        loadUnreadNotificationCount();
     }
 
     @Override

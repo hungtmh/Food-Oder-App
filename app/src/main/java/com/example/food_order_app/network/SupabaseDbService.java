@@ -293,12 +293,10 @@ public interface SupabaseDbService {
             @Query("is_read") String isReadFilter,
             @Query("select") String select);
 
-    // ==================== ADMIN: REVENUE ====================
+    // ==================== ADMIN: REVENUE & STATISTICS ====================
     @GET("orders")
     Call<List<Order>> getOrdersByDateRange(
-            @Query("status") String statusFilter,
-            @Query("created_at") String gteFilter,
-            @QueryMap Map<String, String> extraFilters,
+            @QueryMap Map<String, String> filters,
             @Query("select") String select);
 
     // ==================== AI FEATURES: SENTIMENT ANALYSIS ====================

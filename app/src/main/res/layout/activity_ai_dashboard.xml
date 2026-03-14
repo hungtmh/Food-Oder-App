@@ -21,12 +21,14 @@
 
             <ImageView
                 android:id="@+id/btnBack"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:padding="6dp"
                 android:src="@drawable/ic_back"
                 android:contentDescription="Back"
                 android:clickable="true"
-                android:focusable="true"/>
+                android:focusable="true"
+                android:background="?attr/selectableItemBackgroundBorderless"/>
 
             <TextView
                 android:layout_width="0dp"

@@ -6,6 +6,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -32,7 +33,8 @@ import retrofit2.Response;
 public class AdminAddEditFoodActivity extends AppCompatActivity {
 
     private TextView tvTitle;
-    private ImageView imgPreview, btnBack;
+    private ImageView imgPreview;
+    private ImageButton btnBack;
     private EditText edtImageUrl, edtName, edtPrice, edtDiscount, edtDescription;
     private Spinner spinnerCategory;
     private CheckBox cbPopular, cbRecommended, cbAvailable;

@@ -4,6 +4,7 @@ import android.app.DatePickerDialog;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -43,7 +44,7 @@ import retrofit2.Response;
 
 public class AdminOrderStatisticsActivity extends AppCompatActivity {
 
-    private ImageView btnBack;
+    private ImageButton btnBack;
     private Button btnDateFrom, btnDateTo, btn7Days, btn30Days, btnThisMonth;
     private TextView tvTotalOrders, tvTotalRevenue;
     private TextView tvStatPending, tvStatConfirmed, tvStatDelivered, tvStatCancelled;
@@ -151,18 +152,28 @@ public class AdminOrderStatisticsActivity extends AppCompatActivity {
         String fromStr = isoFormat.format(dateFrom.getTime()) + "T00:00:00";
         String toStr = isoFormat.format(dateTo.getTime()) + "T23:59:59";
 
-        Map<String, String> extraFilters = new HashMap<>();
-        extraFilters.put("created_at", "lte." + toStr);
-
+        Map<String, String> filters = new HashMap<>();
+        filters.put("created_at", "gte." + fromStr);
+        // Supabase doesn't easily support two filters on the same column via query map keys without a custom filter string.
+        // We will query gte locally and let's just fetch everything after fromStr.
+        // BUT Retrofit query map allows overwriting keys.
+        // Let's use the standard supabase query: ?created_at=gte.date&created_at=lte.date -> can be done via String or list.
+        // Because of the limitation, let's just use `gte` from database, and filter `lte` locally to be safe.
+        
         dbService.getOrdersByDateRange(
-                null,
-                "gte." + fromStr,
-                extraFilters,
+                filters,
                 "*").enqueue(new Callback<List<Order>>() {
                     @Override
                     public void onResponse(Call<List<Order>> call, Response<List<Order>> response) {
                         if (response.isSuccessful() && response.body() != null) {
-                            processOrders(response.body());
+                            List<Order> validOrders = new ArrayList<>();
+                            // Filter the lte locally since we pulled gte
+                            for (Order o : response.body()) {
+                                if (o.getCreatedAt() != null && o.getCreatedAt().compareTo(toStr) <= 0) {
+                                    validOrders.add(o);
+                                }
+                            }
+                            processOrders(validOrders);
                         } else {
                             resetAll();
                         }
@@ -208,10 +219,10 @@ public class AdminOrderStatisticsActivity extends AppCompatActivity {
                 case "pending":
                     pending++;
                     break;
-                case "confirmed":
+                case "processing":
                     confirmed++;
                     break;
-                case "delivered":
+                case "served":
                     delivered++;
                     revenue += order.getTotalAmount();
                     break;

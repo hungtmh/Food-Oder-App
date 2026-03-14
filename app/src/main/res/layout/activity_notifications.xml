@@ -18,11 +18,15 @@
 
         <ImageView
             android:id="@+id/btnBackNotif"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:padding="6dp"
             android:src="@drawable/ic_arrow_back"
             android:tint="@color/white"
-            android:contentDescription="Quay lại" />
+            android:contentDescription="Quay lại"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless" />
 
         <TextView
             android:layout_width="0dp"

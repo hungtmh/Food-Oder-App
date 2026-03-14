@@ -105,6 +105,10 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Vi
                 if (response.isSuccessful()) {
                     order.setStatus(newStatus);
                     Toast.makeText(context, actionName + " thành công!", Toast.LENGTH_SHORT).show();
+                    
+                    // Send notification to user
+                    sendNotification(order, newStatus);
+                    
                     if (listener != null) {
                         listener.onOrderStatusChanged();
                     }
@@ -120,9 +124,48 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Vi
         });
     }
 
+    private void sendNotification(Order order, String newStatus) {
+        String title = "Cập nhật đơn hàng " + order.getOrderCode();
+        String message = "";
+        
+        switch (newStatus) {
+            case "processing":
+                message = "Đơn hàng của bạn đã được xác nhận và đang được chế biến.";
+                break;
+            case "served":
+                message = "Đơn hàng của bạn đã làm xong và sẵn sàng phục vụ!";
+                break;
+            case "cancelled":
+                message = "Rất tiếc, đơn hàng của bạn đã bị hủy.";
+                break;
+            default:
+                return;
+        }
+
+        Map<String, Object> notif = new HashMap<>();
+        notif.put("user_id", order.getUserId());
+        notif.put("order_id", order.getId());
+        notif.put("order_code", order.getOrderCode());
+        notif.put("title", title);
+        notif.put("message", message);
+        notif.put("is_read", false);
+
+        dbService.createNotification(notif).enqueue(new Callback<List<com.example.food_order_app.model.Notification>>() {
+            @Override
+            public void onResponse(Call<List<com.example.food_order_app.model.Notification>> call, Response<List<com.example.food_order_app.model.Notification>> response) {
+                // Silently succeed
+            }
+
+            @Override
+            public void onFailure(Call<List<com.example.food_order_app.model.Notification>> call, Throwable t) {
+                // Silently fail
+            }
+        });
+    }
+
     class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvCode, tvStatus, tvCustomer, tvDate, tvTotal, tvFoodSummary;
-        LinearLayout layoutQuickActions, layoutFoodImages;
+        TextView tvCode, tvStatus, tvCustomer, tvDate, tvTotal, tvFoodSummary, tvPhone, tvAddress;
+        LinearLayout layoutQuickActions, layoutFoodImages, layoutPhone, layoutAddress;
         Button btnQuickConfirm, btnQuickServe, btnQuickCancel;
 
         ViewHolder(@NonNull View itemView) {
@@ -133,7 +176,11 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Vi
             tvDate = itemView.findViewById(R.id.tvOrderDate);
             tvTotal = itemView.findViewById(R.id.tvOrderTotal);
             tvFoodSummary = itemView.findViewById(R.id.tvFoodSummary);
+            tvPhone = itemView.findViewById(R.id.tvOrderPhone);
+            tvAddress = itemView.findViewById(R.id.tvOrderAddress);
             layoutFoodImages = itemView.findViewById(R.id.layoutFoodImages);
+            layoutPhone = itemView.findViewById(R.id.layoutPhone);
+            layoutAddress = itemView.findViewById(R.id.layoutAddress);
             layoutQuickActions = itemView.findViewById(R.id.layoutQuickActions);
             btnQuickConfirm = itemView.findViewById(R.id.btnQuickConfirm);
             btnQuickServe = itemView.findViewById(R.id.btnQuickServe);
@@ -160,6 +207,22 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Vi
                 tvDate.setText(output.format(date));
             } catch (Exception e) {
                 tvDate.setText(order.getCreatedAt());
+            }
+
+            // Display phone
+            if (order.getPhone() != null && !order.getPhone().isEmpty()) {
+                tvPhone.setText(order.getPhone());
+                layoutPhone.setVisibility(View.VISIBLE);
+            } else {
+                layoutPhone.setVisibility(View.GONE);
+            }
+
+            // Display address
+            if (order.getAddress() != null && !order.getAddress().isEmpty()) {
+                tvAddress.setText(order.getAddress());
+                layoutAddress.setVisibility(View.VISIBLE);
+            } else {
+                layoutAddress.setVisibility(View.GONE);
             }
 
             // Display food images and summary

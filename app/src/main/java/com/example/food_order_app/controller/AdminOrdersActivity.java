@@ -22,8 +22,10 @@ import com.example.food_order_app.network.SupabaseDbService;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -37,7 +39,6 @@ public class AdminOrdersActivity extends AppCompatActivity implements AdminOrder
     private TextView tvEmpty, tvStats;
     private BottomNavigationView bottomNav;
     private FloatingActionButton fabRevenue;
-    private ImageView btnOrderStatistics;
     private Button btnStatusAll, btnStatusPending, btnStatusConfirmed, btnStatusDelivered, btnStatusCancelled;
 
     private AdminOrderAdapter adapter;
@@ -75,7 +76,6 @@ public class AdminOrdersActivity extends AppCompatActivity implements AdminOrder
         btnStatusDelivered = findViewById(R.id.btnStatusDelivered);
         btnStatusCancelled = findViewById(R.id.btnStatusCancelled);
         fabRevenue = findViewById(R.id.fabRevenue);
-        btnOrderStatistics = findViewById(R.id.btnOrderStatistics);
 
         adapter = new AdminOrderAdapter(this, this);
         rvOrders.setLayoutManager(new LinearLayoutManager(this));
@@ -111,9 +111,6 @@ public class AdminOrdersActivity extends AppCompatActivity implements AdminOrder
 
         fabRevenue.setOnClickListener(v ->
                 startActivity(new Intent(this, AdminRevenueActivity.class)));
-
-        btnOrderStatistics.setOnClickListener(v ->
-                startActivity(new Intent(this, AdminOrderStatisticsActivity.class)));
 
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
@@ -177,20 +174,61 @@ public class AdminOrdersActivity extends AppCompatActivity implements AdminOrder
     }
 
     private void searchOrders() {
-        String query = edtSearch.getText().toString().trim().toLowerCase();
+        String query = removeDiacritics(edtSearch.getText().toString().trim().toLowerCase());
         if (query.isEmpty()) {
             filterOrders();
             return;
         }
         List<Order> results = new ArrayList<>();
         for (Order o : allOrders) {
-            if ((o.getOrderCode() != null && o.getOrderCode().toLowerCase().contains(query)) ||
-                    (o.getReceiverName() != null && o.getReceiverName().toLowerCase().contains(query))) {
+            // Apply current filter first
+            if (!currentFilter.equals("all") && !currentFilter.equals(o.getStatus())) {
+                continue;
+            }
+
+            // Check order code
+            if (o.getOrderCode() != null && removeDiacritics(o.getOrderCode().toLowerCase()).contains(query)) {
                 results.add(o);
+                continue;
+            }
+            // Check customer name
+            if (o.getReceiverName() != null && removeDiacritics(o.getReceiverName().toLowerCase()).contains(query)) {
+                results.add(o);
+                continue;
+            }
+            // Check phone
+            if (o.getPhone() != null && o.getPhone().contains(query)) {
+                results.add(o);
+                continue;
+            }
+            // Check food item names
+            if (o.getOrderItems() != null) {
+                boolean found = false;
+                for (com.example.food_order_app.model.OrderItem item : o.getOrderItems()) {
+                    if (item.getFoodName() != null && removeDiacritics(item.getFoodName().toLowerCase()).contains(query)) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (found) {
+                    results.add(o);
+                }
             }
         }
         adapter.setOrders(results);
         tvEmpty.setVisibility(results.isEmpty() ? View.VISIBLE : View.GONE);
+    }
+
+    private static final Pattern DIACRITICS_PATTERN = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+
+    private String removeDiacritics(String input) {
+        if (input == null) return "";
+        // Normalize to decompose accented characters, then strip diacritics
+        String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
+        String result = DIACRITICS_PATTERN.matcher(normalized).replaceAll("");
+        // Handle special Vietnamese characters not covered by NFD
+        result = result.replace('đ', 'd').replace('Đ', 'D');
+        return result;
     }
 
     @Override
