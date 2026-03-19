@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Button;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,6 +30,7 @@ import com.example.food_order_app.model.OrderItem;
 import com.example.food_order_app.model.User;
 import com.example.food_order_app.network.RetrofitClient;
 import com.example.food_order_app.network.SupabaseDbService;
+import com.example.food_order_app.utils.AdminBottomNavHelper;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.BarData;
@@ -56,6 +58,11 @@ import retrofit2.Response;
 
 public class AdminRevenueActivity extends AppCompatActivity {
 
+    public static final String EXTRA_OPEN_SECTION = "open_section";
+    public static final String SECTION_DASHBOARD = "dashboard";
+    public static final String SECTION_REPORT = "report";
+    public static final String SECTION_CUSTOMER = "customer";
+
     private ImageButton btnBack;
     private Button btnDateFrom, btnDateTo, btnToday, btnThisMonth, btnLastMonth, btnSingleDay, btnApplyFilter, btnExportRevenuePdf, btnExportRevenueExcel, btnSendRevenueEmail;
     private TextView tvTotalRevenue, tvTotalOrders;
@@ -71,6 +78,10 @@ public class AdminRevenueActivity extends AppCompatActivity {
     private TextView tvRevenueChange, tvOrdersChange;
     private TextView tvDashRevenueToday, tvDashOrdersToday, tvDashNewCustomersToday, tvDashTop5Foods;
     private TextView tvCustomerTotal, tvCustomerNewRange, tvCustomerTopBuyer, tvCustomerFrequency;
+    private ScrollView scrollRevenue;
+    private android.view.View cardDashboardOverview;
+    private android.view.View cardRevenueReport;
+    private android.view.View cardCustomerStats;
     private BarChart barChartLast7Days;
 
     private SupabaseDbService dbService;
@@ -97,6 +108,13 @@ public class AdminRevenueActivity extends AppCompatActivity {
         // Default: today
         setToday();
         loadRevenue();
+        handleSectionNavigationIntent();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        AdminBottomNavHelper.setup(this, AdminBottomNavHelper.TAB_REVENUE);
     }
 
     private void initViews() {
@@ -148,10 +166,35 @@ public class AdminRevenueActivity extends AppCompatActivity {
         tvCustomerNewRange = findViewById(R.id.tvCustomerNewRange);
         tvCustomerTopBuyer = findViewById(R.id.tvCustomerTopBuyer);
         tvCustomerFrequency = findViewById(R.id.tvCustomerFrequency);
+        scrollRevenue = findViewById(R.id.scrollRevenue);
+        cardDashboardOverview = findViewById(R.id.cardDashboardOverview);
+        cardRevenueReport = findViewById(R.id.cardRevenueReport);
+        cardCustomerStats = findViewById(R.id.cardCustomerStats);
 
         topFoodAdapter = new TopFoodAdapter(this);
         rvTopFoods.setLayoutManager(new LinearLayoutManager(this));
         rvTopFoods.setAdapter(topFoodAdapter);
+    }
+
+    private void handleSectionNavigationIntent() {
+        String section = getIntent().getStringExtra(EXTRA_OPEN_SECTION);
+        if (section == null || scrollRevenue == null) {
+            return;
+        }
+
+        android.view.View target = null;
+        if (SECTION_DASHBOARD.equals(section)) {
+            target = cardDashboardOverview;
+        } else if (SECTION_REPORT.equals(section)) {
+            target = cardRevenueReport;
+        } else if (SECTION_CUSTOMER.equals(section)) {
+            target = cardCustomerStats;
+        }
+
+        if (target != null) {
+            android.view.View finalTarget = target;
+            scrollRevenue.post(() -> scrollRevenue.smoothScrollTo(0, finalTarget.getTop()));
+        }
     }
 
     private void setupListeners() {
