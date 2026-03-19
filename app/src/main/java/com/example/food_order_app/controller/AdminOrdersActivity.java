@@ -19,7 +19,7 @@ import com.example.food_order_app.adapter.AdminOrderAdapter;
 import com.example.food_order_app.model.Order;
 import com.example.food_order_app.network.RetrofitClient;
 import com.example.food_order_app.network.SupabaseDbService;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.example.food_order_app.utils.AdminBottomNavHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.text.Normalizer;
@@ -37,7 +37,6 @@ public class AdminOrdersActivity extends AppCompatActivity implements AdminOrder
     private EditText edtSearch;
     private ImageView btnSearch;
     private TextView tvEmpty, tvStats;
-    private BottomNavigationView bottomNav;
     private FloatingActionButton fabRevenue;
     private ImageView btnOrderStatistics;
     private Button btnStatusAll, btnStatusPending, btnStatusConfirmed, btnStatusDelivered, btnStatusCancelled;
@@ -60,7 +59,7 @@ public class AdminOrdersActivity extends AppCompatActivity implements AdminOrder
     @Override
     protected void onResume() {
         super.onResume();
-        bottomNav.setSelectedItemId(R.id.nav_admin_orders);
+        AdminBottomNavHelper.setup(this, AdminBottomNavHelper.TAB_ORDERS);
         loadOrders();
     }
 
@@ -70,7 +69,6 @@ public class AdminOrdersActivity extends AppCompatActivity implements AdminOrder
         btnSearch = findViewById(R.id.btnOrderSearch);
         tvEmpty = findViewById(R.id.tvOrderEmpty);
         tvStats = findViewById(R.id.tvOrderStats);
-        bottomNav = findViewById(R.id.adminBottomNav);
         btnStatusAll = findViewById(R.id.btnStatusAll);
         btnStatusPending = findViewById(R.id.btnStatusPending);
         btnStatusConfirmed = findViewById(R.id.btnStatusConfirmed);
@@ -116,27 +114,6 @@ public class AdminOrdersActivity extends AppCompatActivity implements AdminOrder
 
         btnOrderStatistics.setOnClickListener(v ->
                 startActivity(new Intent(this, AdminOrderStatisticsActivity.class)));
-
-        bottomNav.setOnItemSelectedListener(item -> {
-            int id = item.getItemId();
-            if (id == R.id.nav_admin_food) {
-                startActivity(new Intent(this, AdminHomeActivity.class));
-                overridePendingTransition(0, 0);
-                finish();
-                return true;
-            } else if (id == R.id.nav_admin_feedback) {
-                startActivity(new Intent(this, AdminFeedbackActivity.class));
-                overridePendingTransition(0, 0);
-                finish();
-                return true;
-            } else if (id == R.id.nav_admin_orders) {
-                return true;
-            } else if (id == R.id.nav_admin_account) {
-                startActivity(new Intent(this, ProfileActivity.class));
-                return true;
-            }
-            return false;
-        });
     }
 
     private void updateFilterUI() {

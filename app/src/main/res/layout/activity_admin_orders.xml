@@ -39,14 +39,28 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <ImageButton
-            android:id="@+id/btnOrderStatistics"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_chart"
-            android:contentDescription="Thống kê đơn hàng"
-            app:tint="@color/white" />
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/btnOrderStatistics"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_chart"
+                android:contentDescription="Thống kê đơn hàng"
+                app:tint="@color/white" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Thống kê đơn hàng"
+                android:textColor="@color/white"
+                android:textSize="10sp" />
+        </LinearLayout>
     </LinearLayout>
 
     <!-- Search bar -->
@@ -212,14 +226,12 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@id/adminBottomNav" />
 
-    <com.google.android.material.bottomnavigation.BottomNavigationView
+    <include
         android:id="@+id/adminBottomNav"
-        android:layout_width="match_parent"
+        layout="@layout/view_admin_bottom_nav_custom"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="@color/white"
-        app:itemIconTint="@color/bottom_nav_color"
-        app:itemTextColor="@color/bottom_nav_color"
-        app:labelVisibilityMode="labeled"
-        app:menu="@menu/admin_bottom_nav_menu"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

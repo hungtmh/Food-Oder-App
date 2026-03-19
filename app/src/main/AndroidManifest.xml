@@ -149,6 +149,11 @@
             android:name=".controller.AdminRevenueActivity"
             android:exported="false" />
 
+        <!-- Báo cáo & Thống kê (Nhóm 19) -->
+        <activity
+            android:name=".controller.AdminReportStatisticsActivity"
+            android:exported="false" />
+
         <!-- Thống kê đơn hàng -->
         <activity
             android:name=".controller.AdminOrderStatisticsActivity"

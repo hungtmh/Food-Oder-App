@@ -5,6 +5,14 @@
         android:icon="@drawable/ic_home"
         android:title="Đồ ăn" />
     <item
+        android:id="@+id/nav_admin_revenue"
+        android:icon="@drawable/ic_chart"
+        android:title="Doanh thu" />
+    <item
+        android:id="@+id/nav_admin_report"
+        android:icon="@drawable/ic_chart"
+        android:title="Báo cáo" />
+    <item
         android:id="@+id/nav_admin_feedback"
         android:icon="@drawable/ic_feedback"
         android:title="Phản hồi" />
@@ -13,7 +21,7 @@
         android:icon="@drawable/ic_cart"
         android:title="Đơn hàng" />
     <item
-        android:id="@+id/nav_admin_account"
+        android:id="@+id/nav_admin_profile"
         android:icon="@drawable/ic_person"
-        android:title="Tài khoản" />
+        android:title="Hồ sơ" />
 </menu>

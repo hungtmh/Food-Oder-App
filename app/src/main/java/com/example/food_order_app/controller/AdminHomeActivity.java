@@ -19,8 +19,8 @@ import com.example.food_order_app.adapter.AdminFoodAdapter;
 import com.example.food_order_app.model.Food;
 import com.example.food_order_app.network.RetrofitClient;
 import com.example.food_order_app.network.SupabaseDbService;
+import com.example.food_order_app.utils.AdminBottomNavHelper;
 import com.example.food_order_app.utils.SessionManager;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.text.Normalizer;
@@ -39,7 +39,6 @@ public class AdminHomeActivity extends AppCompatActivity implements AdminFoodAda
     private ImageView btnSearch, btnAIInsights;
     private TextView tvEmpty;
     private FloatingActionButton fabAdd;
-    private BottomNavigationView bottomNav;
     private Button btnFilterAll, btnFilterAvailable, btnFilterUnavailable, btnFilterPopular, btnFilterDiscount;
 
     private AdminFoodAdapter adapter;
@@ -63,7 +62,7 @@ public class AdminHomeActivity extends AppCompatActivity implements AdminFoodAda
     @Override
     protected void onResume() {
         super.onResume();
-        bottomNav.setSelectedItemId(R.id.nav_admin_food);
+        AdminBottomNavHelper.setup(this, AdminBottomNavHelper.TAB_FOOD);
         loadFoods();
     }
 
@@ -74,7 +73,6 @@ public class AdminHomeActivity extends AppCompatActivity implements AdminFoodAda
         btnAIInsights = findViewById(R.id.btnAIInsights);
         tvEmpty = findViewById(R.id.tvAdminEmpty);
         fabAdd = findViewById(R.id.fabAddFood);
-        bottomNav = findViewById(R.id.adminBottomNav);
 
         adapter = new AdminFoodAdapter(this, this);
         rvFoods.setLayoutManager(new LinearLayoutManager(this));
@@ -122,25 +120,6 @@ public class AdminHomeActivity extends AppCompatActivity implements AdminFoodAda
         btnFilterUnavailable.setOnClickListener(filterClick);
         btnFilterPopular.setOnClickListener(filterClick);
         btnFilterDiscount.setOnClickListener(filterClick);
-
-        bottomNav.setOnItemSelectedListener(item -> {
-            int id = item.getItemId();
-            if (id == R.id.nav_admin_food) {
-                return true;
-            } else if (id == R.id.nav_admin_feedback) {
-                startActivity(new Intent(this, AdminFeedbackActivity.class));
-                overridePendingTransition(0, 0);
-                return true;
-            } else if (id == R.id.nav_admin_orders) {
-                startActivity(new Intent(this, AdminOrdersActivity.class));
-                overridePendingTransition(0, 0);
-                return true;
-            } else if (id == R.id.nav_admin_account) {
-                startActivity(new Intent(this, ProfileActivity.class));
-                return true;
-            }
-            return false;
-        });
     }
 
     private void loadFoods() {

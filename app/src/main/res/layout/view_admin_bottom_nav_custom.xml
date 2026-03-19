@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/white"
+    android:orientation="vertical">
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/divider" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingTop="4dp"
+        android:paddingBottom="8dp">
+
+        <LinearLayout
+            android:id="@+id/navAdminFood"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_horizontal"
+            android:minHeight="52dp"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:id="@+id/navAdminFoodIconWrap"
+                android:layout_width="56dp"
+                android:layout_height="32dp">
+
+                <ImageView
+                    android:id="@+id/navAdminFoodIcon"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_home" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/navAdminFoodLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:maxLines="1"
+                android:text="Đồ ăn"
+                android:textColor="@color/text_hint"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/navAdminRevenue"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_horizontal"
+            android:minHeight="52dp"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:id="@+id/navAdminRevenueIconWrap"
+                android:layout_width="56dp"
+                android:layout_height="32dp">
+
+                <ImageView
+                    android:id="@+id/navAdminRevenueIcon"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_chart" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/navAdminRevenueLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:maxLines="1"
+                android:text="Doanh thu"
+                android:textColor="@color/text_hint"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/navAdminReport"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_horizontal"
+            android:minHeight="52dp"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:id="@+id/navAdminReportIconWrap"
+                android:layout_width="56dp"
+                android:layout_height="32dp">
+
+                <ImageView
+                    android:id="@+id/navAdminReportIcon"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_chart" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/navAdminReportLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:maxLines="1"
+                android:text="Báo cáo"
+                android:textColor="@color/text_hint"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/navAdminFeedback"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_horizontal"
+            android:minHeight="52dp"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:id="@+id/navAdminFeedbackIconWrap"
+                android:layout_width="56dp"
+                android:layout_height="32dp">
+
+                <ImageView
+                    android:id="@+id/navAdminFeedbackIcon"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_feedback" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/navAdminFeedbackLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:maxLines="1"
+                android:text="Phản hồi"
+                android:textColor="@color/text_hint"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/navAdminOrders"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_horizontal"
+            android:minHeight="52dp"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:id="@+id/navAdminOrdersIconWrap"
+                android:layout_width="56dp"
+                android:layout_height="32dp">
+
+                <ImageView
+                    android:id="@+id/navAdminOrdersIcon"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_cart" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/navAdminOrdersLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:maxLines="1"
+                android:text="Đơn hàng"
+                android:textColor="@color/text_hint"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/navAdminProfile"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_horizontal"
+            android:minHeight="52dp"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:id="@+id/navAdminProfileIconWrap"
+                android:layout_width="56dp"
+                android:layout_height="32dp">
+
+                <ImageView
+                    android:id="@+id/navAdminProfileIcon"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_person" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/navAdminProfileLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:maxLines="1"
+                android:text="Hồ sơ"
+                android:textColor="@color/text_hint"
+                android:textSize="10sp" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

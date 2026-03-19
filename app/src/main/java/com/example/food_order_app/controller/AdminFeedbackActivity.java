@@ -16,7 +16,7 @@ import com.example.food_order_app.adapter.AdminFeedbackAdapter;
 import com.example.food_order_app.model.Feedback;
 import com.example.food_order_app.network.RetrofitClient;
 import com.example.food_order_app.network.SupabaseDbService;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.example.food_order_app.utils.AdminBottomNavHelper;
 
 import java.util.List;
 
@@ -29,7 +29,6 @@ public class AdminFeedbackActivity extends AppCompatActivity implements AdminFee
     private RecyclerView rvFeedbacks;
     private TextView tvEmpty;
     private Button btnFilterAll, btnFilterUnread, btnFilterRead;
-    private BottomNavigationView bottomNav;
 
     private AdminFeedbackAdapter adapter;
     private SupabaseDbService dbService;
@@ -48,7 +47,7 @@ public class AdminFeedbackActivity extends AppCompatActivity implements AdminFee
     @Override
     protected void onResume() {
         super.onResume();
-        bottomNav.setSelectedItemId(R.id.nav_admin_feedback);
+        AdminBottomNavHelper.setup(this, AdminBottomNavHelper.TAB_FEEDBACK);
         loadFeedbacks();
     }
 
@@ -58,7 +57,6 @@ public class AdminFeedbackActivity extends AppCompatActivity implements AdminFee
         btnFilterAll = findViewById(R.id.btnFilterAll);
         btnFilterUnread = findViewById(R.id.btnFilterUnread);
         btnFilterRead = findViewById(R.id.btnFilterRead);
-        bottomNav = findViewById(R.id.adminBottomNav);
 
         adapter = new AdminFeedbackAdapter(this, this);
         rvFeedbacks.setLayoutManager(new LinearLayoutManager(this));
@@ -80,27 +78,6 @@ public class AdminFeedbackActivity extends AppCompatActivity implements AdminFee
             currentFilter = "read";
             updateFilterUI();
             loadFeedbacks();
-        });
-
-        bottomNav.setOnItemSelectedListener(item -> {
-            int id = item.getItemId();
-            if (id == R.id.nav_admin_food) {
-                startActivity(new Intent(this, AdminHomeActivity.class));
-                overridePendingTransition(0, 0);
-                finish();
-                return true;
-            } else if (id == R.id.nav_admin_feedback) {
-                return true;
-            } else if (id == R.id.nav_admin_orders) {
-                startActivity(new Intent(this, AdminOrdersActivity.class));
-                overridePendingTransition(0, 0);
-                finish();
-                return true;
-            } else if (id == R.id.nav_admin_account) {
-                startActivity(new Intent(this, ProfileActivity.class));
-                return true;
-            }
-            return false;
         });
     }
 
