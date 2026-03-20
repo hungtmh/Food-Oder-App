@@ -4,11 +4,15 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.food_order_app.R;
 import com.example.food_order_app.model.Category;
 
@@ -38,8 +42,8 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
     public void setSelectedPosition(int position) {
         int old = selectedPosition;
         selectedPosition = position;
-        notifyItemChanged(old);
-        notifyItemChanged(position);
+        if (old >= 0 && old < getItemCount()) notifyItemChanged(old);
+        if (position >= 0 && position < getItemCount()) notifyItemChanged(position);
     }
 
     @NonNull
@@ -53,19 +57,34 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
     public void onBindViewHolder(@NonNull CategoryViewHolder holder, int position) {
         Category cat = categories.get(position);
         holder.tvName.setText(cat.getName());
-        holder.tvName.setSelected(position == selectedPosition);
+        boolean isSelected = position == selectedPosition;
+        holder.tvName.setSelected(isSelected);
 
-        if (position == selectedPosition) {
-            holder.tvName.setBackgroundResource(R.drawable.bg_category_selected);
-            holder.tvName.setTextColor(context.getResources().getColor(android.R.color.white));
+        if (isSelected) {
+            holder.imgCategory.setBackgroundResource(R.drawable.bg_category_thumb_selected);
+            holder.tvName.setTextColor(ContextCompat.getColor(context, R.color.primary));
         } else {
-            holder.tvName.setBackgroundResource(R.drawable.bg_category_normal);
-            holder.tvName.setTextColor(context.getResources().getColor(R.color.text_primary));
+            holder.imgCategory.setBackgroundResource(R.drawable.bg_category_thumb_normal);
+            holder.tvName.setTextColor(ContextCompat.getColor(context, R.color.text_primary));
+        }
+
+        if (cat.getIconUrl() != null && !cat.getIconUrl().trim().isEmpty()) {
+            Glide.with(context)
+                    .load(cat.getIconUrl())
+                    .placeholder(R.drawable.placeholder_food)
+                    .error(R.drawable.placeholder_food)
+                    .into(holder.imgCategory);
+        } else {
+            Glide.with(context)
+                    .load(R.drawable.ic_placeholder)
+                    .into(holder.imgCategory);
         }
 
         holder.itemView.setOnClickListener(v -> {
-            setSelectedPosition(holder.getAdapterPosition());
-            if (listener != null) listener.onCategoryClick(cat, holder.getAdapterPosition());
+            int adapterPosition = holder.getBindingAdapterPosition();
+            if (adapterPosition == RecyclerView.NO_POSITION) return;
+            setSelectedPosition(adapterPosition);
+            if (listener != null) listener.onCategoryClick(cat, adapterPosition);
         });
     }
 
@@ -73,9 +92,13 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
     public int getItemCount() { return categories.size(); }
 
     static class CategoryViewHolder extends RecyclerView.ViewHolder {
+        LinearLayout layoutItem;
+        ImageView imgCategory;
         TextView tvName;
         CategoryViewHolder(@NonNull View itemView) {
             super(itemView);
+            layoutItem = itemView.findViewById(R.id.layoutCategoryItem);
+            imgCategory = itemView.findViewById(R.id.imgCategory);
             tvName = itemView.findViewById(R.id.tvCategoryName);
         }
     }
