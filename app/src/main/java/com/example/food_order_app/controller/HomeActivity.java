@@ -22,7 +22,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.example.food_order_app.R;
 import com.example.food_order_app.adapter.CategoryAdapter;
 import com.example.food_order_app.adapter.FoodAdapter;
-import com.example.food_order_app.adapter.PersonalizedFoodAdapter;
+import com.example.food_order_app.adapter.HotOfferFoodAdapter;
 import com.example.food_order_app.adapter.SliderAdapter;
 import com.example.food_order_app.model.Address;
 import com.example.food_order_app.model.Category;
@@ -52,6 +52,7 @@ public class HomeActivity extends AppCompatActivity {
     private LinearLayout dotsIndicator;
     private RecyclerView rvCategories, rvFoods;
     private RecyclerView rvMaybeLike;
+    private RecyclerView rvHotOffers;
     private BottomNavigationView bottomNav;
     private View searchBar;
     private View btnNotification;
@@ -61,13 +62,15 @@ public class HomeActivity extends AppCompatActivity {
     private LinearLayout layoutDeliveryAddress;
     private LinearLayout layoutError;
     private LinearLayout layoutMaybeLike;
+    private LinearLayout layoutHotOffers;
     private ScrollView scrollView;
     private Button btnRetry;
 
     private SliderAdapter sliderAdapter;
     private CategoryAdapter categoryAdapter;
     private FoodAdapter foodAdapter;
-    private PersonalizedFoodAdapter personalizedFoodAdapter;
+    private HotOfferFoodAdapter maybeLikeAdapter;
+    private HotOfferFoodAdapter hotOfferAdapter;
 
     private SupabaseDbService dbService;
     private SessionManager sessionManager;
@@ -100,6 +103,7 @@ public class HomeActivity extends AppCompatActivity {
         rvCategories = findViewById(R.id.rvCategories);
         rvFoods = findViewById(R.id.rvFoods);
         rvMaybeLike = findViewById(R.id.rvMaybeLike);
+        rvHotOffers = findViewById(R.id.rvHotOffers);
         bottomNav = findViewById(R.id.bottomNav);
         searchBar = findViewById(R.id.searchBar);
         btnNotification = findViewById(R.id.btnNotification);
@@ -109,6 +113,7 @@ public class HomeActivity extends AppCompatActivity {
         tvDefaultAddress = findViewById(R.id.tvDefaultAddress);
         layoutError = findViewById(R.id.layoutError);
         layoutMaybeLike = findViewById(R.id.layoutMaybeLike);
+        layoutHotOffers = findViewById(R.id.layoutHotOffers);
         scrollView = findViewById(R.id.scrollView);
         btnRetry = findViewById(R.id.btnRetry);
 
@@ -157,8 +162,8 @@ public class HomeActivity extends AppCompatActivity {
 
     private void setupAdapters() {
         // Slider
-        sliderAdapter = new SliderAdapter(this, food -> {
-            openFoodDetail(food);
+        sliderAdapter = new SliderAdapter(this, bannerResId -> {
+            startActivity(new Intent(this, SearchActivity.class));
         });
         viewPagerSlider.setAdapter(sliderAdapter);
         viewPagerSlider.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
@@ -193,10 +198,14 @@ public class HomeActivity extends AppCompatActivity {
         rvFoods.setLayoutManager(new GridLayoutManager(this, 2));
         rvFoods.setAdapter(foodAdapter);
 
-        // Personalized foods horizontal list
-        personalizedFoodAdapter = new PersonalizedFoodAdapter(this, food -> openFoodDetail(food));
+        // Maybe like foods horizontal list
+        maybeLikeAdapter = new HotOfferFoodAdapter(this, food -> openFoodDetail(food));
         rvMaybeLike.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        rvMaybeLike.setAdapter(personalizedFoodAdapter);
+        rvMaybeLike.setAdapter(maybeLikeAdapter);
+
+        hotOfferAdapter = new HotOfferFoodAdapter(this, food -> openFoodDetail(food));
+        rvHotOffers.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        rvHotOffers.setAdapter(hotOfferAdapter);
     }
 
     private int loadFailCount = 0;
@@ -229,10 +238,52 @@ public class HomeActivity extends AppCompatActivity {
             Toast.makeText(this, "Không có kết nối mạng. Vui lòng kiểm tra WiFi/Data.", Toast.LENGTH_LONG).show();
             return;
         }
-        loadPopularFoods();
+        loadSystemBanners();
         loadCategories();
         loadRecommendedFoods();
         loadMaybeLikeFoods();
+        loadHotOffers();
+    }
+
+    private void loadHotOffers() {
+        if (recommendedFoodsCache != null && !recommendedFoodsCache.isEmpty()) {
+            applyHotOffersFromList(recommendedFoodsCache);
+            return;
+        }
+
+        dbService.getAllFoods("eq.true", "created_at.desc").enqueue(new Callback<List<Food>>() {
+            @Override
+            public void onResponse(Call<List<Food>> call, Response<List<Food>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    applyHotOffersFromList(response.body());
+                } else {
+                    layoutHotOffers.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Food>> call, Throwable t) {
+                layoutHotOffers.setVisibility(View.GONE);
+            }
+        });
+    }
+
+    private void applyHotOffersFromList(List<Food> source) {
+        List<Food> discounted = new ArrayList<>();
+        for (Food food : source) {
+            if (food.getDiscountPercent() > 0) {
+                discounted.add(food);
+            }
+        }
+
+        if (discounted.isEmpty()) {
+            layoutHotOffers.setVisibility(View.GONE);
+            return;
+        }
+
+        int limit = Math.min(10, discounted.size());
+        hotOfferAdapter.setFoods(discounted.subList(0, limit));
+        layoutHotOffers.setVisibility(View.VISIBLE);
     }
 
     private void loadMaybeLikeFoods() {
@@ -322,7 +373,7 @@ public class HomeActivity extends AppCompatActivity {
             return;
         }
 
-        personalizedFoodAdapter.setFoods(foods);
+        maybeLikeAdapter.setFoods(foods);
         layoutMaybeLike.setVisibility(View.VISIBLE);
     }
 
@@ -333,7 +384,7 @@ public class HomeActivity extends AppCompatActivity {
             for (int i = 0; i < limit; i++) {
                 fallback.add(recommendedFoodsCache.get(i));
             }
-            personalizedFoodAdapter.setFoods(fallback);
+            maybeLikeAdapter.setFoods(fallback);
             layoutMaybeLike.setVisibility(View.VISIBLE);
             return;
         }
@@ -344,7 +395,7 @@ public class HomeActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
                     List<Food> fallback = response.body();
                     int limit = Math.min(10, fallback.size());
-                    personalizedFoodAdapter.setFoods(fallback.subList(0, limit));
+                    maybeLikeAdapter.setFoods(fallback.subList(0, limit));
                     layoutMaybeLike.setVisibility(View.VISIBLE);
                 } else {
                     layoutMaybeLike.setVisibility(View.GONE);
@@ -358,34 +409,13 @@ public class HomeActivity extends AppCompatActivity {
         });
     }
 
-    private void loadPopularFoods() {
-        dbService.getPopularFoods("eq.true", "eq.true").enqueue(new Callback<List<Food>>() {
-            @Override
-            public void onResponse(Call<List<Food>> call, Response<List<Food>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    List<Food> foods = response.body();
-                    Log.d(TAG, "loadPopularFoods: " + foods.size() + " items");
-                    sliderAdapter.setFoods(foods);
-                    setupDots(foods.size());
-                    startAutoSlide(foods.size());
-                } else if (!response.isSuccessful()) {
-                    try {
-                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "null";
-                        Log.e(TAG, "loadPopularFoods HTTP " + response.code() + ": " + errorBody);
-                    } catch (Exception e) {
-                        Log.e(TAG, "loadPopularFoods HTTP " + response.code());
-                    }
-                } else {
-                    Log.w(TAG, "loadPopularFoods: body null");
-                }
-            }
-
-            @Override
-            public void onFailure(Call<List<Food>> call, Throwable t) {
-                Log.e(TAG, "loadPopularFoods failed: " + t.getMessage());
-                onLoadFailed();
-            }
-        });
+    private void loadSystemBanners() {
+        List<Integer> banners = new ArrayList<>();
+        banners.add(R.drawable.spring);
+        banners.add(R.drawable.summer);
+        sliderAdapter.setBanners(banners);
+        setupDots(banners.size());
+        startAutoSlide(banners.size());
     }
 
     private void loadCategories() {
@@ -431,6 +461,7 @@ public class HomeActivity extends AppCompatActivity {
                     recommendedFoodsCache = response.body();
                     foodAdapter.setFoods(response.body());
                     applyCategoryThumbnails();
+                    loadHotOffers();
                 } else if (!response.isSuccessful()) {
                     try {
                         String errorBody = response.errorBody() != null ? response.errorBody().string() : "null";
@@ -638,6 +669,7 @@ public class HomeActivity extends AppCompatActivity {
         loadUnreadNotificationCount();
         loadDeliveryAddress();
         loadMaybeLikeFoods();
+        loadHotOffers();
     }
 
     @Override

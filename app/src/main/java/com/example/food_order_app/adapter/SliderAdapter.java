@@ -13,18 +13,17 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CenterCrop;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.example.food_order_app.R;
-import com.example.food_order_app.model.Food;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class SliderAdapter extends RecyclerView.Adapter<SliderAdapter.SliderViewHolder> {
-    private List<Food> popularFoods = new ArrayList<>();
+    private List<Integer> bannerResIds = new ArrayList<>();
     private final Context context;
     private OnSliderClickListener listener;
 
     public interface OnSliderClickListener {
-        void onSliderClick(Food food);
+        void onSliderClick(int bannerResId);
     }
 
     public SliderAdapter(Context context, OnSliderClickListener listener) {
@@ -32,8 +31,8 @@ public class SliderAdapter extends RecyclerView.Adapter<SliderAdapter.SliderView
         this.listener = listener;
     }
 
-    public void setFoods(List<Food> foods) {
-        this.popularFoods = foods;
+    public void setBanners(List<Integer> banners) {
+        this.bannerResIds = banners;
         notifyDataSetChanged();
     }
 
@@ -46,18 +45,18 @@ public class SliderAdapter extends RecyclerView.Adapter<SliderAdapter.SliderView
 
     @Override
     public void onBindViewHolder(@NonNull SliderViewHolder holder, int position) {
-        Food food = popularFoods.get(position);
+        int bannerResId = bannerResIds.get(position);
         Glide.with(context)
-                .load(food.getImageUrl())
+                .load(bannerResId)
                 .transform(new CenterCrop(), new RoundedCorners(24))
                 .into(holder.imgSlider);
         holder.itemView.setOnClickListener(v -> {
-            if (listener != null) listener.onSliderClick(food);
+            if (listener != null) listener.onSliderClick(bannerResId);
         });
     }
 
     @Override
-    public int getItemCount() { return popularFoods.size(); }
+    public int getItemCount() { return bannerResIds.size(); }
 
     static class SliderViewHolder extends RecyclerView.ViewHolder {
         ImageView imgSlider;
