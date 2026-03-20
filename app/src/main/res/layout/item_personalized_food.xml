@@ -1,31 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/layoutCategoryItem"
-    android:layout_width="wrap_content"
+    android:layout_width="130dp"
     android:layout_height="wrap_content"
-    android:layout_marginEnd="16dp"
-    android:gravity="center_horizontal"
+    android:layout_marginEnd="10dp"
     android:orientation="vertical"
-    android:paddingHorizontal="2dp"
-    android:paddingVertical="4dp">
+    android:background="@drawable/bg_category_normal"
+    android:padding="8dp">
 
     <ImageView
-        android:id="@+id/imgCategory"
-        android:layout_width="52dp"
-        android:layout_height="52dp"
+        android:id="@+id/imgFood"
+        android:layout_width="match_parent"
+        android:layout_height="78dp"
         android:background="@drawable/bg_category_thumb_normal"
         android:clipToOutline="true"
-        android:padding="2dp"
         android:scaleType="centerCrop" />
 
     <TextView
-        android:id="@+id/tvCategoryName"
-        android:layout_width="wrap_content"
+        android:id="@+id/tvFoodName"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
-        android:maxLines="1"
+        android:maxLines="2"
+        android:ellipsize="end"
         android:textColor="@color/text_primary"
         android:textSize="12sp"
         android:textStyle="bold" />
-
 </LinearLayout>

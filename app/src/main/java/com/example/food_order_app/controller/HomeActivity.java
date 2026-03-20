@@ -22,16 +22,24 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.example.food_order_app.R;
 import com.example.food_order_app.adapter.CategoryAdapter;
 import com.example.food_order_app.adapter.FoodAdapter;
+import com.example.food_order_app.adapter.PersonalizedFoodAdapter;
 import com.example.food_order_app.adapter.SliderAdapter;
+import com.example.food_order_app.model.Address;
 import com.example.food_order_app.model.Category;
 import com.example.food_order_app.model.Food;
+import com.example.food_order_app.model.SearchHistory;
 import com.example.food_order_app.network.RetrofitClient;
 import com.example.food_order_app.network.SupabaseDbService;
 import com.example.food_order_app.utils.SessionManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -43,17 +51,23 @@ public class HomeActivity extends AppCompatActivity {
     private ViewPager2 viewPagerSlider;
     private LinearLayout dotsIndicator;
     private RecyclerView rvCategories, rvFoods;
+    private RecyclerView rvMaybeLike;
     private BottomNavigationView bottomNav;
     private View searchBar;
     private View btnNotification;
+    private View btnFavorites;
     private android.widget.TextView tvNotifBadge;
+    private android.widget.TextView tvDefaultAddress;
+    private LinearLayout layoutDeliveryAddress;
     private LinearLayout layoutError;
+    private LinearLayout layoutMaybeLike;
     private ScrollView scrollView;
     private Button btnRetry;
 
     private SliderAdapter sliderAdapter;
     private CategoryAdapter categoryAdapter;
     private FoodAdapter foodAdapter;
+    private PersonalizedFoodAdapter personalizedFoodAdapter;
 
     private SupabaseDbService dbService;
     private SessionManager sessionManager;
@@ -63,6 +77,7 @@ public class HomeActivity extends AppCompatActivity {
     private int currentSliderPage = 0;
 
     private List<Category> categories = new ArrayList<>();
+    private List<Food> recommendedFoodsCache = new ArrayList<>();
     private String selectedCategoryId = null;
 
     @Override
@@ -75,6 +90,7 @@ public class HomeActivity extends AppCompatActivity {
 
         initViews();
         setupAdapters();
+        loadDeliveryAddress();
         loadData();
     }
 
@@ -83,11 +99,16 @@ public class HomeActivity extends AppCompatActivity {
         dotsIndicator = findViewById(R.id.dotsIndicator);
         rvCategories = findViewById(R.id.rvCategories);
         rvFoods = findViewById(R.id.rvFoods);
+        rvMaybeLike = findViewById(R.id.rvMaybeLike);
         bottomNav = findViewById(R.id.bottomNav);
         searchBar = findViewById(R.id.searchBar);
         btnNotification = findViewById(R.id.btnNotification);
+        btnFavorites = findViewById(R.id.btnFavorites);
         tvNotifBadge = findViewById(R.id.tvNotifBadge);
+        layoutDeliveryAddress = findViewById(R.id.layoutDeliveryAddress);
+        tvDefaultAddress = findViewById(R.id.tvDefaultAddress);
         layoutError = findViewById(R.id.layoutError);
+        layoutMaybeLike = findViewById(R.id.layoutMaybeLike);
         scrollView = findViewById(R.id.scrollView);
         btnRetry = findViewById(R.id.btnRetry);
 
@@ -95,8 +116,16 @@ public class HomeActivity extends AppCompatActivity {
             startActivity(new Intent(this, SearchActivity.class));
         });
 
+        btnFavorites.setOnClickListener(v -> {
+            startActivity(new Intent(this, FavoritesActivity.class));
+        });
+
         btnNotification.setOnClickListener(v -> {
             startActivity(new Intent(this, NotificationsActivity.class));
+        });
+
+        layoutDeliveryAddress.setOnClickListener(v -> {
+            openAddressSelector();
         });
 
         btnRetry.setOnClickListener(v -> {
@@ -144,7 +173,11 @@ public class HomeActivity extends AppCompatActivity {
         categoryAdapter = new CategoryAdapter(this, (category, position) -> {
             if (position == 0) {
                 selectedCategoryId = null;
-                loadRecommendedFoods();
+                if (recommendedFoodsCache != null && !recommendedFoodsCache.isEmpty()) {
+                    foodAdapter.setFoods(recommendedFoodsCache);
+                } else {
+                    loadRecommendedFoods();
+                }
             } else {
                 selectedCategoryId = category.getId();
                 loadFoodsByCategory(category.getId());
@@ -159,6 +192,11 @@ public class HomeActivity extends AppCompatActivity {
         });
         rvFoods.setLayoutManager(new GridLayoutManager(this, 2));
         rvFoods.setAdapter(foodAdapter);
+
+        // Personalized foods horizontal list
+        personalizedFoodAdapter = new PersonalizedFoodAdapter(this, food -> openFoodDetail(food));
+        rvMaybeLike.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        rvMaybeLike.setAdapter(personalizedFoodAdapter);
     }
 
     private int loadFailCount = 0;
@@ -194,6 +232,130 @@ public class HomeActivity extends AppCompatActivity {
         loadPopularFoods();
         loadCategories();
         loadRecommendedFoods();
+        loadMaybeLikeFoods();
+    }
+
+    private void loadMaybeLikeFoods() {
+        if (!sessionManager.isLoggedIn()) {
+            showMaybeLikeFallback();
+            return;
+        }
+
+        String userId = sessionManager.getUserId();
+        if (userId == null) {
+            showMaybeLikeFallback();
+            return;
+        }
+
+        dbService.getSearchHistory("eq." + userId, "created_at.desc", 6)
+                .enqueue(new Callback<List<SearchHistory>>() {
+                    @Override
+                    public void onResponse(Call<List<SearchHistory>> call, Response<List<SearchHistory>> response) {
+                        if (!response.isSuccessful() || response.body() == null || response.body().isEmpty()) {
+                            showMaybeLikeFallback();
+                            return;
+                        }
+
+                        List<String> keywords = new ArrayList<>();
+                        Set<String> seen = new HashSet<>();
+                        for (SearchHistory item : response.body()) {
+                            String keyword = item.getKeyword() != null ? item.getKeyword().trim() : "";
+                            if (!keyword.isEmpty() && !seen.contains(keyword)) {
+                                seen.add(keyword);
+                                keywords.add(keyword);
+                            }
+                            if (keywords.size() >= 3) break;
+                        }
+
+                        if (keywords.isEmpty()) {
+                            showMaybeLikeFallback();
+                            return;
+                        }
+
+                        fetchFoodsByKeywords(keywords);
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<SearchHistory>> call, Throwable t) {
+                        Log.e(TAG, "loadMaybeLikeFoods history failed: " + t.getMessage());
+                        showMaybeLikeFallback();
+                    }
+                });
+    }
+
+    private void fetchFoodsByKeywords(List<String> keywords) {
+        final LinkedHashMap<String, Food> merged = new LinkedHashMap<>();
+        final int[] remaining = {keywords.size()};
+
+        for (String keyword : keywords) {
+            dbService.searchFoods("ilike.*" + keyword + "*", "eq.true")
+                    .enqueue(new Callback<List<Food>>() {
+                        @Override
+                        public void onResponse(Call<List<Food>> call, Response<List<Food>> response) {
+                            if (response.isSuccessful() && response.body() != null) {
+                                for (Food food : response.body()) {
+                                    if (food.getId() != null && !merged.containsKey(food.getId())) {
+                                        merged.put(food.getId(), food);
+                                    }
+                                    if (merged.size() >= 10) break;
+                                }
+                            }
+                            onKeywordDone(merged, remaining);
+                        }
+
+                        @Override
+                        public void onFailure(Call<List<Food>> call, Throwable t) {
+                            Log.e(TAG, "fetchFoodsByKeywords failed: " + t.getMessage());
+                            onKeywordDone(merged, remaining);
+                        }
+                    });
+        }
+    }
+
+    private void onKeywordDone(LinkedHashMap<String, Food> merged, int[] remaining) {
+        remaining[0]--;
+        if (remaining[0] > 0) return;
+
+        List<Food> foods = new ArrayList<>(merged.values());
+        if (foods.isEmpty()) {
+            showMaybeLikeFallback();
+            return;
+        }
+
+        personalizedFoodAdapter.setFoods(foods);
+        layoutMaybeLike.setVisibility(View.VISIBLE);
+    }
+
+    private void showMaybeLikeFallback() {
+        if (recommendedFoodsCache != null && !recommendedFoodsCache.isEmpty()) {
+            List<Food> fallback = new ArrayList<>();
+            int limit = Math.min(10, recommendedFoodsCache.size());
+            for (int i = 0; i < limit; i++) {
+                fallback.add(recommendedFoodsCache.get(i));
+            }
+            personalizedFoodAdapter.setFoods(fallback);
+            layoutMaybeLike.setVisibility(View.VISIBLE);
+            return;
+        }
+
+        dbService.getRecommendedFoods("eq.true", "eq.true").enqueue(new Callback<List<Food>>() {
+            @Override
+            public void onResponse(Call<List<Food>> call, Response<List<Food>> response) {
+                if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                    List<Food> fallback = response.body();
+                    int limit = Math.min(10, fallback.size());
+                    personalizedFoodAdapter.setFoods(fallback.subList(0, limit));
+                    layoutMaybeLike.setVisibility(View.VISIBLE);
+                } else {
+                    layoutMaybeLike.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Food>> call, Throwable t) {
+                layoutMaybeLike.setVisibility(View.GONE);
+            }
+        });
     }
 
     private void loadPopularFoods() {
@@ -239,13 +401,7 @@ public class HomeActivity extends AppCompatActivity {
                         }
                     }
                     Log.d(TAG, "loadCategories: " + categories.size() + " items");
-                    // Add "Tất cả" at beginning
-                    Category all = new Category();
-                    all.setName("Tất cả");
-                    List<Category> withAll = new ArrayList<>();
-                    withAll.add(all);
-                    withAll.addAll(categories);
-                    categoryAdapter.setCategories(withAll);
+                    applyCategoryThumbnails();
                 } else if (!response.isSuccessful()) {
                     try {
                         String errorBody = response.errorBody() != null ? response.errorBody().string() : "null";
@@ -267,30 +423,69 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void loadRecommendedFoods() {
-        dbService.getRecommendedFoods("eq.true", "eq.true").enqueue(new Callback<List<Food>>() {
+        dbService.getAllFoods("eq.true", "created_at.desc").enqueue(new Callback<List<Food>>() {
             @Override
             public void onResponse(Call<List<Food>> call, Response<List<Food>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    Log.d(TAG, "loadRecommendedFoods: " + response.body().size() + " items");
+                    Log.d(TAG, "loadAllFoodsForAllCategory: " + response.body().size() + " items");
+                    recommendedFoodsCache = response.body();
                     foodAdapter.setFoods(response.body());
+                    applyCategoryThumbnails();
                 } else if (!response.isSuccessful()) {
                     try {
                         String errorBody = response.errorBody() != null ? response.errorBody().string() : "null";
-                        Log.e(TAG, "loadRecommendedFoods HTTP " + response.code() + ": " + errorBody);
+                        Log.e(TAG, "loadAllFoodsForAllCategory HTTP " + response.code() + ": " + errorBody);
                     } catch (Exception e) {
-                        Log.e(TAG, "loadRecommendedFoods HTTP " + response.code());
+                        Log.e(TAG, "loadAllFoodsForAllCategory HTTP " + response.code());
                     }
                 } else {
-                    Log.w(TAG, "loadRecommendedFoods: body null");
+                    Log.w(TAG, "loadAllFoodsForAllCategory: body null");
                 }
             }
 
             @Override
             public void onFailure(Call<List<Food>> call, Throwable t) {
-                Log.e(TAG, "loadRecommendedFoods failed: " + t.getMessage());
+                Log.e(TAG, "loadAllFoodsForAllCategory failed: " + t.getMessage());
                 onLoadFailed();
             }
         });
+    }
+
+    private void applyCategoryThumbnails() {
+        if (categories == null || categories.isEmpty()) return;
+
+        Map<String, String> thumbByCategory = new HashMap<>();
+        if (recommendedFoodsCache != null) {
+            for (Food food : recommendedFoodsCache) {
+                if (food.getCategoryId() == null || food.getImageUrl() == null || food.getImageUrl().trim().isEmpty()) {
+                    continue;
+                }
+                if (!thumbByCategory.containsKey(food.getCategoryId())) {
+                    thumbByCategory.put(food.getCategoryId(), food.getImageUrl());
+                }
+            }
+        }
+
+        Category all = new Category();
+        all.setName("Tất cả");
+        if (recommendedFoodsCache != null && !recommendedFoodsCache.isEmpty()) {
+            String allThumb = recommendedFoodsCache.get(0).getImageUrl();
+            if (allThumb != null && !allThumb.trim().isEmpty()) {
+                all.setIconUrl(allThumb);
+            }
+        }
+
+        List<Category> withAll = new ArrayList<>();
+        withAll.add(all);
+        for (Category c : categories) {
+            String thumb = thumbByCategory.get(c.getId());
+            if (thumb != null && !thumb.trim().isEmpty()) {
+                c.setIconUrl(thumb);
+            }
+            withAll.add(c);
+        }
+
+        categoryAdapter.setCategories(withAll);
     }
 
     private void loadFoodsByCategory(String categoryId) {
@@ -323,6 +518,57 @@ public class HomeActivity extends AppCompatActivity {
         Intent intent = new Intent(this, FoodDetailActivity.class);
         intent.putExtra("food_id", food.getId());
         startActivity(intent);
+    }
+
+    private void loadDeliveryAddress() {
+        String userId = sessionManager.getUserId();
+        if (userId == null) {
+            tvDefaultAddress.setText("Thêm địa chỉ giao hàng");
+            return;
+        }
+
+        dbService.getAddresses("eq." + userId, "is_default.desc,created_at.asc")
+                .enqueue(new Callback<List<Address>>() {
+                    @Override
+                    public void onResponse(Call<List<Address>> call, Response<List<Address>> response) {
+                        if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                            List<Address> addresses = response.body();
+                            // Find the default address
+                            Address defaultAddr = null;
+                            for (Address addr : addresses) {
+                                if (addr.isDefault()) {
+                                    defaultAddr = addr;
+                                    break;
+                                }
+                            }
+                            
+                            // If no default found, use the first one
+                            if (defaultAddr == null && !addresses.isEmpty()) {
+                                defaultAddr = addresses.get(0);
+                            }
+                            
+                            if (defaultAddr != null) {
+                                tvDefaultAddress.setText(defaultAddr.getAddress());
+                            } else {
+                                tvDefaultAddress.setText("Thêm địa chỉ giao hàng");
+                            }
+                        } else {
+                            tvDefaultAddress.setText("Thêm địa chỉ giao hàng");
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<Address>> call, Throwable t) {
+                        Log.e(TAG, "loadDeliveryAddress failed: " + t.getMessage());
+                        tvDefaultAddress.setText("Thêm địa chỉ giao hàng");
+                    }
+                });
+    }
+
+    private void openAddressSelector() {
+        Intent intent = new Intent(this, AddressActivity.class);
+        intent.putExtra(AddressActivity.EXTRA_PICK_MODE, true);
+        startActivityForResult(intent, 100);
     }
 
     private void loadUnreadNotificationCount() {
@@ -390,11 +636,22 @@ public class HomeActivity extends AppCompatActivity {
             sliderHandler.postDelayed(sliderRunnable, 3000);
         }
         loadUnreadNotificationCount();
+        loadDeliveryAddress();
+        loadMaybeLikeFoods();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         sliderHandler.removeCallbacks(sliderRunnable);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 100 && resultCode == RESULT_OK && data != null) {
+            // Address was selected, refresh the delivery address display
+            loadDeliveryAddress();
+        }
     }
 }
