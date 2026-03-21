@@ -9,6 +9,7 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.Toast;
@@ -19,6 +20,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DecodeFormat;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.food_order_app.R;
 import com.example.food_order_app.adapter.CategoryAdapter;
 import com.example.food_order_app.adapter.FoodAdapter;
@@ -65,6 +69,7 @@ public class HomeActivity extends AppCompatActivity {
     private LinearLayout layoutHotOffers;
     private ScrollView scrollView;
     private Button btnRetry;
+    private ImageView imgWaveBackground;
 
     private SliderAdapter sliderAdapter;
     private CategoryAdapter categoryAdapter;
@@ -116,6 +121,15 @@ public class HomeActivity extends AppCompatActivity {
         layoutHotOffers = findViewById(R.id.layoutHotOffers);
         scrollView = findViewById(R.id.scrollView);
         btnRetry = findViewById(R.id.btnRetry);
+        imgWaveBackground = findViewById(R.id.imgWaveBackground);
+
+        // Load wave background via Glide to avoid "too large bitmap" crash
+        Glide.with(this)
+                .load(R.drawable.wave)
+                .apply(new RequestOptions()
+                        .override(1080, 500)
+                        .format(DecodeFormat.PREFER_RGB_565))
+                .into(imgWaveBackground);
 
         searchBar.setOnClickListener(v -> {
             startActivity(new Intent(this, SearchActivity.class));

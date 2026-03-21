@@ -17,4 +17,7 @@ public class SupabaseConfig {
 
     // Auth API base URL
     public static final String AUTH_URL = SUPABASE_URL + "/auth/v1/";
+
+    // Storage API base URL
+    public static final String STORAGE_URL = SUPABASE_URL + "/storage/v1/";
 }
