@@ -40,6 +40,18 @@
         </LinearLayout>
 
         <ImageView
+            android:id="@+id/btnSendNotif"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_notification"
+            android:contentDescription="Gửi thông báo"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:tint="@color/white" />
+
+        <ImageView
             android:id="@+id/btnAIInsights"
             android:layout_width="40dp"
             android:layout_height="40dp"

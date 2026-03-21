@@ -159,6 +159,11 @@
             android:name=".controller.AdminOrderStatisticsActivity"
             android:exported="false" />
 
+        <!-- Gửi thông báo cho hệ thống -->
+        <activity
+            android:name=".controller.AdminSendNotificationActivity"
+            android:exported="false" />
+
         <!-- ==================== AI FEATURES ==================== -->
 
         <!-- AI Dashboard -->

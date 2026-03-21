@@ -79,3 +79,24 @@ SELECT
     ROUND(AVG(sentiment_score), 2) as avg_sentiment_score
 FROM public.reviews
 WHERE sentiment IS NOT NULL;
+
+-- ============================================
+-- RPC FUNCTION: Send Broadcast Notifications
+-- ============================================
+CREATE OR REPLACE FUNCTION public.send_broadcast_notification(title TEXT, message TEXT)
+RETURNS JSON AS $$
+DECLARE
+    v_count INT;
+BEGIN
+    -- Insert notification for all users
+    INSERT INTO public.notifications (user_id, title, message, is_read)
+    SELECT id, title, message, false
+    FROM public.users
+    WHERE id IS NOT NULL;
+    
+    GET DIAGNOSTICS v_count = ROW_COUNT;
+    
+    RETURN json_build_object('count', v_count, 'status', 'success');
+END;
+$$ LANGUAGE plpgsql;
+

@@ -299,6 +299,10 @@ public interface SupabaseDbService {
             @Query("is_read") String isReadFilter,
             @Query("select") String select);
 
+    @Headers("Prefer: return=representation")
+    @POST("rpc/send_broadcast_notification")
+    Call<Map<String, Object>> sendBroadcastNotification(@Body Map<String, Object> payload);
+
     // ==================== ADMIN: REVENUE & STATISTICS ====================
     @GET("orders")
     Call<List<Order>> getOrdersByDateRange(
