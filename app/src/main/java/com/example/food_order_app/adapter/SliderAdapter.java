@@ -10,8 +10,10 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DecodeFormat;
 import com.bumptech.glide.load.resource.bitmap.CenterCrop;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.food_order_app.R;
 
 import java.util.ArrayList;
@@ -48,6 +50,9 @@ public class SliderAdapter extends RecyclerView.Adapter<SliderAdapter.SliderView
         int bannerResId = bannerResIds.get(position);
         Glide.with(context)
                 .load(bannerResId)
+                .apply(new RequestOptions()
+                        .override(1080, 600)
+                        .format(DecodeFormat.PREFER_RGB_565))
                 .transform(new CenterCrop(), new RoundedCorners(24))
                 .into(holder.imgSlider);
         holder.itemView.setOnClickListener(v -> {

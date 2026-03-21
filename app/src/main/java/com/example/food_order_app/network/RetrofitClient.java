@@ -19,6 +19,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class RetrofitClient {
     private static Retrofit authRetrofit = null;
     private static Retrofit dbRetrofit = null;
+    private static Retrofit storageRetrofit = null;
 
     /**
      * Tạo OkHttpClient với interceptor thêm apikey header
@@ -90,5 +91,55 @@ public class RetrofitClient {
      */
     public static SupabaseDbService getDbService() {
         return getDbClient().create(SupabaseDbService.class);
+    }
+
+    /**
+     * Tạo OkHttpClient cho Storage API (KHÔNG set Content-Type: application/json)
+     */
+    private static OkHttpClient createStorageClient() {
+        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+
+        return new OkHttpClient.Builder()
+                .addInterceptor(new Interceptor() {
+                    @Override
+                    public Response intercept(Chain chain) throws IOException {
+                        Request original = chain.request();
+                        Request.Builder builder = original.newBuilder()
+                                .header("apikey", SupabaseConfig.SUPABASE_ANON_KEY);
+                        // Do NOT override Content-Type — let Retrofit/caller set it
+                        if (original.header("Authorization") == null) {
+                            builder.header("Authorization", "Bearer " + SupabaseConfig.SUPABASE_ANON_KEY);
+                        }
+                        Request request = builder.method(original.method(), original.body()).build();
+                        return chain.proceed(request);
+                    }
+                })
+                .addInterceptor(logging)
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .writeTimeout(30, TimeUnit.SECONDS)
+                .build();
+    }
+
+    /**
+     * Lấy Retrofit instance cho Storage API
+     */
+    public static synchronized Retrofit getStorageClient() {
+        if (storageRetrofit == null) {
+            storageRetrofit = new Retrofit.Builder()
+                    .baseUrl(SupabaseConfig.STORAGE_URL)
+                    .client(createStorageClient())
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
+        }
+        return storageRetrofit;
+    }
+
+    /**
+     * Lấy SupabaseStorageService
+     */
+    public static SupabaseStorageService getStorageService() {
+        return getStorageClient().create(SupabaseStorageService.class);
     }
 }
