@@ -52,12 +52,33 @@
             android:numStars="5"
             android:stepSize="1" />
 
+        <!-- Review title -->
+        <TextView
+            android:id="@+id/tvReviewTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
         <TextView
             android:id="@+id/tvReviewComment"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="4dp"
             android:textColor="@color/text_secondary"
             android:textSize="13sp" />
+
+        <!-- Review image -->
+        <ImageView
+            android:id="@+id/imgReviewPhoto"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_marginTop="8dp"
+            android:scaleType="centerCrop"
+            android:visibility="gone"
+            android:background="@drawable/bg_card" />
     </LinearLayout>
 </LinearLayout>

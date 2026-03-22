@@ -23,11 +23,24 @@
         android:rating="5"
         android:stepSize="1" />
 
+    <!-- Review title -->
+    <EditText
+        android:id="@+id/etDialogTitle"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/bg_edit_text"
+        android:hint="Tiêu đề đánh giá (tùy chọn)"
+        android:inputType="text"
+        android:paddingHorizontal="16dp"
+        android:textSize="14sp" />
+
+    <!-- Comment -->
     <EditText
         android:id="@+id/etDialogComment"
         android:layout_width="match_parent"
         android:layout_height="100dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="12dp"
         android:background="@drawable/bg_edit_text"
         android:gravity="top"
         android:hint="Nhập nhận xét của bạn..."
@@ -35,4 +48,43 @@
         android:paddingHorizontal="16dp"
         android:paddingTop="12dp"
         android:textSize="14sp" />
+
+    <!-- Add image section -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btnAddReviewImage"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_button_outline"
+            android:text="📷 Thêm ảnh"
+            android:textAllCaps="false"
+            android:textColor="@color/primary"
+            android:textSize="13sp"
+            android:paddingHorizontal="16dp" />
+
+        <TextView
+            android:id="@+id/tvImageStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:textColor="@color/text_hint"
+            android:textSize="12sp"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <!-- Image preview -->
+    <ImageView
+        android:id="@+id/imgReviewPreview"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="8dp"
+        android:scaleType="centerCrop"
+        android:visibility="gone"
+        android:background="@drawable/bg_card" />
 </LinearLayout>
