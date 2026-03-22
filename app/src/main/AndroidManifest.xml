@@ -67,6 +67,11 @@
             android:name=".controller.FoodDetailActivity"
             android:exported="false" />
 
+        <!-- Danh gia mon an -->
+        <activity
+            android:name=".controller.FoodReviewsActivity"
+            android:exported="false" />
+
         <!-- Giỏ hàng -->
         <activity
             android:name=".controller.CartActivity"
@@ -85,31 +90,6 @@
         <!-- Xác nhận đơn hàng -->
         <activity
             android:name=".controller.OrderConfirmationActivity"
-            android:exported="false" />
-
-        <!-- Quản lý đơn hàng (User) -->
-        <activity
-            android:name=".controller.OrderHistoryActivity"
-            android:exported="false" />
-
-        <!-- Liên hệ -->
-        <activity
-            android:name=".controller.ContactActivity"
-            android:exported="false" />
-
-        <!-- Món yêu thích -->
-        <activity
-            android:name=".controller.FavoritesActivity"
-            android:exported="false" />
-
-        <!-- Địa chỉ giao hàng -->
-        <activity
-            android:name=".controller.AddressActivity"
-            android:exported="false" />
-
-        <!-- Thông báo -->
-        <activity
-            android:name=".controller.NotificationsActivity"
             android:exported="false" />
 
         <!-- ==================== ADMIN ==================== -->
@@ -147,33 +127,6 @@
         <!-- Thống kê doanh thu -->
         <activity
             android:name=".controller.AdminRevenueActivity"
-            android:exported="false" />
-
-        <!-- Báo cáo & Thống kê (Nhóm 19) -->
-        <activity
-            android:name=".controller.AdminReportStatisticsActivity"
-            android:exported="false" />
-
-        <!-- Thống kê đơn hàng -->
-        <activity
-            android:name=".controller.AdminOrderStatisticsActivity"
-            android:exported="false" />
-
-        <!-- ==================== AI FEATURES ==================== -->
-
-        <!-- AI Dashboard -->
-        <activity
-            android:name=".controller.AIDashboardActivity"
-            android:exported="false" />
-
-        <!-- Thống kê cảm xúc -->
-        <activity
-            android:name=".controller.SentimentStatisticsActivity"
-            android:exported="false" />
-
-        <!-- Dự đoán xu hướng -->
-        <activity
-            android:name=".controller.FoodTrendPredictionActivity"
             android:exported="false" />
 
     </application>

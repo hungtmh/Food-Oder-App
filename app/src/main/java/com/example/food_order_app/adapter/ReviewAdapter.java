@@ -50,8 +50,8 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewView
     public int getItemCount() { return reviews.size(); }
 
     class ReviewViewHolder extends RecyclerView.ViewHolder {
-        ImageView imgAvatar;
-        TextView tvUserName, tvDate, tvComment;
+        ImageView imgAvatar, imgReviewPhoto;
+        TextView tvUserName, tvDate, tvComment, tvTitle;
         RatingBar ratingBar;
 
         ReviewViewHolder(@NonNull View itemView) {
@@ -59,13 +59,33 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewView
             imgAvatar = itemView.findViewById(R.id.imgReviewAvatar);
             tvUserName = itemView.findViewById(R.id.tvReviewUserName);
             tvDate = itemView.findViewById(R.id.tvReviewDate);
+            tvTitle = itemView.findViewById(R.id.tvReviewTitle);
             tvComment = itemView.findViewById(R.id.tvReviewComment);
             ratingBar = itemView.findViewById(R.id.rbReviewRating);
+            imgReviewPhoto = itemView.findViewById(R.id.imgReviewPhoto);
         }
 
         void bind(Review review) {
             tvComment.setText(review.getComment());
             ratingBar.setRating(review.getRating());
+
+            // Title
+            if (review.getTitle() != null && !review.getTitle().isEmpty()) {
+                tvTitle.setText(review.getTitle());
+                tvTitle.setVisibility(View.VISIBLE);
+            } else {
+                tvTitle.setVisibility(View.GONE);
+            }
+
+            // Review image
+            if (review.getImageUrl() != null && !review.getImageUrl().isEmpty()) {
+                imgReviewPhoto.setVisibility(View.VISIBLE);
+                Glide.with(context).load(review.getImageUrl())
+                        .placeholder(R.drawable.bg_card)
+                        .into(imgReviewPhoto);
+            } else {
+                imgReviewPhoto.setVisibility(View.GONE);
+            }
 
             if (review.getUser() != null) {
                 tvUserName.setText(review.getUser().getFullName());

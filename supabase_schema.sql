@@ -144,7 +144,7 @@ CREATE TABLE IF NOT EXISTS public.orders (
     subtotal DECIMAL(12,0) NOT NULL DEFAULT 0,
     discount_amount DECIMAL(12,0) NOT NULL DEFAULT 0,
     total_amount DECIMAL(12,0) NOT NULL DEFAULT 0,
-    status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'served', 'cancelled')),
+    status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'preparing', 'delivering', 'delivered', 'cancelled')),
     estimated_delivery TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -192,22 +192,6 @@ CREATE TABLE IF NOT EXISTS public.feedbacks (
 );
 
 -- ============================================
--- 13. BẢNG NOTIFICATIONS
--- ============================================
-CREATE TABLE IF NOT EXISTS public.notifications (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
-    order_id UUID REFERENCES public.orders(id) ON DELETE SET NULL,
-    order_code TEXT,
-    title TEXT NOT NULL,
-    message TEXT NOT NULL,
-    is_read BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON public.notifications(user_id);
-CREATE INDEX IF NOT EXISTS idx_notifications_created_at ON public.notifications(created_at DESC);
-
--- ============================================
 -- TRIGGERS
 -- ============================================
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -251,7 +235,7 @@ DECLARE
 BEGIN
     FOR tbl IN SELECT unnest(ARRAY[
         'users','password_reset_codes','categories','foods','food_images',
-        'reviews','carts','cart_items','addresses','orders','order_items','search_history','feedbacks','notifications'
+        'reviews','carts','cart_items','addresses','orders','order_items','search_history','feedbacks'
     ])
     LOOP
         EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', tbl);
