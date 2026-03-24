@@ -72,6 +72,11 @@
             android:name=".controller.FoodReviewsActivity"
             android:exported="false" />
 
+        <!-- Viết đánh giá -->
+        <activity
+            android:name=".controller.WriteReviewActivity"
+            android:exported="false" />
+
         <!-- Giỏ hàng -->
         <activity
             android:name=".controller.CartActivity"

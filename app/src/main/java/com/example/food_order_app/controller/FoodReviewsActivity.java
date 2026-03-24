@@ -72,11 +72,8 @@ public class FoodReviewsActivity extends AppCompatActivity {
     private String foodName;
     private int currentFilter = 0; // 0 = all
 
-    // Review image picker
-    private ActivityResultLauncher<Intent> reviewImageLauncher;
-    private Uri selectedReviewImageUri = null;
-    private ImageView imgReviewPreview;
-    private TextView tvImageStatus;
+    // WriteReviewLauncher to refresh reviews
+    private ActivityResultLauncher<Intent> writeReviewLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,24 +96,16 @@ public class FoodReviewsActivity extends AppCompatActivity {
         }
 
         initViews();
-        setupReviewImagePicker();
+        setupWriteReviewLauncher();
         loadAllReviews();
     }
 
-    private void setupReviewImagePicker() {
-        reviewImageLauncher = registerForActivityResult(
+    private void setupWriteReviewLauncher() {
+        writeReviewLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
-                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                        selectedReviewImageUri = result.getData().getData();
-                        if (selectedReviewImageUri != null && imgReviewPreview != null) {
-                            imgReviewPreview.setVisibility(View.VISIBLE);
-                            imgReviewPreview.setImageURI(selectedReviewImageUri);
-                            if (tvImageStatus != null) {
-                                tvImageStatus.setText("Đã chọn 1 ảnh");
-                                tvImageStatus.setVisibility(View.VISIBLE);
-                            }
-                        }
+                    if (result.getResultCode() == RESULT_OK) {
+                        loadAllReviews();
                     }
                 }
         );
@@ -155,7 +144,8 @@ public class FoodReviewsActivity extends AppCompatActivity {
         rvReviews.setAdapter(reviewAdapter);
 
         btnBack.setOnClickListener(v -> finish());
-        btnWriteReview.setOnClickListener(v -> showReviewDialog());
+        btnWriteReview.setOnClickListener(v -> openWriteReviewActivity());
+        tvFilterStar.setOnClickListener(v -> showFilterDialog());
         tvFilterStar.setOnClickListener(v -> showFilterDialog());
     }
 
@@ -264,151 +254,13 @@ public class FoodReviewsActivity extends AppCompatActivity {
 
     // ============ END FILTER AND VIEW ============
 
-    // ============ REVIEW COMPOSITION ============
-
-    private void showReviewDialog() {
+    private void openWriteReviewActivity() {
         if (!sessionManager.isLoggedIn()) {
             Toast.makeText(this, "Vui lòng đăng nhập để đánh giá", Toast.LENGTH_SHORT).show();
             return;
         }
-
-        selectedReviewImageUri = null;
-
-        View dialogView = getLayoutInflater().inflate(R.layout.dialog_review, null);
-        RatingBar rbRating = dialogView.findViewById(R.id.rbDialogRating);
-        EditText etTitle = dialogView.findViewById(R.id.etDialogTitle);
-        EditText etComment = dialogView.findViewById(R.id.etDialogComment);
-        Button btnAddImage = dialogView.findViewById(R.id.btnAddReviewImage);
-        imgReviewPreview = dialogView.findViewById(R.id.imgReviewPreview);
-        tvImageStatus = dialogView.findViewById(R.id.tvImageStatus);
-
-        btnAddImage.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_PICK);
-            intent.setType("image/*");
-            reviewImageLauncher.launch(intent);
-        });
-
-        new AlertDialog.Builder(this)
-                .setView(dialogView)
-                .setPositiveButton("Gửi đánh giá", (dialog, which) -> {
-                    int rating = (int) rbRating.getRating();
-                    String title = etTitle.getText().toString().trim();
-                    String comment = etComment.getText().toString().trim();
-
-                    if (rating == 0) {
-                        Toast.makeText(this, "Vui lòng chọn số sao", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                    if (selectedReviewImageUri != null) {
-                        uploadReviewImageThenSubmit(rating, title, comment);
-                    } else {
-                        submitReview(rating, title, comment, null);
-                    }
-                })
-                .setNegativeButton("Hủy", null)
-                .show();
-    }
-
-    private void uploadReviewImageThenSubmit(int rating, String title, String comment) {
-        progressDialog.setMessage("Đang tải ảnh lên...");
-        progressDialog.show();
-
-        try {
-            InputStream inputStream = getContentResolver().openInputStream(selectedReviewImageUri);
-            if (inputStream == null) {
-                progressDialog.dismiss();
-                submitReview(rating, title, comment, null);
-                return;
-            }
-
-            Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-            inputStream.close();
-
-            if (bitmap == null) {
-                progressDialog.dismiss();
-                submitReview(rating, title, comment, null);
-                return;
-            }
-
-            // Resize if too large
-            int maxSize = 800;
-            int w = bitmap.getWidth(), h = bitmap.getHeight();
-            if (w > maxSize || h > maxSize) {
-                float scale = Math.min((float) maxSize / w, (float) maxSize / h);
-                w = Math.round(w * scale);
-                h = Math.round(h * scale);
-                bitmap = Bitmap.createScaledBitmap(bitmap, w, h, true);
-            }
-
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, baos);
-            byte[] imageBytes = baos.toByteArray();
-
-            String fileName = "review_" + UUID.randomUUID().toString().substring(0, 8) + ".jpg";
-
-            RequestBody requestBody = RequestBody.create(
-                    MediaType.parse("image/jpeg"), imageBytes);
-
-            storageService.uploadFile(REVIEW_BUCKET, fileName, "image/jpeg", "true", requestBody)
-                    .enqueue(new Callback<ResponseBody>() {
-                        @Override
-                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                            progressDialog.dismiss();
-                            if (response.isSuccessful()) {
-                                String imageUrl = SupabaseConfig.STORAGE_URL
-                                        + "object/public/" + REVIEW_BUCKET + "/" + fileName;
-                                submitReview(rating, title, comment, imageUrl);
-                            } else {
-                                Log.e(TAG, "Review image upload failed: " + response.code());
-                                submitReview(rating, title, comment, null);
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(Call<ResponseBody> call, Throwable t) {
-                            progressDialog.dismiss();
-                            Log.e(TAG, "Review image upload error: " + t.getMessage());
-                            submitReview(rating, title, comment, null);
-                        }
-                    });
-
-        } catch (Exception e) {
-            progressDialog.dismiss();
-            Log.e(TAG, "Image processing error: " + e.getMessage());
-            submitReview(rating, title, comment, null);
-        }
-    }
-
-    private void submitReview(int rating, String title, String comment, String imageUrl) {
-        Map<String, Object> reviewData = new HashMap<>();
-        reviewData.put("food_id", foodId);
-        reviewData.put("user_id", sessionManager.getUserId());
-        reviewData.put("rating", rating);
-        reviewData.put("comment", comment);
-
-        if (title != null && !title.isEmpty()) {
-            reviewData.put("title", title);
-        }
-        if (imageUrl != null && !imageUrl.isEmpty()) {
-            reviewData.put("image_url", imageUrl);
-        }
-
-        dbService.createReview(reviewData).enqueue(new Callback<Void>() {
-            @Override
-            public void onResponse(Call<Void> call, Response<Void> response) {
-                if (response.isSuccessful()) {
-                    Toast.makeText(FoodReviewsActivity.this, "Đã gửi đánh giá!", Toast.LENGTH_SHORT).show();
-                    loadAllReviews(); // Reload from server
-                } else {
-                    Toast.makeText(FoodReviewsActivity.this, "Lỗi gửi đánh giá", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<Void> call, Throwable t) {
-                Log.e(TAG, "submitReview failed: " + t.getMessage());
-            }
-        });
+        Intent intent = new Intent(this, WriteReviewActivity.class);
+        intent.putExtra("food_id", foodId);
+        writeReviewLauncher.launch(intent);
     }
 }

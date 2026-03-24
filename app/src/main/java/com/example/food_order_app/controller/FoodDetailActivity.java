@@ -110,6 +110,16 @@ public class FoodDetailActivity extends AppCompatActivity {
         checkFavoriteStatus();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (foodId != null) {
+            loadFoodDetail();
+            // loadReviews will be called automatically but just to be safe:
+            loadReviews();
+        }
+    }
+
 
 
     private void initViews() {
@@ -283,6 +293,19 @@ public class FoodDetailActivity extends AppCompatActivity {
             public void onResponse(Call<List<Review>> call, Response<List<Review>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     List<Review> reviews = response.body();
+
+                    int total = reviews.size();
+                    double sum = 0;
+                    for (Review r : reviews) sum += r.getRating();
+                    double avg = total > 0 ? (sum / total) : 0;
+                    avg = Math.round(avg * 10.0) / 10.0;
+                    
+                    tvDetailRating.setText(String.format(Locale.getDefault(), "%.1f", avg));
+                    tvDetailReviewCount.setText("(" + total + " đánh giá)");
+                    tvDetailReviewHeaderTitle.setText("Đánh giá (" + total + ")");
+                    rbDetailReviewHeader.setRating((float) avg);
+                    tvDetailReviewHeaderScore.setText(String.format(Locale.getDefault(), "%.1f", avg));
+
                     if (reviews.isEmpty()) {
                         tvNoReviews.setVisibility(View.VISIBLE);
                         rvReviews.setVisibility(View.GONE);
