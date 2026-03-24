@@ -71,14 +71,19 @@
             android:textColor="@color/text_secondary"
             android:textSize="13sp" />
 
-        <!-- Review image -->
-        <ImageView
-            android:id="@+id/imgReviewPhoto"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
+        <!-- Review images -->
+        <HorizontalScrollView
+            android:id="@+id/hsvReviewImages"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:scaleType="centerCrop"
-            android:visibility="gone"
-            android:background="@drawable/bg_card" />
+            android:scrollbars="none"
+            android:visibility="gone">
+            <LinearLayout
+                android:id="@+id/layoutReviewImages"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" />
+        </HorizontalScrollView>
     </LinearLayout>
 </LinearLayout>

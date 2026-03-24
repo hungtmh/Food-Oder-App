@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="@color/surface">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Top text -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="Chạm vào ngôi sao để đánh giá"
+            android:textColor="@color/text_primary"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp" />
+
+        <!-- Big Rating Bar -->
+        <RatingBar
+            android:id="@+id/rbWriteReview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp"
+            android:numStars="5"
+            android:stepSize="1"
+            android:progressTint="@color/accent"
+            android:secondaryProgressTint="@color/accent" />
+
+        <!-- Rating Status Text -->
+        <TextView
+            android:id="@+id/tvRatingStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="24dp"
+            android:text="Rất hài lòng"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp" />
+
+        <!-- Image Selection Container -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp">
+
+            <!-- Initial wide button -->
+            <LinearLayout
+                android:id="@+id/layoutAddImageLarge"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_btn_add_image_large"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Thêm hình"
+                    android:textColor="@color/accent"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:layout_marginEnd="8dp" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_camera_add"
+                    android:tint="@color/accent" />
+            </LinearLayout>
+
+            <!-- Selected image state -->
+            <LinearLayout
+                android:id="@+id/layoutImageSelected"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:visibility="gone">
+
+                <!-- Small add image button -->
+                <LinearLayout
+                    android:id="@+id/btnAddMoreImage"
+                    android:layout_width="72dp"
+                    android:layout_height="72dp"
+                    android:background="@drawable/bg_btn_add_image_small"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_marginEnd="16dp">
+
+                    <ImageView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:src="@drawable/ic_camera_add"
+                        android:tint="@color/text_secondary" />
+                </LinearLayout>
+
+                <!-- Image Thumbnail Wrapper -->
+                <HorizontalScrollView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:scrollbars="none">
+
+                    <LinearLayout
+                        android:id="@+id/containerImages"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal" />
+                </HorizontalScrollView>
+            </LinearLayout>
+        </FrameLayout>
+
+        <!-- Comment EditText -->
+        <EditText
+            android:id="@+id/etReviewComment"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:background="@drawable/bg_edittext_comment"
+            android:gravity="top|start"
+            android:hint="Hãy để lại nhận xét của bạn"
+            android:padding="16dp"
+            android:textSize="14sp"
+            android:textColorHint="@color/text_hint"
+            android:textColor="@color/text_primary"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Submit Button -->
+        <Button
+            android:id="@+id/btnSubmitReview"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:background="@drawable/bg_btn_submit_review"
+            android:text="Gửi đánh giá"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textAllCaps="false" />
+
+    </LinearLayout>
+</ScrollView>
