@@ -41,6 +41,8 @@ public class CheckoutActivity extends AppCompatActivity {
     private RadioGroup rgOrderType;
     private LinearLayout layoutDeliveryAddress;
     private boolean isDineIn = false;
+    private LinearLayout layoutDineIn;
+    private EditText edtDineInName, edtDineInTable;
 
     // Address card views
     private LinearLayout layoutSelectedAddress, layoutAddressDetail;
@@ -85,6 +87,11 @@ public class CheckoutActivity extends AppCompatActivity {
         // Order type
         rgOrderType = findViewById(R.id.rgOrderType);
         layoutDeliveryAddress = findViewById(R.id.layoutDeliveryAddress);
+        layoutDineIn = findViewById(R.id.layoutDineIn);
+        edtDineInName = findViewById(R.id.edtDineInName);
+        edtDineInTable = findViewById(R.id.edtDineInTable);
+        
+        edtDineInName.setText(sessionManager.getFullName());
 
         layoutSelectedAddress = findViewById(R.id.layoutSelectedAddress);
         layoutAddressDetail = findViewById(R.id.layoutAddressDetail);
@@ -113,6 +120,7 @@ public class CheckoutActivity extends AppCompatActivity {
         rgOrderType.setOnCheckedChangeListener((group, checkedId) -> {
             isDineIn = (checkedId == R.id.rbDineIn);
             layoutDeliveryAddress.setVisibility(isDineIn ? View.GONE : View.VISIBLE);
+            layoutDineIn.setVisibility(isDineIn ? View.VISIBLE : View.GONE);
         });
 
         tvSubtotal.setText(nf.format(totalAmount) + " VNĐ");
@@ -188,6 +196,13 @@ public class CheckoutActivity extends AppCompatActivity {
                 Toast.makeText(this, "Vui lòng chọn địa chỉ giao hàng", Toast.LENGTH_SHORT).show();
                 return;
             }
+        } else {
+            String dineInName = edtDineInName.getText().toString().trim();
+            String dineInTable = edtDineInTable.getText().toString().trim();
+            if (dineInName.isEmpty() || dineInTable.isEmpty()) {
+                Toast.makeText(this, "Vui lòng nhập tên và số bàn", Toast.LENGTH_SHORT).show();
+                return;
+            }
         }
 
         String note = etNote.getText().toString().trim();
@@ -216,9 +231,11 @@ public class CheckoutActivity extends AppCompatActivity {
         orderData.put("status", "pending");
 
         if (isDineIn) {
-            orderData.put("receiver_name", sessionManager.getFullName());
+            String dineInName = edtDineInName.getText().toString().trim();
+            String dineInTable = edtDineInTable.getText().toString().trim();
+            orderData.put("receiver_name", dineInName);
             orderData.put("phone", sessionManager.getPhone() != null ? sessionManager.getPhone() : "");
-            orderData.put("address", "Ăn tại quán");
+            orderData.put("address", "Ăn tại quán - " + dineInTable);
         } else {
             orderData.put("receiver_name", selectedReceiverName);
             orderData.put("phone", selectedPhone);

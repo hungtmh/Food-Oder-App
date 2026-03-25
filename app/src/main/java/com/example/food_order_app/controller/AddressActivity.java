@@ -12,6 +12,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -63,6 +65,8 @@ public class AddressActivity extends AppCompatActivity
     private SupabaseDbService dbService;
     private SessionManager sessionManager;
     private boolean pickMode = false;
+    
+    private ActivityResultLauncher<Intent> addEditLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +76,15 @@ public class AddressActivity extends AppCompatActivity
         pickMode = getIntent().getBooleanExtra(EXTRA_PICK_MODE, false);
         dbService = RetrofitClient.getDbService();
         sessionManager = new SessionManager(this);
+        
+        addEditLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK) {
+                        loadAddresses();
+                    }
+                }
+        );
 
         initViews();
         loadAddresses();
@@ -91,7 +104,14 @@ public class AddressActivity extends AppCompatActivity
         rvAddresses.setAdapter(adapter);
 
         btnBack.setOnClickListener(v -> finish());
-        btnAddAddress.setOnClickListener(v -> showAddressDialog(null, -1));
+        btnAddAddress.setOnClickListener(v -> {
+            Intent intent = new Intent(AddressActivity.this, AddEditAddressActivity.class);
+            // If no addresses exist, the first one should be default automatically
+            if (adapter.getItemCount() == 0) {
+                intent.putExtra("isDefault", true);
+            }
+            addEditLauncher.launch(intent);
+        });
     }
 
     private void loadAddresses() {
@@ -173,7 +193,13 @@ public class AddressActivity extends AppCompatActivity
 
     @Override
     public void onEdit(Address address, int position) {
-        showAddressDialog(address, position);
+        Intent intent = new Intent(AddressActivity.this, AddEditAddressActivity.class);
+        intent.putExtra("addressId", address.getId());
+        intent.putExtra("receiverName", address.getReceiverName());
+        intent.putExtra("phone", address.getPhone());
+        intent.putExtra("address", address.getAddress());
+        intent.putExtra("isDefault", address.isDefault());
+        addEditLauncher.launch(intent);
     }
 
     @Override
@@ -186,126 +212,6 @@ public class AddressActivity extends AppCompatActivity
                 .show();
     }
 
-    // ============ ADD / EDIT DIALOG ============
-
-    private void showAddressDialog(Address existing, int position) {
-        boolean isEdit = existing != null;
-
-        LinearLayout form = new LinearLayout(this);
-        form.setOrientation(LinearLayout.VERTICAL);
-        int pad = (int) (16 * getResources().getDisplayMetrics().density);
-        form.setPadding(pad, pad, pad, 0);
-
-        EditText etName = makeEditText("Tên người nhận *", InputType.TYPE_TEXT_VARIATION_PERSON_NAME);
-        EditText etPhone = makeEditText("Số điện thoại *", InputType.TYPE_CLASS_PHONE);
-        EditText etAddr = makeEditText("Địa chỉ giao hàng *", InputType.TYPE_TEXT_FLAG_MULTI_LINE);
-
-        if (isEdit) {
-            etName.setText(existing.getReceiverName());
-            etPhone.setText(existing.getPhone());
-            etAddr.setText(existing.getAddress());
-        }
-
-        form.addView(etName);
-        form.addView(etPhone);
-        form.addView(etAddr);
-
-        new AlertDialog.Builder(this)
-                .setTitle(isEdit ? "Sửa địa chỉ" : "Thêm địa chỉ mới")
-                .setView(form)
-                .setPositiveButton("Lưu", (d, w) -> {
-                    String name = etName.getText().toString().trim();
-                    String phone = etPhone.getText().toString().trim();
-                    String addr = etAddr.getText().toString().trim();
-
-                    if (name.isEmpty() || phone.isEmpty() || addr.isEmpty()) {
-                        Toast.makeText(this, "Vui lòng điền đầy đủ thông tin", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    if (!phone.matches("^0[3|5|7|8|9][0-9]{8}$")) {
-                        Toast.makeText(this, "Số điện thoại không hợp lệ (VD: 0912345678)", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                    if (isEdit) {
-                        updateAddress(existing, name, phone, addr, position);
-                    } else {
-                        createAddress(name, phone, addr);
-                    }
-                })
-                .setNegativeButton("Hủy", null)
-                .show();
-    }
-
-    private EditText makeEditText(String hint, int inputType) {
-        EditText et = new EditText(this);
-        float dp = getResources().getDisplayMetrics().density;
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                (int) (48 * dp));
-        lp.bottomMargin = (int) (10 * dp);
-        et.setLayoutParams(lp);
-        et.setHint(hint);
-        et.setInputType(inputType);
-        et.setBackground(getResources().getDrawable(R.drawable.bg_edit_text, getTheme()));
-        et.setPaddingRelative((int) (12 * dp), 0, (int) (12 * dp), 0);
-        et.setTextSize(14);
-        return et;
-    }
-
-    // ============ API CALLS ============
-
-    private void createAddress(String name, String phone, String addr) {
-        String userId = sessionManager.getUserId();
-        if (userId == null) return;
-
-        Map<String, Object> body = new HashMap<>();
-        body.put("user_id", userId);
-        body.put("receiver_name", name);
-        body.put("phone", phone);
-        body.put("address", addr);
-        body.put("is_default", false);
-
-        dbService.createAddress(body).enqueue(new Callback<List<Address>>() {
-            @Override
-            public void onResponse(Call<List<Address>> call, Response<List<Address>> response) {
-                if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
-                    loadAddresses();
-                    Toast.makeText(AddressActivity.this, "Đã thêm địa chỉ", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(AddressActivity.this, "Lỗi thêm địa chỉ", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<List<Address>> call, Throwable t) {
-                Log.e(TAG, "createAddress failed: " + t.getMessage());
-            }
-        });
-    }
-
-    private void updateAddress(Address existing, String name, String phone, String addr, int position) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("receiver_name", name);
-        body.put("phone", phone);
-        body.put("address", addr);
-
-        dbService.updateAddress("eq." + existing.getId(), body).enqueue(new Callback<List<Address>>() {
-            @Override
-            public void onResponse(Call<List<Address>> call, Response<List<Address>> response) {
-                if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
-                    Address updated = response.body().get(0);
-                    adapter.updateAt(position, updated);
-                    Toast.makeText(AddressActivity.this, "Đã cập nhật", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<List<Address>> call, Throwable t) {
-                Log.e(TAG, "updateAddress failed: " + t.getMessage());
-            }
-        });
-    }
 
     private void deleteAddress(Address address, int position) {
         dbService.deleteAddress("eq." + address.getId()).enqueue(new Callback<Void>() {

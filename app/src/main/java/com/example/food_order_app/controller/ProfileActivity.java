@@ -68,8 +68,6 @@ public class ProfileActivity extends AppCompatActivity {
 
     // Orders section (navigates to OrderHistoryActivity)
     private LinearLayout sectionOrdersHeader;
-    // Address section
-    private LinearLayout sectionAddressHeader;
 
     // Favorites section (navigates to FavoritesActivity)
     private LinearLayout sectionFavoritesHeader;
@@ -118,8 +116,6 @@ public class ProfileActivity extends AppCompatActivity {
 
         // Orders section
         sectionOrdersHeader = findViewById(R.id.sectionOrdersHeader);
-        // Address section
-        sectionAddressHeader = findViewById(R.id.sectionAddressHeader);
 
         // Favorites section
         sectionFavoritesHeader = findViewById(R.id.sectionFavoritesHeader);
@@ -188,10 +184,6 @@ public class ProfileActivity extends AppCompatActivity {
             startActivity(new Intent(ProfileActivity.this, OrderHistoryActivity.class));
         });
 
-        // Address: navigate to AddressActivity
-        sectionAddressHeader.setOnClickListener(v -> {
-            startActivity(new Intent(ProfileActivity.this, AddressActivity.class));
-        });
 
         // Favorites: navigate to FavoritesActivity
         sectionFavoritesHeader.setOnClickListener(v -> {

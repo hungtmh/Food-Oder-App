@@ -136,6 +136,7 @@
 
         <!-- ==================== MISSING ACTIVITIES ==================== -->
         <activity android:name=".controller.AddressActivity" android:exported="false" />
+        <activity android:name=".controller.AddEditAddressActivity" android:exported="false" />
         <activity android:name=".controller.AdminOrderStatisticsActivity" android:exported="false" />
         <activity android:name=".controller.AdminReportStatisticsActivity" android:exported="false" />
         <activity android:name=".controller.AIDashboardActivity" android:exported="false" />
