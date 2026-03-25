@@ -9,9 +9,9 @@
         android:icon="@drawable/ic_cart"
         android:title="Giỏ hàng" />
     <item
-        android:id="@+id/nav_feedback"
+        android:id="@+id/nav_chat"
         android:icon="@drawable/ic_feedback"
-        android:title="Phản hồi" />
+        android:title="Chat" />
     <item
         android:id="@+id/nav_contact"
         android:icon="@drawable/ic_contact"
