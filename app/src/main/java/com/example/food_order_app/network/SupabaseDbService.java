@@ -379,4 +379,20 @@ public interface SupabaseDbService {
     @DELETE("addresses")
     Call<Void> deleteAddress(
             @Query("id") String idFilter);
+
+    // ==================== CHAT ====================
+    @GET("chat_messages")
+    Call<List<ChatMessage>> getChatMessages(
+            @Query("room_user_id") String roomUserIdFilter,
+            @Query("select") String select,
+            @Query("order") String order);
+
+    @GET("chat_messages")
+    Call<List<ChatMessage>> getAllChatMessages(
+            @Query("select") String select,
+            @Query("order") String order);
+
+    @Headers("Prefer: return=representation")
+    @POST("chat_messages")
+    Call<List<ChatMessage>> createChatMessage(@Body Map<String, Object> chatMessage);
 }

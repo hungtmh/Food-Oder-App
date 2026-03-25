@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import com.example.food_order_app.R;
-import com.example.food_order_app.controller.AdminFeedbackActivity;
+import com.example.food_order_app.controller.AdminChatListActivity;
 import com.example.food_order_app.controller.AdminHomeActivity;
 import com.example.food_order_app.controller.AdminOrdersActivity;
 import com.example.food_order_app.controller.AdminReportStatisticsActivity;
@@ -22,7 +22,7 @@ public final class AdminBottomNavHelper {
     public static final int TAB_FOOD = R.id.navAdminFood;
     public static final int TAB_REVENUE = R.id.navAdminRevenue;
     public static final int TAB_REPORT = R.id.navAdminReport;
-    public static final int TAB_FEEDBACK = R.id.navAdminFeedback;
+    public static final int TAB_CHAT = R.id.navAdminChat;
     public static final int TAB_ORDERS = R.id.navAdminOrders;
     public static final int TAB_PROFILE = R.id.navAdminProfile;
 
@@ -36,8 +36,8 @@ public final class AdminBottomNavHelper {
                 selectedTabId, AdminRevenueActivity.class);
         bindItem(activity, TAB_REPORT, R.id.navAdminReportIconWrap, R.id.navAdminReportIcon, R.id.navAdminReportLabel,
                 selectedTabId, AdminReportStatisticsActivity.class);
-        bindItem(activity, TAB_FEEDBACK, R.id.navAdminFeedbackIconWrap, R.id.navAdminFeedbackIcon, R.id.navAdminFeedbackLabel,
-                selectedTabId, AdminFeedbackActivity.class);
+        bindItem(activity, TAB_CHAT, R.id.navAdminChatIconWrap, R.id.navAdminChatIcon, R.id.navAdminChatLabel,
+                selectedTabId, AdminChatListActivity.class);
         bindItem(activity, TAB_ORDERS, R.id.navAdminOrdersIconWrap, R.id.navAdminOrdersIcon, R.id.navAdminOrdersLabel,
                 selectedTabId, AdminOrdersActivity.class);
         bindItem(activity, TAB_PROFILE, R.id.navAdminProfileIconWrap, R.id.navAdminProfileIcon, R.id.navAdminProfileLabel,

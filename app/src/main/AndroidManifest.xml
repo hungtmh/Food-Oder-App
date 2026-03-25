@@ -134,6 +134,22 @@
             android:name=".controller.AdminRevenueActivity"
             android:exported="false" />
 
+        <!-- ==================== MISSING ACTIVITIES ==================== -->
+        <activity android:name=".controller.AddressActivity" android:exported="false" />
+        <activity android:name=".controller.AdminOrderStatisticsActivity" android:exported="false" />
+        <activity android:name=".controller.AdminReportStatisticsActivity" android:exported="false" />
+        <activity android:name=".controller.AIDashboardActivity" android:exported="false" />
+        <activity android:name=".controller.ContactActivity" android:exported="false" />
+        <activity android:name=".controller.FavoritesActivity" android:exported="false" />
+        <activity android:name=".controller.FoodTrendPredictionActivity" android:exported="false" />
+        <activity android:name=".controller.NotificationsActivity" android:exported="false" />
+        <activity android:name=".controller.OrderHistoryActivity" android:exported="false" />
+        <activity android:name=".controller.SentimentStatisticsActivity" android:exported="false" />
+
+        <!-- ==================== CHAT FEATURE ==================== -->
+        <activity android:name=".controller.ChatRoomActivity" android:exported="false" />
+        <activity android:name=".controller.AdminChatListActivity" android:exported="false" />
+
     </application>
 
 </manifest>

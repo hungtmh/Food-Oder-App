@@ -160,8 +160,12 @@ public class HomeActivity extends AppCompatActivity {
             } else if (id == R.id.nav_cart) {
                 startActivity(new Intent(this, CartActivity.class));
                 return true;
-            } else if (id == R.id.nav_feedback) {
-                Toast.makeText(this, "Tính năng đang phát triển", Toast.LENGTH_SHORT).show();
+            } else if (id == R.id.nav_chat) {
+                if (sessionManager != null && sessionManager.isLoggedIn()) {
+                    startActivity(new Intent(this, ChatRoomActivity.class));
+                } else {
+                    Toast.makeText(this, "Vui lòng đăng nhập để chat", Toast.LENGTH_SHORT).show();
+                }
                 return true;
             } else if (id == R.id.nav_contact) {
                 startActivity(new Intent(this, ContactActivity.class));
