@@ -288,39 +288,7 @@
                     android:src="@drawable/ic_expand_more" />
             </LinearLayout>
 
-            <!-- ============ SECTION: Địa chỉ giao hàng ============ -->
-            <LinearLayout
-                android:id="@+id/sectionAddressHeader"
-                android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/bg_section_header"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingHorizontal="16dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="📍"
-                    android:textSize="18sp" />
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
-                    android:layout_weight="1"
-                    android:text="Địa chỉ giao hàng"
-                    android:textColor="@color/text_primary"
-                    android:textSize="15sp"
-                    android:textStyle="bold" />
-
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:rotation="270"
-                    android:src="@drawable/ic_expand_more" />
-            </LinearLayout>
 
             <!-- ============ ACTION BUTTONS ============ -->
             <LinearLayout

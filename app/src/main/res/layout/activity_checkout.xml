@@ -84,6 +84,48 @@
             </RadioGroup>
         </LinearLayout>
 
+        <!-- Dine-in information (hidden when delivery) -->
+        <LinearLayout
+            android:id="@+id/layoutDineIn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Thông tin tại quán"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/edtDineInName"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_edit_text"
+                android:hint="Tên khách hàng *"
+                android:inputType="textPersonName"
+                android:paddingHorizontal="16dp"
+                android:textSize="14sp" />
+
+            <EditText
+                android:id="@+id/edtDineInTable"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_edit_text"
+                android:hint="Số bàn *"
+                android:inputType="text"
+                android:paddingHorizontal="16dp"
+                android:textSize="14sp" />
+        </LinearLayout>
+
         <!-- Delivery address (hidden when dine-in) -->
         <LinearLayout
             android:id="@+id/layoutDeliveryAddress"
