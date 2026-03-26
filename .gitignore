@@ -16,3 +16,4 @@ local.properties
 
 # Gemini AI Configuration (Private)
 app/src/main/java/com/example/food_order_app/config/GeminiAiConfig.java
+
