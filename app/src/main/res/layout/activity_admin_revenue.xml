@@ -123,55 +123,7 @@
                         android:textSize="13sp" />
                 </LinearLayout>
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:orientation="horizontal">
-
-                    <androidx.appcompat.widget.AppCompatButton
-                        android:id="@+id/btnToday"
-                        android:layout_width="0dp"
-                        android:layout_height="36dp"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="4dp"
-                        android:background="@drawable/bg_category_normal"
-                        android:text="Hôm nay"
-                        android:textAllCaps="false"
-                        android:textSize="12sp" />
-
-                    <androidx.appcompat.widget.AppCompatButton
-                        android:id="@+id/btnThisMonth"
-                        android:layout_width="0dp"
-                        android:layout_height="36dp"
-                        android:layout_weight="1"
-                        android:layout_marginHorizontal="4dp"
-                        android:background="@drawable/bg_category_normal"
-                        android:text="Tháng này"
-                        android:textAllCaps="false"
-                        android:textSize="12sp" />
-
-                    <androidx.appcompat.widget.AppCompatButton
-                        android:id="@+id/btnLastMonth"
-                        android:layout_width="0dp"
-                        android:layout_height="36dp"
-                        android:layout_weight="1"
-                        android:layout_marginStart="4dp"
-                        android:background="@drawable/bg_category_normal"
-                        android:text="Tháng trước"
-                        android:textAllCaps="false"
-                        android:textSize="12sp" />
-                </LinearLayout>
-
-                <androidx.appcompat.widget.AppCompatButton
-                    android:id="@+id/btnSingleDay"
-                    android:layout_width="match_parent"
-                    android:layout_height="36dp"
-                    android:layout_marginTop="8dp"
-                    android:background="@drawable/bg_category_normal"
-                    android:text="Chọn 1 ngày"
-                    android:textAllCaps="false"
-                    android:textSize="12sp" />
+<View android:layout_width="0dp" android:layout_height="8dp"/>
 
                 <androidx.appcompat.widget.AppCompatButton
                     android:id="@+id/btnApplyFilter"
@@ -195,39 +147,9 @@
                     android:textSize="14sp"
                     android:textAllCaps="false" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:orientation="horizontal">
-
-                    <androidx.appcompat.widget.AppCompatButton
-                        android:id="@+id/btnExportRevenueExcel"
-                        android:layout_width="0dp"
-                        android:layout_height="40dp"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="4dp"
-                        android:background="@drawable/bg_button_outline"
-                        android:text="Xuất Excel"
-                        android:textColor="@color/primary"
-                        android:textSize="13sp"
-                        android:textAllCaps="false" />
-
-                    <androidx.appcompat.widget.AppCompatButton
-                        android:id="@+id/btnSendRevenueEmail"
-                        android:layout_width="0dp"
-                        android:layout_height="40dp"
-                        android:layout_weight="1"
-                        android:layout_marginStart="4dp"
-                        android:background="@drawable/bg_button_outline"
-                        android:text="Gửi email"
-                        android:textColor="@color/primary"
-                        android:textSize="13sp"
-                        android:textAllCaps="false" />
-                </LinearLayout>
             </LinearLayout>
 
-            <!-- Dashboard overview -->
+            <!-- Báo cáo doanh thu - Unified card -->
             <LinearLayout
                 android:id="@+id/cardDashboardOverview"
                 android:layout_width="match_parent"
@@ -240,11 +162,76 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Dashboard tổng quan"
+                    android:text="Báo cáo doanh thu"
                     android:textColor="@color/text_primary"
-                    android:textSize="15sp"
+                    android:textSize="16sp"
                     android:textStyle="bold" />
 
+                <!-- === Tổng quan === -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="4dp"
+                        android:background="@drawable/bg_stat_card"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="10dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Doanh thu"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="11sp" />
+
+                        <TextView
+                            android:id="@+id/tvTotalRevenue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="0 VNĐ"
+                            android:textColor="@color/primary"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="4dp"
+                        android:background="@drawable/bg_stat_card"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="10dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Đơn hoàn thành"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="11sp" />
+
+                        <TextView
+                            android:id="@+id/tvTotalOrders"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="0"
+                            android:textColor="@color/success"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Dashboard metrics row 1 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -261,7 +248,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Doanh thu hôm nay"
+                            android:text="Doanh thu"
                             android:textColor="@color/text_secondary"
                             android:textSize="12sp" />
 
@@ -285,7 +272,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Đơn hôm nay"
+                            android:text="Đơn hoàn thành"
                             android:textColor="@color/text_secondary"
                             android:textSize="12sp" />
 
@@ -324,20 +311,92 @@
                     </LinearLayout>
                 </LinearLayout>
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:text="Biểu đồ 7 ngày gần nhất"
-                    android:textColor="@color/text_primary"
-                    android:textSize="13sp"
-                    android:textStyle="bold" />
-
-                <com.github.mikephil.charting.charts.BarChart
-                    android:id="@+id/barChartLast7Days"
+                <!-- Dashboard metrics row 2 -->
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="220dp"
-                    android:layout_marginTop="6dp" />
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="4dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Đơn TB"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/tvDashAvgOrderValue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0 VNĐ"
+                            android:textColor="@color/primary"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginHorizontal="4dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Thành công"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/tvDashSuccessRate"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0%"
+                            android:textColor="@color/success"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="4dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Tỷ lệ hủy"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/tvDashCancelRate"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0%"
+                            android:textColor="@color/error"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Divider -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginVertical="12dp"
+                    android:background="@color/divider" />
 
                 <TextView
                     android:id="@+id/tvDashTop5Foods"
@@ -347,90 +406,23 @@
                     android:text="Top 5 món: chưa có dữ liệu"
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp" />
-            </LinearLayout>
 
-            <!-- Revenue summary -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:orientation="horizontal">
+                <!-- Divider -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginVertical="12dp"
+                    android:background="@color/divider" />
 
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="6dp"
-                    android:background="@drawable/bg_stat_card"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:padding="12dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Doanh thu"
-                        android:textSize="12sp"
-                        android:textColor="@color/text_secondary" />
-
-                    <TextView
-                        android:id="@+id/tvTotalRevenue"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="0 VNĐ"
-                        android:textColor="@color/primary"
-                        android:textSize="18sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="6dp"
-                    android:background="@drawable/bg_stat_card"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:padding="12dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Đơn hoàn thành"
-                        android:textSize="12sp"
-                        android:textColor="@color/text_secondary" />
-
-                    <TextView
-                        android:id="@+id/tvTotalOrders"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="0"
-                        android:textColor="@color/success"
-                        android:textSize="24sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-            </LinearLayout>
-
-            <!-- Order status breakdown -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:background="@drawable/bg_admin_card"
-                android:orientation="vertical"
-                android:padding="12dp">
-
+                <!-- === Thống kê đơn hàng === -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Thống kê đơn hàng"
                     android:textColor="@color/text_primary"
-                    android:textSize="15sp"
+                    android:textSize="14sp"
                     android:textStyle="bold" />
 
-                <!-- Tổng đơn -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -484,32 +476,30 @@
                     <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Đã hủy:" android:textSize="14sp" />
                     <TextView android:id="@+id/tvStatCancelled" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0" android:textColor="@color/error" android:textStyle="bold" android:textSize="14sp" />
                 </LinearLayout>
-            </LinearLayout>
 
-            <!-- Daily revenue chart section -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:background="@drawable/bg_admin_card"
-                android:orientation="vertical"
-                android:padding="12dp">
+                <!-- Divider -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginVertical="12dp"
+                    android:background="@color/divider" />
 
+                <!-- === Doanh thu theo ngày === -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Doanh thu theo ngày"
                     android:textColor="@color/text_primary"
-                    android:textSize="15sp"
+                    android:textSize="14sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Truc X: Ngay trong thang | Truc Y: Doanh thu (VND)"
+                    android:text="Trục X: Ngày trong tháng | Trục Y: Doanh thu (VNĐ)"
                     android:textColor="@color/text_hint"
-                    android:textSize="12sp" />
+                    android:textSize="11sp" />
 
                 <LinearLayout
                     android:id="@+id/llDailyRevenueChart"
@@ -523,326 +513,381 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:text="Chua co du lieu"
-                    android:textColor="@color/text_hint"
-                    android:textSize="14sp"
-                    android:visibility="gone" />
-
-                <!-- Keep old ids removed from horizontal bars design -->
-                <!--
-                <HorizontalScrollView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:scrollbars="none">
-
-                    <LinearLayout
-                        android:id="@+id/llDailyRevenueChart"
-                        android:layout_width="wrap_content"
-                        android:layout_height="200dp"
-                        android:orientation="horizontal"
-                        android:gravity="bottom"
-                        android:paddingHorizontal="8dp"
-                        android:paddingVertical="12dp"
-                        android:baselineAligned="false" />
-                </HorizontalScrollView>
-
-                <TextView
-                    android:id="@+id/tvDailyRevenueEmpty"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
                     android:text="Chưa có dữ liệu"
                     android:textColor="@color/text_hint"
                     android:textSize="14sp"
                     android:visibility="gone" />
-                -->
-            </LinearLayout>
 
-            <!-- Previous month comparison -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:background="@drawable/bg_admin_card"
-                android:orientation="vertical"
-                android:padding="12dp">
+                <!-- Divider -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginVertical="12dp"
+                    android:background="@color/divider" />
+
+                <!-- === Biến động doanh thu theo tháng === -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Biến động doanh thu theo tháng"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="So sánh tháng trước"
+                    android:layout_marginTop="2dp"
+                    android:text="(Tổng hợp toàn bộ đơn hoàn thành)"
+                    android:textColor="@color/text_hint"
+                    android:textSize="11sp" />
+
+                <!-- Monthly Trend Table -->
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:scrollbars="horizontal">
+
+                    <TableLayout
+                        android:id="@+id/tableMonthlyTrend"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:stretchColumns="*">
+
+                        <TableRow
+                            android:background="#EEEEEE"
+                            android:gravity="center_vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Tháng"
+                                android:textStyle="bold"
+                                android:textSize="11sp"
+                                android:textColor="@color/text_primary"
+                                android:gravity="center"
+                                android:padding="8dp"
+                                android:minWidth="70dp"/>
+
+                            <View android:layout_width="1dp" android:layout_height="match_parent" android:background="#CCCCCC"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Doanh thu"
+                                android:textStyle="bold"
+                                android:textSize="11sp"
+                                android:textColor="@color/text_primary"
+                                android:gravity="center"
+                                android:padding="8dp"
+                                android:minWidth="100dp"/>
+
+                            <View android:layout_width="1dp" android:layout_height="match_parent" android:background="#CCCCCC"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Đơn hàng"
+                                android:textStyle="bold"
+                                android:textSize="11sp"
+                                android:textColor="@color/text_primary"
+                                android:gravity="center"
+                                android:padding="8dp"
+                                android:minWidth="55dp"/>
+
+                            <View android:layout_width="1dp" android:layout_height="match_parent" android:background="#CCCCCC"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="% Doanh thu"
+                                android:textStyle="bold"
+                                android:textSize="11sp"
+                                android:textColor="@color/text_primary"
+                                android:gravity="center"
+                                android:padding="8dp"
+                                android:minWidth="60dp"/>
+
+                            <View android:layout_width="1dp" android:layout_height="match_parent" android:background="#CCCCCC"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="% Đơn hàng"
+                                android:textStyle="bold"
+                                android:textSize="11sp"
+                                android:textColor="@color/text_primary"
+                                android:gravity="center"
+                                android:padding="8dp"
+                                android:minWidth="60dp"/>
+                        </TableRow>
+                    </TableLayout>
+                </HorizontalScrollView>
+
+                <!-- Revenue Chart -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="📊 Biểu đồ Doanh thu"
                     android:textColor="@color/text_primary"
-                    android:textSize="15sp"
+                    android:textSize="13sp"
                     android:textStyle="bold" />
 
-                <!-- Current Month Stats -->
-                <LinearLayout
+                <com.github.mikephil.charting.charts.BarChart
+                    android:id="@+id/chartMonthlyRevenue"
                     android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:layout_marginTop="4dp" />
+
+                <!-- Orders Chart -->
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:orientation="vertical">
+                    android:text="📊 Biểu đồ Đơn hàng"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Tháng này"
-                        android:textColor="@color/primary"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:orientation="horizontal">
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Doanh thu:"
-                            android:textSize="13sp" />
-                        <TextView
-                            android:id="@+id/tvCurrentMonthRevenue"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0 VNĐ"
-                            android:textStyle="bold"
-                            android:textSize="13sp"
-                            android:textColor="@color/primary" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:orientation="horizontal">
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Đơn hoàn thành:"
-                            android:textSize="13sp" />
-                        <TextView
-                            android:id="@+id/tvCurrentMonthOrders"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0"
-                            android:textStyle="bold"
-                            android:textSize="13sp"
-                            android:textColor="@color/success" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <!-- Previous Month Stats -->
-                <LinearLayout
+                <com.github.mikephil.charting.charts.BarChart
+                    android:id="@+id/chartMonthlyOrders"
                     android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:layout_marginTop="4dp" />
+
+                <!-- AI Commentary -->
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:orientation="vertical">
+                    android:text="🤖 AI nhận xét biến động"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Tháng trước"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/tvMonthlyTrendComment"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Đang phân tích dữ liệu..."
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:lineSpacingExtra="4dp"
+                    android:background="#F5F5F5"
+                    android:padding="12dp" />
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:orientation="horizontal">
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Doanh thu:"
-                            android:textSize="13sp" />
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical">
-                            <TextView
-                                android:id="@+id/tvPreviousMonthRevenue"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="0 VNĐ"
-                                android:textStyle="bold"
-                                android:textSize="13sp"
-                                android:textColor="@color/text_secondary" />
-                            <TextView
-                                android:id="@+id/tvRevenueChange"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="8dp"
-                                android:text="+0%"
-                                android:textSize="12sp"
-                                android:textStyle="bold"
-                                android:textColor="@color/success"
-                                android:paddingHorizontal="6dp"
-                                android:paddingVertical="2dp"
-                                android:background="@drawable/bg_category_selected" />
-                        </LinearLayout>
-                    </LinearLayout>
+                <!-- Divider -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginVertical="12dp"
+                    android:background="@color/divider" />
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:orientation="horizontal">
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Đơn hoàn thành:"
-                            android:textSize="13sp" />
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical">
-                            <TextView
-                                android:id="@+id/tvPreviousMonthOrders"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="0"
-                                android:textStyle="bold"
-                                android:textSize="13sp"
-                                android:textColor="@color/text_secondary" />
-                            <TextView
-                                android:id="@+id/tvOrdersChange"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="8dp"
-                                android:text="+0%"
-                                android:textSize="12sp"
-                                android:textStyle="bold"
-                                android:textColor="@color/success"
-                                android:paddingHorizontal="6dp"
-                                android:paddingVertical="2dp"
-                                android:background="@drawable/bg_category_selected" />
-                        </LinearLayout>
-                    </LinearLayout>
-                </LinearLayout>
-            </LinearLayout>
-
-            <!-- Customer statistics -->
-            <LinearLayout
-                android:id="@+id/cardCustomerStats"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:background="@drawable/bg_admin_card"
-                android:orientation="vertical"
-                android:padding="12dp">
-
+                <!-- === Thống kê khách hàng === -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Thống kê khách hàng"
                     android:textColor="@color/text_primary"
-                    android:textSize="15sp"
+                    android:textSize="14sp"
                     android:textStyle="bold" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="10dp"
+                    android:gravity="center_vertical">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilMonthSelector"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="8dp"
+                        app:hintEnabled="true"
+                        android:hint="Tháng">
+
+                        <AutoCompleteTextView
+                            android:id="@+id/atvMonthSelector"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="none"
+                            android:padding="12dp"
+                            android:textSize="13sp"
+                            android:textColor="@color/text_primary" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilYearSelector"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        app:hintEnabled="true"
+                        android:hint="Năm">
+
+                        <AutoCompleteTextView
+                            android:id="@+id/atvYearSelector"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="none"
+                            android:padding="12dp"
+                            android:textSize="13sp"
+                            android:textColor="@color/text_primary" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+
+                <TableLayout
+                    android:id="@+id/tableCustomerStats"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp">
+                    
+                    <TableRow
+                        android:background="#EEEEEE"
+                        android:gravity="center_vertical">
+                        
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="0.8"
+                            android:layout_height="wrap_content"
+                            android:text="Ngày"
+                            android:textStyle="bold"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_primary"
+                            android:gravity="center"
+                            android:padding="8dp"/>
+                            
+                        <View android:layout_width="1dp" android:layout_height="match_parent" android:background="#CCCCCC"/>
+                            
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="1.2"
+                            android:layout_height="wrap_content"
+                            android:text="Tên khách"
+                            android:textStyle="bold"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_primary"
+                            android:padding="8dp"/>
+                            
+                        <View android:layout_width="1dp" android:layout_height="match_parent" android:background="#CCCCCC"/>
+                            
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="0.8"
+                            android:layout_height="wrap_content"
+                            android:text="Số đơn"
+                            android:textStyle="bold"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_primary"
+                            android:gravity="center"
+                            android:padding="8dp"/>
+
+                        <View android:layout_width="1dp" android:layout_height="match_parent" android:background="#CCCCCC"/>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="0.5"
+                            android:layout_height="wrap_content"
+                            android:text="Hạng"
+                            android:textStyle="bold"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_primary"
+                            android:gravity="center"
+                            android:padding="8dp"/>
+                    </TableRow>
+                </TableLayout>
+
+                <TextView
+                    android:id="@+id/tvNoCustomerData"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:orientation="horizontal">
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Tổng khách:" />
-                    <TextView
-                        android:id="@+id/tvCustomerTotal"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0"
-                        android:textStyle="bold" />
-                </LinearLayout>
+                    android:text="Đang tải dữ liệu..."
+                    android:textColor="@color/text_hint"
+                    android:textSize="13sp" />
 
-                <LinearLayout
+                <!-- Divider -->
+                <View
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:orientation="horizontal">
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Khách mới (theo lọc):" />
-                    <TextView
-                        android:id="@+id/tvCustomerNewRange"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0"
-                        android:textStyle="bold" />
-                </LinearLayout>
+                    android:layout_height="1dp"
+                    android:layout_marginVertical="12dp"
+                    android:background="@color/divider" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:orientation="horizontal">
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Khách mua nhiều:" />
-                    <TextView
-                        android:id="@+id/tvCustomerTopBuyer"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="-"
-                        android:textStyle="bold" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:orientation="horizontal">
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Tần suất mua:" />
-                    <TextView
-                        android:id="@+id/tvCustomerFrequency"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0 đơn/khách"
-                        android:textStyle="bold" />
-                </LinearLayout>
-            </LinearLayout>
-
-            <!-- Top selling foods -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:background="@drawable/bg_admin_card"
-                android:orientation="vertical"
-                android:padding="12dp">
-
+                <!-- === Top 10 món bán chạy === -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Top 10 món bán chạy"
                     android:textColor="@color/text_primary"
-                    android:textSize="15sp"
+                    android:textSize="14sp"
                     android:textStyle="bold" />
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvTopFoods"
+                <TableLayout
+                    android:id="@+id/tableTopFoods"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:nestedScrollingEnabled="false" />
+                    android:layout_marginTop="8dp">
+
+                    <TableRow
+                        android:background="#EEEEEE"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="0.4"
+                            android:layout_height="wrap_content"
+                            android:text="Hạng"
+                            android:textStyle="bold"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_primary"
+                            android:gravity="center"
+                            android:padding="8dp"/>
+
+                        <View android:layout_width="1dp" android:layout_height="match_parent" android:background="#CCCCCC"/>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="1.2"
+                            android:layout_height="wrap_content"
+                            android:text="Tên món"
+                            android:textStyle="bold"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_primary"
+                            android:padding="8dp"/>
+
+                        <View android:layout_width="1dp" android:layout_height="match_parent" android:background="#CCCCCC"/>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="0.6"
+                            android:layout_height="wrap_content"
+                            android:text="Số lượng"
+                            android:textStyle="bold"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_primary"
+                            android:gravity="center"
+                            android:padding="8dp"/>
+
+                        <View android:layout_width="1dp" android:layout_height="match_parent" android:background="#CCCCCC"/>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="0.8"
+                            android:layout_height="wrap_content"
+                            android:text="Doanh thu"
+                            android:textStyle="bold"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_primary"
+                            android:gravity="center"
+                            android:padding="8dp"/>
+                    </TableRow>
+                </TableLayout>
 
                 <TextView
                     android:id="@+id/tvNoTopFoods"

@@ -108,7 +108,7 @@ public class AdminReportStatisticsActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        AdminBottomNavHelper.setup(this, AdminBottomNavHelper.TAB_REPORT);
+        AdminBottomNavHelper.setup(this, AdminBottomNavHelper.TAB_REVENUE);
     }
 
     private void initViews() {
@@ -244,7 +244,7 @@ public class AdminReportStatisticsActivity extends AppCompatActivity {
         String toStr = isoFormat.format(now.getTime()) + "T23:59:59";
 
         Map<String, String> filters = new HashMap<>();
-        filters.put("created_at", "gte." + fromStr);
+        filters.put("and", "(created_at.gte." + fromStr + ",created_at.lte." + toStr + ")");
 
         dbService.getOrdersByDateRange(filters, "*").enqueue(new Callback<List<Order>>() {
             @Override
@@ -395,7 +395,7 @@ public class AdminReportStatisticsActivity extends AppCompatActivity {
         String toStr = isoFormat.format(reportTo.getTime()) + "T23:59:59";
 
         Map<String, String> filters = new HashMap<>();
-        filters.put("created_at", "gte." + fromStr);
+        filters.put("and", "(created_at.gte." + fromStr + ",created_at.lte." + toStr + ")");
 
         dbService.getOrdersByDateRange(filters, "*").enqueue(new Callback<List<Order>>() {
             @Override

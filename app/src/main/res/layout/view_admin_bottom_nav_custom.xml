@@ -91,42 +91,6 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/navAdminReport"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center_horizontal"
-            android:minHeight="52dp"
-            android:orientation="vertical">
-
-            <FrameLayout
-                android:id="@+id/navAdminReportIconWrap"
-                android:layout_width="56dp"
-                android:layout_height="32dp">
-
-                <ImageView
-                    android:id="@+id/navAdminReportIcon"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_gravity="center"
-                    android:src="@drawable/ic_chart" />
-            </FrameLayout>
-
-            <TextView
-                android:id="@+id/navAdminReportLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:maxLines="1"
-                android:text="Báo cáo"
-                android:textColor="@color/text_hint"
-                android:textSize="10sp" />
-        </LinearLayout>
-
-        <LinearLayout
             android:id="@+id/navAdminFeedback"
             android:layout_width="0dp"
             android:layout_height="wrap_content"

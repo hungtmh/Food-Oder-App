@@ -13,7 +13,6 @@ import com.example.food_order_app.R;
 import com.example.food_order_app.controller.AdminFeedbackActivity;
 import com.example.food_order_app.controller.AdminHomeActivity;
 import com.example.food_order_app.controller.AdminOrdersActivity;
-import com.example.food_order_app.controller.AdminReportStatisticsActivity;
 import com.example.food_order_app.controller.AdminRevenueActivity;
 import com.example.food_order_app.controller.ProfileActivity;
 
@@ -21,7 +20,6 @@ public final class AdminBottomNavHelper {
 
     public static final int TAB_FOOD = R.id.navAdminFood;
     public static final int TAB_REVENUE = R.id.navAdminRevenue;
-    public static final int TAB_REPORT = R.id.navAdminReport;
     public static final int TAB_FEEDBACK = R.id.navAdminFeedback;
     public static final int TAB_ORDERS = R.id.navAdminOrders;
     public static final int TAB_PROFILE = R.id.navAdminProfile;
@@ -34,8 +32,6 @@ public final class AdminBottomNavHelper {
                 selectedTabId, AdminHomeActivity.class);
         bindItem(activity, TAB_REVENUE, R.id.navAdminRevenueIconWrap, R.id.navAdminRevenueIcon, R.id.navAdminRevenueLabel,
                 selectedTabId, AdminRevenueActivity.class);
-        bindItem(activity, TAB_REPORT, R.id.navAdminReportIconWrap, R.id.navAdminReportIcon, R.id.navAdminReportLabel,
-                selectedTabId, AdminReportStatisticsActivity.class);
         bindItem(activity, TAB_FEEDBACK, R.id.navAdminFeedbackIconWrap, R.id.navAdminFeedbackIcon, R.id.navAdminFeedbackLabel,
                 selectedTabId, AdminFeedbackActivity.class);
         bindItem(activity, TAB_ORDERS, R.id.navAdminOrdersIconWrap, R.id.navAdminOrdersIcon, R.id.navAdminOrdersLabel,
