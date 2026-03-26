@@ -224,28 +224,55 @@
                 android:background="@color/divider" />
 
             <LinearLayout
+                android:id="@+id/layoutReviewHeader"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
+                android:background="?android:attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
                 android:gravity="center_vertical"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:paddingVertical="8dp">
 
                 <TextView
-                    android:layout_width="0dp"
+                    android:id="@+id/tvDetailReviewHeaderTitle"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Đánh giá"
+                    android:text="Đánh giá (0)"
                     android:textColor="@color/text_primary"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
-                <TextView
-                    android:id="@+id/tvWriteReview"
+                <RatingBar
+                    android:id="@+id/rbDetailReviewHeader"
+                    style="?android:attr/ratingBarStyleSmall"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Viết đánh giá"
+                    android:layout_marginStart="8dp"
+                    android:isIndicator="true"
+                    android:numStars="5"
+                    android:stepSize="0.1"
+                    android:progressTint="@color/primary" />
+
+                <TextView
+                    android:id="@+id/tvDetailReviewHeaderScore"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:text="0.0"
                     android:textColor="@color/primary"
-                    android:textSize="13sp" />
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=">"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
@@ -265,6 +292,8 @@
                 android:textColor="@color/text_hint"
                 android:textSize="14sp"
                 android:visibility="gone" />
+
+            <!-- We omit TV view all reviews -->
 
             <!-- Bottom spacing -->
             <View

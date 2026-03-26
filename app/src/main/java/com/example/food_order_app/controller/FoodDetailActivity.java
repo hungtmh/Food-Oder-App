@@ -1,8 +1,12 @@
 package com.example.food_order_app.controller;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Paint;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -14,6 +18,8 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -21,6 +27,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.food_order_app.R;
 import com.example.food_order_app.adapter.ReviewAdapter;
+import com.example.food_order_app.config.SupabaseConfig;
 import com.example.food_order_app.model.Cart;
 import com.example.food_order_app.model.CartItem;
 import com.example.food_order_app.model.Favorite;
@@ -28,39 +35,55 @@ import com.example.food_order_app.model.Food;
 import com.example.food_order_app.model.Review;
 import com.example.food_order_app.network.RetrofitClient;
 import com.example.food_order_app.network.SupabaseDbService;
+import com.example.food_order_app.network.SupabaseStorageService;
 import com.example.food_order_app.utils.SessionManager;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 public class FoodDetailActivity extends AppCompatActivity {
     private static final String TAG = "FoodDetailActivity";
+    private static final String REVIEW_BUCKET = "reviews";
 
     private ImageView imgFoodDetail;
     private ImageView btnDetailFavorite;
     private TextView btnBack, tvDetailDiscount, tvDetailName, tvDetailRating, tvDetailReviewCount;
     private TextView tvDetailDiscountedPrice, tvDetailOriginalPrice, tvDetailDescription;
-    private TextView tvDetailQuantity, tvWriteReview, tvNoReviews;
+    private TextView tvDetailQuantity, tvWriteReview, tvNoReviews, tvViewAllReviews;
     private ImageButton btnDetailMinus, btnDetailPlus;
     private Button btnAddToCart;
     private RecyclerView rvReviews;
 
     private SupabaseDbService dbService;
+    private SupabaseStorageService storageService;
     private SessionManager sessionManager;
     private ReviewAdapter reviewAdapter;
     private NumberFormat nf;
+    private ProgressDialog progressDialog;
 
     private Food currentFood;
     private int quantity = 1;
     private String foodId;
     private boolean isFavorite = false;
+
+    // Review header views
+    private View layoutReviewHeader;
+    private TextView tvDetailReviewHeaderTitle;
+    private RatingBar rbDetailReviewHeader;
+    private TextView tvDetailReviewHeaderScore;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,8 +91,12 @@ public class FoodDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_food_detail);
 
         dbService = RetrofitClient.getDbService();
+        storageService = RetrofitClient.getStorageService();
         sessionManager = new SessionManager(this);
         nf = NumberFormat.getInstance(new Locale("vi", "VN"));
+
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setCancelable(false);
 
         foodId = getIntent().getStringExtra("food_id");
         if (foodId == null) {
@@ -83,6 +110,18 @@ public class FoodDetailActivity extends AppCompatActivity {
         checkFavoriteStatus();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (foodId != null) {
+            loadFoodDetail();
+            // loadReviews will be called automatically but just to be safe:
+            loadReviews();
+        }
+    }
+
+
+
     private void initViews() {
         imgFoodDetail = findViewById(R.id.imgFoodDetail);
         btnBack = findViewById(R.id.btnBack);
@@ -95,12 +134,16 @@ public class FoodDetailActivity extends AppCompatActivity {
         tvDetailOriginalPrice = findViewById(R.id.tvDetailOriginalPrice);
         tvDetailDescription = findViewById(R.id.tvDetailDescription);
         tvDetailQuantity = findViewById(R.id.tvDetailQuantity);
-        tvWriteReview = findViewById(R.id.tvWriteReview);
         tvNoReviews = findViewById(R.id.tvNoReviews);
         btnDetailMinus = findViewById(R.id.btnDetailMinus);
         btnDetailPlus = findViewById(R.id.btnDetailPlus);
         btnAddToCart = findViewById(R.id.btnAddToCart);
         rvReviews = findViewById(R.id.rvReviews);
+
+        layoutReviewHeader = findViewById(R.id.layoutReviewHeader);
+        tvDetailReviewHeaderTitle = findViewById(R.id.tvDetailReviewHeaderTitle);
+        rbDetailReviewHeader = findViewById(R.id.rbDetailReviewHeader);
+        tvDetailReviewHeaderScore = findViewById(R.id.tvDetailReviewHeaderScore);
 
         reviewAdapter = new ReviewAdapter(this);
         rvReviews.setLayoutManager(new LinearLayoutManager(this));
@@ -122,7 +165,12 @@ public class FoodDetailActivity extends AppCompatActivity {
 
         btnAddToCart.setOnClickListener(v -> addToCart());
 
-        tvWriteReview.setOnClickListener(v -> showReviewDialog());
+        layoutReviewHeader.setOnClickListener(v -> {
+            Intent intent = new Intent(this, FoodReviewsActivity.class);
+            intent.putExtra("food_id", foodId);
+            intent.putExtra("food_name", currentFood != null ? currentFood.getName() : "");
+            startActivity(intent);
+        });
 
         btnDetailFavorite.setOnClickListener(v -> toggleFavorite());
     }
@@ -232,6 +280,11 @@ public class FoodDetailActivity extends AppCompatActivity {
             tvDetailOriginalPrice.setVisibility(View.GONE);
             tvDetailDiscount.setVisibility(View.GONE);
         }
+
+        // Review Header
+        tvDetailReviewHeaderTitle.setText("Đánh giá (" + currentFood.getTotalReviews() + ")");
+        rbDetailReviewHeader.setRating((float) currentFood.getAvgRating());
+        tvDetailReviewHeaderScore.setText(String.format(Locale.getDefault(), "%.1f", currentFood.getAvgRating()));
     }
 
     private void loadReviews() {
@@ -240,6 +293,19 @@ public class FoodDetailActivity extends AppCompatActivity {
             public void onResponse(Call<List<Review>> call, Response<List<Review>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     List<Review> reviews = response.body();
+
+                    int total = reviews.size();
+                    double sum = 0;
+                    for (Review r : reviews) sum += r.getRating();
+                    double avg = total > 0 ? (sum / total) : 0;
+                    avg = Math.round(avg * 10.0) / 10.0;
+                    
+                    tvDetailRating.setText(String.format(Locale.getDefault(), "%.1f", avg));
+                    tvDetailReviewCount.setText("(" + total + " đánh giá)");
+                    tvDetailReviewHeaderTitle.setText("Đánh giá (" + total + ")");
+                    rbDetailReviewHeader.setRating((float) avg);
+                    tvDetailReviewHeaderScore.setText(String.format(Locale.getDefault(), "%.1f", avg));
+
                     if (reviews.isEmpty()) {
                         tvNoReviews.setVisibility(View.VISIBLE);
                         rvReviews.setVisibility(View.GONE);
@@ -350,49 +416,5 @@ public class FoodDetailActivity extends AppCompatActivity {
         });
     }
 
-    private void showReviewDialog() {
-        if (!sessionManager.isLoggedIn()) {
-            Toast.makeText(this, "Vui lòng đăng nhập để đánh giá", Toast.LENGTH_SHORT).show();
-            return;
-        }
 
-        View dialogView = getLayoutInflater().inflate(R.layout.dialog_review, null);
-        RatingBar rbRating = dialogView.findViewById(R.id.rbDialogRating);
-        EditText etComment = dialogView.findViewById(R.id.etDialogComment);
-
-        new AlertDialog.Builder(this)
-                .setView(dialogView)
-                .setPositiveButton("Gửi", (dialog, which) -> {
-                    int rating = (int) rbRating.getRating();
-                    String comment = etComment.getText().toString().trim();
-                    submitReview(rating, comment);
-                })
-                .setNegativeButton("Hủy", null)
-                .show();
-    }
-
-    private void submitReview(int rating, String comment) {
-        Map<String, Object> reviewData = new HashMap<>();
-        reviewData.put("food_id", foodId);
-        reviewData.put("user_id", sessionManager.getUserId());
-        reviewData.put("rating", rating);
-        reviewData.put("comment", comment);
-
-        dbService.createReview(reviewData).enqueue(new Callback<Void>() {
-            @Override
-            public void onResponse(Call<Void> call, Response<Void> response) {
-                if (response.isSuccessful()) {
-                    Toast.makeText(FoodDetailActivity.this, "Đã gửi đánh giá!", Toast.LENGTH_SHORT).show();
-                    loadReviews();
-                } else {
-                    Toast.makeText(FoodDetailActivity.this, "Lỗi gửi đánh giá", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<Void> call, Throwable t) {
-                Log.e(TAG, "submitReview failed: " + t.getMessage());
-            }
-        });
-    }
 }

@@ -11,8 +11,12 @@ public class Review {
     private String userId;
     @SerializedName("rating")
     private int rating;
+    @SerializedName("title")
+    private String title;
     @SerializedName("comment")
     private String comment;
+    @SerializedName("image_url")
+    private String imageUrl;
     @SerializedName("created_at")
     private String createdAt;
     @SerializedName("sentiment")
@@ -36,7 +40,11 @@ public class Review {
     public String getFoodId() { return foodId; }
     public String getUserId() { return userId; }
     public int getRating() { return rating; }
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
     public String getComment() { return comment; }
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
     public String getCreatedAt() { return createdAt; }
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }

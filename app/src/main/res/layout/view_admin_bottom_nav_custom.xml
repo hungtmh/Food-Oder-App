@@ -127,7 +127,7 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/navAdminFeedback"
+            android:id="@+id/navAdminChat"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -139,12 +139,12 @@
             android:orientation="vertical">
 
             <FrameLayout
-                android:id="@+id/navAdminFeedbackIconWrap"
+                android:id="@+id/navAdminChatIconWrap"
                 android:layout_width="56dp"
                 android:layout_height="32dp">
 
                 <ImageView
-                    android:id="@+id/navAdminFeedbackIcon"
+                    android:id="@+id/navAdminChatIcon"
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:layout_gravity="center"
@@ -152,12 +152,12 @@
             </FrameLayout>
 
             <TextView
-                android:id="@+id/navAdminFeedbackLabel"
+                android:id="@+id/navAdminChatLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
                 android:maxLines="1"
-                android:text="Phản hồi"
+                android:text="Chat"
                 android:textColor="@color/text_hint"
                 android:textSize="10sp" />
         </LinearLayout>

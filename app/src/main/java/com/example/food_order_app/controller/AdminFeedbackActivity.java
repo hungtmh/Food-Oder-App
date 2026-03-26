@@ -47,7 +47,7 @@ public class AdminFeedbackActivity extends AppCompatActivity implements AdminFee
     @Override
     protected void onResume() {
         super.onResume();
-        AdminBottomNavHelper.setup(this, AdminBottomNavHelper.TAB_FEEDBACK);
+        AdminBottomNavHelper.setup(this, 0);
         loadFeedbacks();
     }
 

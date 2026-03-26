@@ -4,6 +4,8 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.HorizontalScrollView;
+import android.widget.LinearLayout;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
@@ -51,21 +53,56 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewView
 
     class ReviewViewHolder extends RecyclerView.ViewHolder {
         ImageView imgAvatar;
-        TextView tvUserName, tvDate, tvComment;
+        TextView tvUserName, tvDate, tvComment, tvTitle;
         RatingBar ratingBar;
+        HorizontalScrollView hsvReviewImages;
+        LinearLayout layoutReviewImages;
 
         ReviewViewHolder(@NonNull View itemView) {
             super(itemView);
             imgAvatar = itemView.findViewById(R.id.imgReviewAvatar);
             tvUserName = itemView.findViewById(R.id.tvReviewUserName);
             tvDate = itemView.findViewById(R.id.tvReviewDate);
+            tvTitle = itemView.findViewById(R.id.tvReviewTitle);
             tvComment = itemView.findViewById(R.id.tvReviewComment);
             ratingBar = itemView.findViewById(R.id.rbReviewRating);
+            hsvReviewImages = itemView.findViewById(R.id.hsvReviewImages);
+            layoutReviewImages = itemView.findViewById(R.id.layoutReviewImages);
         }
 
         void bind(Review review) {
             tvComment.setText(review.getComment());
             ratingBar.setRating(review.getRating());
+
+            // Title
+            if (review.getTitle() != null && !review.getTitle().isEmpty()) {
+                tvTitle.setText(review.getTitle());
+                tvTitle.setVisibility(View.VISIBLE);
+            } else {
+                tvTitle.setVisibility(View.GONE);
+            }
+
+            // Review images
+            if (review.getImageUrl() != null && !review.getImageUrl().isEmpty()) {
+                hsvReviewImages.setVisibility(View.VISIBLE);
+                layoutReviewImages.removeAllViews();
+                String[] urls = review.getImageUrl().split(",");
+                for (String url : urls) {
+                    if (url.trim().isEmpty()) continue;
+                    ImageView iv = new ImageView(context);
+                    LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                            dip2px(context, 100), dip2px(context, 100)
+                    );
+                    params.setMarginEnd(dip2px(context, 8));
+                    iv.setLayoutParams(params);
+                    iv.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                    Glide.with(context).load(url.trim()).placeholder(R.drawable.bg_card).into(iv);
+                    layoutReviewImages.addView(iv);
+                }
+            } else {
+                hsvReviewImages.setVisibility(View.GONE);
+                layoutReviewImages.removeAllViews();
+            }
 
             if (review.getUser() != null) {
                 tvUserName.setText(review.getUser().getFullName());
@@ -88,6 +125,11 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewView
             } catch (Exception e) {
                 tvDate.setText("");
             }
+        }
+
+        private int dip2px(Context context, float dpValue) {
+            final float scale = context.getResources().getDisplayMetrics().density;
+            return (int) (dpValue * scale + 0.5f);
         }
     }
 }

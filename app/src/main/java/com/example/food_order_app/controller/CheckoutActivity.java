@@ -37,6 +37,13 @@ import retrofit2.Response;
 public class CheckoutActivity extends AppCompatActivity {
     private static final String TAG = "CheckoutActivity";
 
+    // Order type
+    private RadioGroup rgOrderType;
+    private LinearLayout layoutDeliveryAddress;
+    private boolean isDineIn = false;
+    private LinearLayout layoutDineIn;
+    private EditText edtDineInName, edtDineInTable;
+
     // Address card views
     private LinearLayout layoutSelectedAddress, layoutAddressDetail;
     private TextView tvNoAddressHint, tvSelectedName, tvSelectedPhone, tvSelectedAddress;
@@ -77,6 +84,15 @@ public class CheckoutActivity extends AppCompatActivity {
     }
 
     private void initViews() {
+        // Order type
+        rgOrderType = findViewById(R.id.rgOrderType);
+        layoutDeliveryAddress = findViewById(R.id.layoutDeliveryAddress);
+        layoutDineIn = findViewById(R.id.layoutDineIn);
+        edtDineInName = findViewById(R.id.edtDineInName);
+        edtDineInTable = findViewById(R.id.edtDineInTable);
+        
+        edtDineInName.setText(sessionManager.getFullName());
+
         layoutSelectedAddress = findViewById(R.id.layoutSelectedAddress);
         layoutAddressDetail = findViewById(R.id.layoutAddressDetail);
         tvNoAddressHint = findViewById(R.id.tvNoAddressHint);
@@ -98,6 +114,13 @@ public class CheckoutActivity extends AppCompatActivity {
             Intent intent = new Intent(this, AddressActivity.class);
             intent.putExtra(AddressActivity.EXTRA_PICK_MODE, true);
             startActivityForResult(intent, REQ_PICK_ADDRESS);
+        });
+
+        // Order type toggle
+        rgOrderType.setOnCheckedChangeListener((group, checkedId) -> {
+            isDineIn = (checkedId == R.id.rbDineIn);
+            layoutDeliveryAddress.setVisibility(isDineIn ? View.GONE : View.VISIBLE);
+            layoutDineIn.setVisibility(isDineIn ? View.VISIBLE : View.GONE);
         });
 
         tvSubtotal.setText(nf.format(totalAmount) + " VNĐ");
@@ -167,10 +190,21 @@ public class CheckoutActivity extends AppCompatActivity {
     }
 
     private void placeOrder() {
-        if (selectedReceiverName == null || selectedPhone == null || selectedAddressText == null) {
-            Toast.makeText(this, "Vui lòng chọn địa chỉ giao hàng", Toast.LENGTH_SHORT).show();
-            return;
+        // Only require address for delivery
+        if (!isDineIn) {
+            if (selectedReceiverName == null || selectedPhone == null || selectedAddressText == null) {
+                Toast.makeText(this, "Vui lòng chọn địa chỉ giao hàng", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        } else {
+            String dineInName = edtDineInName.getText().toString().trim();
+            String dineInTable = edtDineInTable.getText().toString().trim();
+            if (dineInName.isEmpty() || dineInTable.isEmpty()) {
+                Toast.makeText(this, "Vui lòng nhập tên và số bàn", Toast.LENGTH_SHORT).show();
+                return;
+            }
         }
+
         String note = etNote.getText().toString().trim();
 
         if (cartItems == null || cartItems.isEmpty()) {
@@ -179,6 +213,7 @@ public class CheckoutActivity extends AppCompatActivity {
         }
 
         String paymentMethod = rgPayment.getCheckedRadioButtonId() == R.id.rbCOD ? "cod" : "banking";
+        String orderType = isDineIn ? "dine_in" : "delivery";
         String orderCode = "ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
 
         btnPlaceOrder.setEnabled(false);
@@ -187,15 +222,25 @@ public class CheckoutActivity extends AppCompatActivity {
         Map<String, Object> orderData = new HashMap<>();
         orderData.put("user_id", sessionManager.getUserId());
         orderData.put("order_code", orderCode);
-        orderData.put("receiver_name", selectedReceiverName);
-        orderData.put("phone", selectedPhone);
-        orderData.put("address", selectedAddressText);
         orderData.put("payment_method", paymentMethod);
+        orderData.put("order_type", orderType);
         orderData.put("note", note);
         orderData.put("subtotal", totalAmount);
         orderData.put("discount_amount", 0);
         orderData.put("total_amount", totalAmount);
         orderData.put("status", "pending");
+
+        if (isDineIn) {
+            String dineInName = edtDineInName.getText().toString().trim();
+            String dineInTable = edtDineInTable.getText().toString().trim();
+            orderData.put("receiver_name", dineInName);
+            orderData.put("phone", sessionManager.getPhone() != null ? sessionManager.getPhone() : "");
+            orderData.put("address", "Ăn tại quán - " + dineInTable);
+        } else {
+            orderData.put("receiver_name", selectedReceiverName);
+            orderData.put("phone", selectedPhone);
+            orderData.put("address", selectedAddressText);
+        }
 
         dbService.createOrder(orderData).enqueue(new Callback<List<Order>>() {
             @Override
@@ -294,4 +339,3 @@ public class CheckoutActivity extends AppCompatActivity {
         }
     }
 }
-

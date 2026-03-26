@@ -13,9 +13,9 @@
         android:icon="@drawable/ic_chart"
         android:title="Báo cáo" />
     <item
-        android:id="@+id/nav_admin_feedback"
+        android:id="@+id/nav_admin_chat"
         android:icon="@drawable/ic_feedback"
-        android:title="Phản hồi" />
+        android:title="Chat" />
     <item
         android:id="@+id/nav_admin_orders"
         android:icon="@drawable/ic_cart"

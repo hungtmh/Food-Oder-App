@@ -2,7 +2,11 @@ package com.example.food_order_app.controller;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.RotateAnimation;
 import android.widget.Button;
@@ -12,23 +16,33 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.example.food_order_app.R;
+import com.example.food_order_app.config.SupabaseConfig;
 import com.example.food_order_app.model.User;
 import com.example.food_order_app.network.RetrofitClient;
 import com.example.food_order_app.network.SupabaseAuthService;
 import com.example.food_order_app.network.SupabaseDbService;
+import com.example.food_order_app.network.SupabaseStorageService;
 import com.example.food_order_app.utils.SessionManager;
 import com.example.food_order_app.utils.ValidationUtils;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -38,6 +52,7 @@ import retrofit2.Response;
  */
 public class ProfileActivity extends AppCompatActivity {
     private static final String TAG = "ProfileActivity";
+    private static final String STORAGE_BUCKET = "avatars";
 
     // Header
     private ImageView btnBack, btnChangeAvatar;
@@ -53,8 +68,6 @@ public class ProfileActivity extends AppCompatActivity {
 
     // Orders section (navigates to OrderHistoryActivity)
     private LinearLayout sectionOrdersHeader;
-    // Address section
-    private LinearLayout sectionAddressHeader;
 
     // Favorites section (navigates to FavoritesActivity)
     private LinearLayout sectionFavoritesHeader;
@@ -65,6 +78,10 @@ public class ProfileActivity extends AppCompatActivity {
     private ProgressDialog progressDialog;
     private SessionManager sessionManager;
     private SupabaseDbService dbService;
+    private SupabaseStorageService storageService;
+
+    // Image picker launcher
+    private ActivityResultLauncher<Intent> pickImageLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,10 +90,12 @@ public class ProfileActivity extends AppCompatActivity {
 
         sessionManager = new SessionManager(this);
         dbService = RetrofitClient.getDbService();
+        storageService = RetrofitClient.getStorageService();
 
         initViews();
         loadUserData();
         setupListeners();
+        setupImagePicker();
     }
 
     private void initViews() {
@@ -97,8 +116,6 @@ public class ProfileActivity extends AppCompatActivity {
 
         // Orders section
         sectionOrdersHeader = findViewById(R.id.sectionOrdersHeader);
-        // Address section
-        sectionAddressHeader = findViewById(R.id.sectionAddressHeader);
 
         // Favorites section
         sectionFavoritesHeader = findViewById(R.id.sectionFavoritesHeader);
@@ -133,12 +150,27 @@ public class ProfileActivity extends AppCompatActivity {
         }
     }
 
+    private void setupImagePicker() {
+        pickImageLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        Uri imageUri = result.getData().getData();
+                        if (imageUri != null) {
+                            uploadAvatarToStorage(imageUri);
+                        }
+                    }
+                }
+        );
+    }
+
     private void setupListeners() {
         btnBack.setOnClickListener(v -> finish());
 
         btnChangeAvatar.setOnClickListener(v -> {
-            Toast.makeText(this, "Chức năng đổi ảnh đại diện sẽ được cập nhật!",
-                    Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(Intent.ACTION_PICK);
+            intent.setType("image/*");
+            pickImageLauncher.launch(intent);
         });
 
         // Collapsible: Personal info
@@ -152,10 +184,6 @@ public class ProfileActivity extends AppCompatActivity {
             startActivity(new Intent(ProfileActivity.this, OrderHistoryActivity.class));
         });
 
-        // Address: navigate to AddressActivity
-        sectionAddressHeader.setOnClickListener(v -> {
-            startActivity(new Intent(ProfileActivity.this, AddressActivity.class));
-        });
 
         // Favorites: navigate to FavoritesActivity
         sectionFavoritesHeader.setOnClickListener(v -> {
@@ -172,6 +200,167 @@ public class ProfileActivity extends AppCompatActivity {
 
         // Logout
         btnLogout.setOnClickListener(v -> showLogoutConfirmation());
+    }
+
+    // ============ AVATAR UPLOAD ============
+
+    private void uploadAvatarToStorage(Uri imageUri) {
+        progressDialog.setMessage("Đang tải ảnh lên...");
+        progressDialog.show();
+
+        try {
+            // Read and compress image
+            InputStream inputStream = getContentResolver().openInputStream(imageUri);
+            if (inputStream == null) {
+                progressDialog.dismiss();
+                Toast.makeText(this, "Không thể đọc ảnh", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+            inputStream.close();
+
+            if (bitmap == null) {
+                progressDialog.dismiss();
+                Toast.makeText(this, "Ảnh không hợp lệ", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Resize if too large (max 800px)
+            int maxSize = 800;
+            int width = bitmap.getWidth();
+            int height = bitmap.getHeight();
+            if (width > maxSize || height > maxSize) {
+                float scale = Math.min((float) maxSize / width, (float) maxSize / height);
+                width = Math.round(width * scale);
+                height = Math.round(height * scale);
+                bitmap = Bitmap.createScaledBitmap(bitmap, width, height, true);
+            }
+
+            // Compress to JPEG
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, baos);
+            byte[] imageBytes = baos.toByteArray();
+
+            // Generate unique file path
+            String userId = sessionManager.getUserId();
+            String fileName = (userId != null ? userId : UUID.randomUUID().toString()) + ".jpg";
+
+            RequestBody requestBody = RequestBody.create(
+                    MediaType.parse("image/jpeg"), imageBytes);
+
+            // Upload to Supabase Storage
+            storageService.uploadFile(STORAGE_BUCKET, fileName, "image/jpeg", "true", requestBody)
+                    .enqueue(new Callback<ResponseBody>() {
+                        @Override
+                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                            if (response.isSuccessful()) {
+                                // Build public URL
+                                String publicUrl = SupabaseConfig.STORAGE_URL
+                                        + "object/public/" + STORAGE_BUCKET + "/" + fileName;
+                                saveAvatarUrl(publicUrl);
+                            } else {
+                                progressDialog.dismiss();
+                                String errorMsg = "Upload thất bại";
+                                try {
+                                    if (response.errorBody() != null) {
+                                        errorMsg += ": " + response.errorBody().string();
+                                    }
+                                } catch (Exception e) {
+                                    // ignore
+                                }
+                                Log.e(TAG, "Upload failed: " + response.code() + " " + errorMsg);
+                                Toast.makeText(ProfileActivity.this, "Upload ảnh thất bại. Mã lỗi: " + response.code(), Toast.LENGTH_LONG).show();
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResponseBody> call, Throwable t) {
+                            progressDialog.dismiss();
+                            Log.e(TAG, "Upload error: " + t.getMessage());
+                            Toast.makeText(ProfileActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+        } catch (Exception e) {
+            progressDialog.dismiss();
+            Log.e(TAG, "Image processing error: " + e.getMessage());
+            Toast.makeText(this, "Lỗi xử lý ảnh: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void saveAvatarUrl(String newUrl) {
+        String userId = sessionManager.getUserId();
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("avatar_url", newUrl);
+
+        if (userId == null || userId.isEmpty()) {
+            saveAvatarUrlByEmail(updates, newUrl);
+            return;
+        }
+
+        dbService.updateUser("eq." + userId, updates).enqueue(new Callback<List<User>>() {
+            @Override
+            public void onResponse(Call<List<User>> call, Response<List<User>> response) {
+                progressDialog.dismiss();
+                if (response.isSuccessful()) {
+                    sessionManager.updateProfile(sessionManager.getFullName(),
+                            sessionManager.getPhone(), sessionManager.getAddress(), newUrl);
+                    loadUserData();
+                    Toast.makeText(ProfileActivity.this, "Đã cập nhật ảnh đại diện!", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(ProfileActivity.this, "Cập nhật thất bại", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<User>> call, Throwable t) {
+                progressDialog.dismiss();
+                Toast.makeText(ProfileActivity.this, getString(R.string.error_network), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void saveAvatarUrlByEmail(Map<String, Object> updates, String newUrl) {
+        String email = sessionManager.getEmail();
+        dbService.getUserByEmail("eq." + email, "*").enqueue(new Callback<List<User>>() {
+            @Override
+            public void onResponse(Call<List<User>> call, Response<List<User>> response) {
+                if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                    User user = response.body().get(0);
+                    dbService.updateUser("eq." + user.getId(), updates).enqueue(new Callback<List<User>>() {
+                        @Override
+                        public void onResponse(Call<List<User>> call, Response<List<User>> response) {
+                            progressDialog.dismiss();
+                            if (response.isSuccessful()) {
+                                sessionManager.updateProfile(sessionManager.getFullName(),
+                                        sessionManager.getPhone(), sessionManager.getAddress(), newUrl);
+                                loadUserData();
+                                Toast.makeText(ProfileActivity.this, "Đã cập nhật ảnh đại diện!", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(ProfileActivity.this, "Cập nhật thất bại", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<List<User>> call, Throwable t) {
+                            progressDialog.dismiss();
+                            Toast.makeText(ProfileActivity.this, getString(R.string.error_network), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                } else {
+                    progressDialog.dismiss();
+                    Toast.makeText(ProfileActivity.this, "Không tìm thấy tài khoản", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<User>> call, Throwable t) {
+                progressDialog.dismiss();
+                Toast.makeText(ProfileActivity.this, getString(R.string.error_network), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     // ============ SECTION TOGGLE ANIMATION ============
@@ -232,7 +421,7 @@ public class ProfileActivity extends AppCompatActivity {
             public void onResponse(Call<List<User>> call, Response<List<User>> response) {
                 progressDialog.dismiss();
                 if (response.isSuccessful()) {
-                    sessionManager.updateProfile(fullName, phone, sessionManager.getAddress(), null);
+                    sessionManager.updateProfile(fullName, phone, sessionManager.getAddress(), sessionManager.getAvatarUrl());
                     tvProfileName.setText(fullName.isEmpty() ? "Người dùng" : fullName);
                     Toast.makeText(ProfileActivity.this,
                             getString(R.string.success_update_profile),
@@ -276,7 +465,7 @@ public class ProfileActivity extends AppCompatActivity {
                                 public void onResponse(Call<List<User>> call, Response<List<User>> response) {
                                     progressDialog.dismiss();
                                     if (response.isSuccessful()) {
-                                        sessionManager.updateProfile(fullName, phone, sessionManager.getAddress(), null);
+                                        sessionManager.updateProfile(fullName, phone, sessionManager.getAddress(), sessionManager.getAvatarUrl());
                                         tvProfileName.setText(fullName.isEmpty() ? "Người dùng" : fullName);
                                         Toast.makeText(ProfileActivity.this,
                                                 getString(R.string.success_update_profile),
