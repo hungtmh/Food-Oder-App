@@ -150,6 +150,11 @@ public interface SupabaseDbService {
             @Query("select") String select,
             @Query("order") String order);
 
+    @GET("orders")
+    Call<List<Order>> getOrderById(
+            @Query("id") String idFilter,
+            @Query("select") String select);
+
     // ==================== ORDER ITEMS ====================
     @POST("order_items")
     Call<Void> createOrderItem(@Body Map<String, Object> orderItem);
@@ -395,4 +400,16 @@ public interface SupabaseDbService {
     @Headers("Prefer: return=representation")
     @POST("chat_messages")
     Call<List<ChatMessage>> createChatMessage(@Body Map<String, Object> chatMessage);
+
+    // ==================== VOUCHERS ====================
+    @GET("vouchers")
+    Call<List<com.example.food_order_app.model.Voucher>> getVouchers(
+            @Query("is_active") String isActiveParam,
+            @Query("is_public") String isPublicParam,
+            @Query("order") String orderParam);
+
+    @GET("vouchers")
+    Call<List<com.example.food_order_app.model.Voucher>> getVoucherByCode(
+            @Query("code") String codeFilter,
+            @Query("is_active") String isActiveParam);
 }

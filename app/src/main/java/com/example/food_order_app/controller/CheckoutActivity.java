@@ -1,16 +1,25 @@
 package com.example.food_order_app.controller;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.EditText;
 import android.widget.Toast;
+import com.bumptech.glide.Glide;
+import com.example.food_order_app.model.Voucher;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -21,6 +30,7 @@ import com.example.food_order_app.model.CartItem;
 import com.example.food_order_app.model.Order;
 import com.example.food_order_app.network.RetrofitClient;
 import com.example.food_order_app.network.SupabaseDbService;
+import com.example.food_order_app.network.SupabaseEdgeService;
 import com.example.food_order_app.utils.SessionManager;
 
 import java.text.NumberFormat;
@@ -59,6 +69,7 @@ public class CheckoutActivity extends AppCompatActivity {
     private String selectedReceiverName, selectedPhone, selectedAddressText;
 
     private SupabaseDbService dbService;
+    private SupabaseEdgeService edgeService;
     private SessionManager sessionManager;
     private NumberFormat nf;
 
@@ -66,12 +77,21 @@ public class CheckoutActivity extends AppCompatActivity {
     private double totalAmount;
     private List<CartItem> cartItems;
 
+    // Voucher fields
+    private EditText etVoucherCode;
+    private Button btnApplyVoucher;
+    private Button btnSelectVoucher;
+    private double discountAmount = 0;
+    private String appliedVoucherId = null;
+    private String appliedVoucherCode = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_checkout);
 
         dbService = RetrofitClient.getDbService();
+        edgeService = RetrofitClient.getEdgeService();
         sessionManager = new SessionManager(this);
         nf = NumberFormat.getInstance(new Locale("vi", "VN"));
 
@@ -107,9 +127,16 @@ public class CheckoutActivity extends AppCompatActivity {
         tvTotalAmount = findViewById(R.id.tvTotalAmount);
         btnPlaceOrder = findViewById(R.id.btnPlaceOrder);
         btnPickAddress = findViewById(R.id.btnPickAddress);
+        
+        // Voucher
+        etVoucherCode = findViewById(R.id.etVoucherCode);
+        btnApplyVoucher = findViewById(R.id.btnApplyVoucher);
+        btnSelectVoucher = findViewById(R.id.btnSelectVoucher);
 
         btnBack.setOnClickListener(v -> finish());
         btnPlaceOrder.setOnClickListener(v -> placeOrder());
+        btnApplyVoucher.setOnClickListener(v -> handleApplyVoucher(etVoucherCode.getText().toString().trim()));
+        btnSelectVoucher.setOnClickListener(v -> showVoucherSelectionDialog());
         btnPickAddress.setOnClickListener(v -> {
             Intent intent = new Intent(this, AddressActivity.class);
             intent.putExtra(AddressActivity.EXTRA_PICK_MODE, true);
@@ -177,8 +204,7 @@ public class CheckoutActivity extends AppCompatActivity {
                         subtotal += item.getSubtotal();
                     }
                     totalAmount = subtotal;
-                    tvSubtotal.setText(nf.format(subtotal) + " VNĐ");
-                    tvTotalAmount.setText(nf.format(subtotal) + " VNĐ");
+                    updateTotalsUI();
                 }
             }
 
@@ -187,6 +213,162 @@ public class CheckoutActivity extends AppCompatActivity {
                 Log.e(TAG, "loadCartItems failed: " + t.getMessage());
             }
         });
+    }
+
+    private void showVoucherSelectionDialog() {
+        dbService.getVouchers("eq.true", "eq.true", "discount_value.desc").enqueue(new Callback<List<Voucher>>() {
+            @Override
+            public void onResponse(Call<List<Voucher>> call, Response<List<Voucher>> response) {
+                if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                    List<Voucher> vouchers = response.body();
+                    ListView listView = new ListView(CheckoutActivity.this);
+                    listView.setDividerHeight(1);
+                    listView.setPadding(24, 8, 24, 8);
+
+                    BaseAdapter adapter = new BaseAdapter() {
+                        @Override
+                        public int getCount() {
+                            return vouchers.size();
+                        }
+
+                        @Override
+                        public Object getItem(int position) {
+                            return vouchers.get(position);
+                        }
+
+                        @Override
+                        public long getItemId(int position) {
+                            return position;
+                        }
+
+                        @Override
+                        public View getView(int position, View convertView, ViewGroup parent) {
+                            View row = convertView;
+                            if (row == null) {
+                                row = LayoutInflater.from(CheckoutActivity.this)
+                                        .inflate(android.R.layout.simple_list_item_2, parent, false);
+                                row.setPadding(28, 24, 28, 24);
+                            }
+
+                            TextView line1 = row.findViewById(android.R.id.text1);
+                            TextView line2 = row.findViewById(android.R.id.text2);
+                            Voucher v = vouchers.get(position);
+
+                            line1.setText(v.getCode() + "  •  " + v.getTitle());
+                            line1.setTextSize(15f);
+                            line1.setSingleLine(false);
+
+                            line2.setText(buildVoucherSubtitle(v));
+                            line2.setTextSize(13f);
+                            line2.setSingleLine(false);
+                            return row;
+                        }
+                    };
+
+                    listView.setAdapter(adapter);
+
+                    AlertDialog dialog = new AlertDialog.Builder(CheckoutActivity.this)
+                            .setTitle("Chọn mã giảm giá")
+                            .setView(listView)
+                            .setNegativeButton("Đóng", null)
+                            .create();
+
+                    listView.setOnItemClickListener((AdapterView<?> parent, View view, int position, long id) -> {
+                        Voucher selected = vouchers.get(position);
+                        etVoucherCode.setText(selected.getCode());
+                        handleApplyVoucherReal(selected);
+                        dialog.dismiss();
+                    });
+
+                    dialog.show();
+                } else {
+                    Toast.makeText(CheckoutActivity.this, "Không có mã giảm giá nào phù hợp!", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Voucher>> call, Throwable t) {
+                Toast.makeText(CheckoutActivity.this, "Lỗi tải mã giảm giá", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private String buildVoucherSubtitle(Voucher voucher) {
+        String discountLabel;
+        if ("percent".equals(voucher.getDiscountType())) {
+            String maxLabel = voucher.getMaxDiscountAmount() != null
+                    ? " (tối đa " + nf.format(voucher.getMaxDiscountAmount()) + "đ)"
+                    : "";
+            discountLabel = "Giảm " + ((int) voucher.getDiscountValue()) + "%" + maxLabel;
+        } else {
+            discountLabel = "Giảm " + nf.format(voucher.getDiscountValue()) + "đ";
+        }
+        return discountLabel + " • Đơn tối thiểu " + nf.format(voucher.getMinOrderValue()) + "đ";
+    }
+
+    private void handleApplyVoucher(String inputCode) {
+        if (inputCode.isEmpty()) {
+            Toast.makeText(this, "Vui lòng nhập mã", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        btnApplyVoucher.setEnabled(false);
+        dbService.getVoucherByCode("eq." + inputCode, "eq.true").enqueue(new Callback<List<Voucher>>() {
+            @Override
+            public void onResponse(Call<List<Voucher>> call, Response<List<Voucher>> response) {
+                btnApplyVoucher.setEnabled(true);
+                if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                    handleApplyVoucherReal(response.body().get(0));
+                } else {
+                    Toast.makeText(CheckoutActivity.this, "Mã không hợp lệ hoặc đã lưu!", Toast.LENGTH_SHORT).show();
+                    discountAmount = 0;
+                    appliedVoucherCode = null;
+                    appliedVoucherId = null;
+                    updateTotalsUI();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Voucher>> call, Throwable t) {
+                btnApplyVoucher.setEnabled(true);
+                Toast.makeText(CheckoutActivity.this, "Lỗi kiểm tra mã", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void handleApplyVoucherReal(Voucher voucher) {
+        if (totalAmount < voucher.getMinOrderValue()) {
+            Toast.makeText(this, "Đơn hàng chưa đạt tối thiểu " + nf.format(voucher.getMinOrderValue()) + "đ", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        double calculatedDiscount = 0;
+        if ("percent".equals(voucher.getDiscountType())) {
+            calculatedDiscount = totalAmount * (voucher.getDiscountValue() / 100.0);
+            if (voucher.getMaxDiscountAmount() != null && calculatedDiscount > voucher.getMaxDiscountAmount()) {
+                calculatedDiscount = voucher.getMaxDiscountAmount();
+            }
+        } else {
+            calculatedDiscount = voucher.getDiscountValue();
+        }
+
+        discountAmount = calculatedDiscount;
+        appliedVoucherCode = voucher.getCode();
+        appliedVoucherId = voucher.getId();
+        
+        updateTotalsUI();
+        Toast.makeText(this, "Áp dụng thành công!", Toast.LENGTH_SHORT).show();
+    }
+
+    private void updateTotalsUI() {
+        tvSubtotal.setText(nf.format(totalAmount) + " VNĐ");
+        if (discountAmount > 0) {
+            tvDiscount.setText("-" + nf.format(discountAmount) + " VNĐ");
+        } else {
+            tvDiscount.setText("0 VNĐ");
+        }
+        double finalAmount = Math.max(0, totalAmount - discountAmount);
+        tvTotalAmount.setText(nf.format(finalAmount) + " VNĐ");
     }
 
     private void placeOrder() {
@@ -219,6 +401,8 @@ public class CheckoutActivity extends AppCompatActivity {
         btnPlaceOrder.setEnabled(false);
         btnPlaceOrder.setText("Đang xử lý...");
 
+        double finalAmount = Math.max(0, totalAmount - discountAmount);
+
         Map<String, Object> orderData = new HashMap<>();
         orderData.put("user_id", sessionManager.getUserId());
         orderData.put("order_code", orderCode);
@@ -226,9 +410,14 @@ public class CheckoutActivity extends AppCompatActivity {
         orderData.put("order_type", orderType);
         orderData.put("note", note);
         orderData.put("subtotal", totalAmount);
-        orderData.put("discount_amount", 0);
-        orderData.put("total_amount", totalAmount);
+        orderData.put("discount_amount", discountAmount);
+        orderData.put("total_amount", finalAmount);
         orderData.put("status", "pending");
+        
+        if (appliedVoucherCode != null) {
+            orderData.put("applied_voucher_code", appliedVoucherCode);
+            orderData.put("voucher_id", appliedVoucherId);
+        }
 
         if (isDineIn) {
             String dineInName = edtDineInName.getText().toString().trim();
@@ -242,12 +431,18 @@ public class CheckoutActivity extends AppCompatActivity {
             orderData.put("address", selectedAddressText);
         }
 
+        boolean isBanking = rgPayment.getCheckedRadioButtonId() == R.id.rbBanking;
+        if (isBanking) {
+            createBankingOrder(orderCode, note);
+            return;
+        }
+
         dbService.createOrder(orderData).enqueue(new Callback<List<Order>>() {
             @Override
             public void onResponse(Call<List<Order>> call, Response<List<Order>> response) {
                 if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
                     Order order = response.body().get(0);
-                    createOrderItems(order.getId(), orderCode);
+                    createOrderItems(order.getId(), orderCode, null, false);
                 } else {
                     Log.e(TAG, "createOrder failed: " + response.code());
                     Toast.makeText(CheckoutActivity.this, "Lỗi tạo đơn hàng", Toast.LENGTH_SHORT).show();
@@ -264,7 +459,65 @@ public class CheckoutActivity extends AppCompatActivity {
         });
     }
 
-    private void createOrderItems(String orderId, String orderCode) {
+    private void createBankingOrder(String orderCode, String note) {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("user_id", sessionManager.getUserId());
+        payload.put("order_code", orderCode);
+        payload.put("subtotal", totalAmount);
+        payload.put("payment_mode", "BANK_QR");
+        payload.put("note", note);
+
+        if (appliedVoucherCode != null) {
+            payload.put("voucher_code", appliedVoucherCode);
+        }
+
+        if (isDineIn) {
+            payload.put("receiver_name", edtDineInName.getText().toString().trim());
+            payload.put("phone", sessionManager.getPhone() != null ? sessionManager.getPhone() : "");
+            payload.put("address", "Ăn tại quán - " + edtDineInTable.getText().toString().trim());
+        } else {
+            payload.put("receiver_name", selectedReceiverName);
+            payload.put("phone", selectedPhone);
+            payload.put("address", selectedAddressText);
+        }
+
+        edgeService.createSepayPayment(payload).enqueue(new Callback<Map<String, Object>>() {
+            @Override
+            public void onResponse(Call<Map<String, Object>> call, Response<Map<String, Object>> response) {
+                if (!response.isSuccessful() || response.body() == null) {
+                    Toast.makeText(CheckoutActivity.this, "Không tạo được thanh toán QR", Toast.LENGTH_SHORT).show();
+                    resetButton();
+                    return;
+                }
+
+                Map<String, Object> body = response.body();
+                Map<String, Object> orderMap = asMap(body.get("order"));
+                Map<String, Object> paymentMap = asMap(body.get("payment"));
+
+                String orderId = asString(orderMap.get("id"));
+                String qrUrl = asString(paymentMap.get("qr_url"));
+                String transferContent = asString(paymentMap.get("transfer_content"));
+                double amount = asDouble(paymentMap.get("amount"));
+
+                if (orderId == null || qrUrl == null) {
+                    Toast.makeText(CheckoutActivity.this, "Thiếu dữ liệu QR thanh toán", Toast.LENGTH_SHORT).show();
+                    resetButton();
+                    return;
+                }
+
+                createOrderItems(orderId, orderCode, new BankingMeta(qrUrl, transferContent, amount), true);
+            }
+
+            @Override
+            public void onFailure(Call<Map<String, Object>> call, Throwable t) {
+                Log.e(TAG, "createBankingOrder failed: " + t.getMessage());
+                Toast.makeText(CheckoutActivity.this, "Lỗi tạo thanh toán QR", Toast.LENGTH_SHORT).show();
+                resetButton();
+            }
+        });
+    }
+
+    private void createOrderItems(String orderId, String orderCode, BankingMeta bankingMeta, boolean waitForPayment) {
         final int[] completed = {0};
         final int total = cartItems.size();
 
@@ -283,7 +536,11 @@ public class CheckoutActivity extends AppCompatActivity {
                 public void onResponse(Call<Void> call, Response<Void> response) {
                     completed[0]++;
                     if (completed[0] == total) {
-                        clearCartAndFinish(orderCode);
+                        if (waitForPayment && bankingMeta != null) {
+                            showBankingQrDialog(orderId, orderCode, bankingMeta);
+                        } else {
+                            clearCartAndFinish(orderCode, Math.max(0, totalAmount - discountAmount));
+                        }
                     }
                 }
 
@@ -292,34 +549,140 @@ public class CheckoutActivity extends AppCompatActivity {
                     completed[0]++;
                     Log.e(TAG, "createOrderItem failed: " + t.getMessage());
                     if (completed[0] == total) {
-                        clearCartAndFinish(orderCode);
+                        if (waitForPayment && bankingMeta != null) {
+                            showBankingQrDialog(orderId, orderCode, bankingMeta);
+                        } else {
+                            clearCartAndFinish(orderCode, Math.max(0, totalAmount - discountAmount));
+                        }
                     }
                 }
             });
         }
     }
 
-    private void clearCartAndFinish(String orderCode) {
-        dbService.clearCart("eq." + cartId).enqueue(new Callback<Void>() {
+    private void showBankingQrDialog(String orderId, String orderCode, BankingMeta bankingMeta) {
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_payment_qr, null, false);
+        ImageView imgQr = view.findViewById(R.id.imgQrPayment);
+        TextView tvQrOrderCode = view.findViewById(R.id.tvQrOrderCode);
+        TextView tvQrAmount = view.findViewById(R.id.tvQrAmount);
+        TextView tvQrContent = view.findViewById(R.id.tvQrContent);
+        Button btnPaid = view.findViewById(R.id.btnQrPaid);
+        Button btnCancel = view.findViewById(R.id.btnQrCancel);
+
+        tvQrOrderCode.setText("Mã đơn: " + orderCode);
+        tvQrAmount.setText("Số tiền: " + nf.format(bankingMeta.amount) + " VNĐ");
+        tvQrContent.setText("Nội dung CK: " + (bankingMeta.transferContent != null ? bankingMeta.transferContent : orderCode));
+
+        Glide.with(this).load(bankingMeta.qrUrl).into(imgQr);
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(view)
+                .setCancelable(false)
+                .create();
+
+        btnCancel.setOnClickListener(v -> {
+            dialog.dismiss();
+            resetButton();
+            Toast.makeText(this, "Đơn hàng đang chờ thanh toán", Toast.LENGTH_SHORT).show();
+        });
+
+        btnPaid.setOnClickListener(v -> verifyWebhookPaymentThenFinish(orderId, orderCode, bankingMeta.amount, dialog, btnPaid));
+
+        dialog.show();
+    }
+
+    private void verifyWebhookPaymentThenFinish(String orderId, String orderCode, double paidAmount, AlertDialog dialog, Button btnPaid) {
+        btnPaid.setEnabled(false);
+        btnPaid.setText("Đang kiểm tra...");
+
+        dbService.getOrderById("eq." + orderId, "id,status,payment_status").enqueue(new Callback<List<Order>>() {
             @Override
-            public void onResponse(Call<Void> call, Response<Void> response) {
-                navigateToConfirmation(orderCode);
+            public void onResponse(Call<List<Order>> call, Response<List<Order>> response) {
+                btnPaid.setEnabled(true);
+                btnPaid.setText("Đã thanh toán");
+
+                if (!response.isSuccessful() || response.body() == null || response.body().isEmpty()) {
+                    Toast.makeText(CheckoutActivity.this, "Không kiểm tra được trạng thái đơn", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                Order order = response.body().get(0);
+                boolean paid = "paid".equalsIgnoreCase(order.getPaymentStatus());
+                boolean processing = "processing".equalsIgnoreCase(order.getStatus());
+
+                if (paid || processing) {
+                    dialog.dismiss();
+                    clearCartAndFinish(orderCode, paidAmount);
+                } else {
+                    Toast.makeText(CheckoutActivity.this, "Thanh toán chưa thành công, vui lòng thử lại sau", Toast.LENGTH_SHORT).show();
+                }
             }
 
             @Override
-            public void onFailure(Call<Void> call, Throwable t) {
-                navigateToConfirmation(orderCode);
+            public void onFailure(Call<List<Order>> call, Throwable t) {
+                btnPaid.setEnabled(true);
+                btnPaid.setText("Đã thanh toán");
+                Toast.makeText(CheckoutActivity.this, "Lỗi kiểm tra thanh toán", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    private void navigateToConfirmation(String orderCode) {
+    private void clearCartAndFinish(String orderCode, double finalAmount) {
+        dbService.clearCart("eq." + cartId).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                navigateToConfirmation(orderCode, finalAmount);
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                navigateToConfirmation(orderCode, finalAmount);
+            }
+        });
+    }
+
+    private void navigateToConfirmation(String orderCode, double finalAmount) {
         Intent intent = new Intent(this, OrderConfirmationActivity.class);
         intent.putExtra("order_code", orderCode);
-        intent.putExtra("total_amount", totalAmount);
+        intent.putExtra("total_amount", finalAmount);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
         finish();
+    }
+
+    private Map<String, Object> asMap(Object value) {
+        if (value instanceof Map) {
+            //noinspection unchecked
+            return (Map<String, Object>) value;
+        }
+        return new HashMap<>();
+    }
+
+    private String asString(Object value) {
+        return value == null ? null : String.valueOf(value);
+    }
+
+    private double asDouble(Object value) {
+        if (value instanceof Number) {
+            return ((Number) value).doubleValue();
+        }
+        try {
+            return value == null ? 0 : Double.parseDouble(String.valueOf(value));
+        } catch (Exception ignore) {
+            return 0;
+        }
+    }
+
+    private static class BankingMeta {
+        final String qrUrl;
+        final String transferContent;
+        final double amount;
+
+        BankingMeta(String qrUrl, String transferContent, double amount) {
+            this.qrUrl = qrUrl;
+            this.transferContent = transferContent;
+            this.amount = amount;
+        }
     }
 
     private void resetButton() {

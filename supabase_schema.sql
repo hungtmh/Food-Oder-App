@@ -299,3 +299,107 @@ BEGIN
         (cat_appetizer, 'Súp cua', 'Súp cua trứng bắc thảo nóng hổi bổ dưỡng', 55000, 0, 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400', FALSE, TRUE);
     END IF;
 END $$;
+
+-- ============================================
+-- 14. BẢNG VOUCHERS (Mã giảm giá)
+-- ============================================
+CREATE TABLE IF NOT EXISTS public.vouchers (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    code TEXT UNIQUE NOT NULL, -- Mã nhập (vd: FREESHIP, SALE50)
+    title TEXT NOT NULL, -- Tiêu đề hiển thị (vd: Giảm 50% tối đa 30k)
+    description TEXT DEFAULT '',
+    discount_type TEXT NOT NULL DEFAULT 'fixed_amount' CHECK (discount_type IN ('percent', 'fixed_amount')),
+    discount_value DECIMAL(12,0) NOT NULL, -- Mức giảm (nếu type=percent thì là %, vd 20; nếu fixed_amount thì là VND, vd 20000)
+    max_discount_amount DECIMAL(12,0), -- Số tiền giảm tối đa (rất quan trọng cho loại 'percent')
+    min_order_value DECIMAL(12,0) DEFAULT 0, -- Giá trị đơn hàng tối thiểu để áp dụng
+    start_date TIMESTAMPTZ DEFAULT NOW(),
+    end_date TIMESTAMPTZ NOT NULL, -- Ngày hết hạn
+    usage_limit INT, -- Giới hạn tổng số lần sử dụng của toàn hệ thống (NULL = không giới hạn)
+    used_count INT DEFAULT 0, -- Số lần đã được sử dụng
+    limit_per_user INT DEFAULT 1, -- Giới hạn mỗi user được dùng mấy lần
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_vouchers_code ON public.vouchers(code);
+
+-- Thêm Trigger cập nhật updated_at cho vouchers
+CREATE TRIGGER update_vouchers_updated_at BEFORE UPDATE ON public.vouchers FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ============================================
+-- CẬP NHẬT BẢNG ORDERS
+-- ============================================
+-- Thêm cột lưu trữ thông tin voucher vào order để dễ đối soát
+ALTER TABLE public.orders 
+ADD COLUMN IF NOT EXISTS voucher_id UUID REFERENCES public.vouchers(id) ON DELETE SET NULL,
+ADD COLUMN IF NOT EXISTS applied_voucher_code TEXT;
+
+-- ============================================
+-- RLS CHO VOUCHERS
+-- ============================================
+ALTER TABLE public.vouchers ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow all select on vouchers" ON public.vouchers;
+CREATE POLICY "Allow all select on vouchers" ON public.vouchers FOR SELECT USING (true);
+
+-- ============================================
+-- 14. BẢNG VOUCHERS (Mã giảm giá)
+-- ============================================
+CREATE TABLE IF NOT EXISTS public.vouchers (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    code TEXT UNIQUE NOT NULL,
+    title TEXT NOT NULL,
+    discount_type TEXT NOT NULL DEFAULT 'fixed_amount' CHECK (discount_type IN ('percent', 'fixed_amount')),
+    discount_value DECIMAL(12,0) NOT NULL,
+    max_discount_amount DECIMAL(12,0),
+    min_order_value DECIMAL(12,0) DEFAULT 0,
+    start_date TIMESTAMPTZ DEFAULT NOW(),
+    end_date TIMESTAMPTZ NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    is_public BOOLEAN DEFAULT TRUE, 
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.orders 
+ADD COLUMN IF NOT EXISTS voucher_id UUID REFERENCES public.vouchers(id) ON DELETE SET NULL,
+ADD COLUMN IF NOT EXISTS applied_voucher_code TEXT;
+
+ALTER TABLE public.vouchers ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow all select on vouchers" ON public.vouchers;
+CREATE POLICY "Allow all select on vouchers" ON public.vouchers FOR SELECT USING (true);
+
+INSERT INTO public.vouchers (code, title, discount_type, discount_value, max_discount_amount, min_order_value, end_date, is_public)
+VALUES 
+    ('GIAM50K', 'Giảm trực tiếp 50K cho đơn từ 200K', 'fixed_amount', 50000, 50000, 200000, NOW() + INTERVAL '30 days', TRUE),
+    ('GIAM20', 'Giảm 20% tối đa 30K', 'percent', 20, 30000, 100000, NOW() + INTERVAL '30 days', TRUE),
+    ('FREESHIP', 'Miễn phí giao hàng (Tối đa 15K)', 'fixed_amount', 15000, 15000, 0, NOW() + INTERVAL '30 days', TRUE),
+    ('SECRET', 'Mã VIP bị mất giảm 100K', 'fixed_amount', 100000, 100000, 0, NOW() + INTERVAL '30 days', FALSE)
+ON CONFLICT (code) DO NOTHING;
+
+-- ============================================
+-- 15. HỖ TRỢ THANH TOÁN QR (SEPAY)
+-- ============================================
+ALTER TABLE public.orders
+ADD COLUMN IF NOT EXISTS payment_status TEXT NOT NULL DEFAULT 'pending' CHECK (payment_status IN ('pending', 'paid', 'failed', 'expired')),
+ADD COLUMN IF NOT EXISTS payment_reference TEXT,
+ADD COLUMN IF NOT EXISTS payment_qr_url TEXT,
+ADD COLUMN IF NOT EXISTS paid_at TIMESTAMPTZ;
+
+CREATE INDEX IF NOT EXISTS idx_orders_payment_status ON public.orders(payment_status);
+CREATE INDEX IF NOT EXISTS idx_orders_payment_reference ON public.orders(payment_reference);
+
+ALTER TABLE public.vouchers
+ADD COLUMN IF NOT EXISTS is_public BOOLEAN DEFAULT TRUE;
+
+CREATE OR REPLACE FUNCTION public.increment_voucher_usage(p_voucher_id UUID)
+RETURNS VOID
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    UPDATE public.vouchers
+    SET used_count = COALESCE(used_count, 0) + 1,
+        updated_at = NOW()
+    WHERE id = p_voucher_id;
+END;
+$$;
