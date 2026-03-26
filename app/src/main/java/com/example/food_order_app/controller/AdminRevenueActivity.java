@@ -796,7 +796,7 @@ public class AdminRevenueActivity extends AppCompatActivity {
                 + dataSummary;
 
         String apiKey = com.example.food_order_app.config.GeminiAiConfig.GEMINI_API_KEY;
-        String url = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent";
+        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent";
 
         org.json.JSONObject requestBody = new org.json.JSONObject();
         try {
