@@ -13,6 +13,7 @@ import com.example.food_order_app.R;
 import com.example.food_order_app.controller.AdminChatListActivity;
 import com.example.food_order_app.controller.AdminHomeActivity;
 import com.example.food_order_app.controller.AdminOrdersActivity;
+import com.example.food_order_app.controller.AdminReportStatisticsActivity;
 import com.example.food_order_app.controller.AdminRevenueActivity;
 import com.example.food_order_app.controller.ProfileActivity;
 
