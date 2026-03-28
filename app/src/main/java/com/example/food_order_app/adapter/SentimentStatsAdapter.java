@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.food_order_app.R;
 import com.example.food_order_app.model.FoodSentimentStats;
-import com.example.food_order_app.utils.SentimentAnalysisService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,8 +64,8 @@ public class SentimentStatsAdapter extends RecyclerView.Adapter<SentimentStatsAd
 
         // Sentiment info
         String dominantSentiment = stat.getDominantSentiment();
-        holder.tvSentimentEmoji.setText(SentimentAnalysisService.getSentimentEmoji(dominantSentiment));
-        holder.tvSentimentName.setText(SentimentAnalysisService.getSentimentName(dominantSentiment));
+        holder.tvSentimentEmoji.setText(getSentimentEmoji(dominantSentiment));
+        holder.tvSentimentName.setText(getSentimentName(dominantSentiment));
         
         double percent = 0;
         if (dominantSentiment.equals("positive")) {
@@ -77,7 +76,7 @@ public class SentimentStatsAdapter extends RecyclerView.Adapter<SentimentStatsAd
             percent = stat.getNeutralPercent();
         }
         holder.tvSentimentPercent.setText(String.format(Locale.getDefault(), "%.0f%%", percent));
-        holder.tvSentimentPercent.setTextColor(SentimentAnalysisService.getSentimentColor(dominantSentiment));
+        holder.tvSentimentPercent.setTextColor(getSentimentColor(dominantSentiment));
 
         // Rating
         holder.tvAvgRating.setText(String.format(Locale.getDefault(), "%.1f", stat.getAvgRating()));
@@ -93,6 +92,33 @@ public class SentimentStatsAdapter extends RecyclerView.Adapter<SentimentStatsAd
     @Override
     public int getItemCount() {
         return stats.size();
+    }
+
+    private String getSentimentEmoji(String sentiment) {
+        switch (sentiment) {
+            case "positive": return "😊";
+            case "negative": return "😞";
+            case "neutral":
+            default: return "😐";
+        }
+    }
+
+    private String getSentimentName(String sentiment) {
+        switch (sentiment) {
+            case "positive": return "Tich cuc";
+            case "negative": return "Tieu cuc";
+            case "neutral":
+            default: return "Trung tinh";
+        }
+    }
+
+    private int getSentimentColor(String sentiment) {
+        switch (sentiment) {
+            case "positive": return 0xFF4CAF50;
+            case "negative": return 0xFFF44336;
+            case "neutral":
+            default: return 0xFFFF9800;
+        }
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {

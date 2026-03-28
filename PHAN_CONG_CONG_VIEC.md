@@ -85,10 +85,10 @@
 
 #### Nhóm 16: Thông báo (User)
 
-| Tính năng           | Mô tả                                                 | Trạng thái  |
-| ------------------- | ----------------------------------------------------- | ----------- |
-| Thông báo đẩy       | Đơn hàng xác nhận, đang xử lý, hoàn thành, khuyến mãi | ⬜ Chưa làm |
-| Thông báo trong app | Xem lại tất cả, đánh dấu đã đọc/chưa đọc, xóa         | ⬜ Chưa làm |
+| Tính năng           | Mô tả                                                 | Trạng thái    |
+| ------------------- | ----------------------------------------------------- | ------------- |
+| Thông báo đẩy       | Đơn hàng xác nhận, đang xử lý, hoàn thành, khuyến mãi | ✅ Hoàn thành |
+| Thông báo trong app | Xem lại tất cả, đánh dấu đã đọc/chưa đọc, xóa         | ✅ Hoàn thành |
 
 ---
 
@@ -96,13 +96,13 @@
 
 #### Nhóm 10: Giỏ hàng
 
-| Tính năng            | Mô tả                                             | Trạng thái    |
-| -------------------- | ------------------------------------------------- | ------------- |
-| Thêm món vào giỏ     | Chọn số lượng, hiệu ứng thêm thành công           | ✅ Hoàn thành |
-| Xem giỏ hàng         | Danh sách món: Ảnh, Tên, Giá, Số lượng, Tổng tiền | ✅ Hoàn thành |
-| Thay đổi số lượng    | Tăng/giảm, tổng tiền tự động cập nhật             | ✅ Hoàn thành |
-| Xóa món khỏi giỏ     | Xóa từng món, vuốt trái để xóa, Snackbar Hoàn tác          | ✅ Hoàn thành |
-| Xóa toàn bộ giỏ hàng | Xóa tất cả, Snackbar Hoàn tác, tổng tiền reset về 0         | ✅ Hoàn thành |
+| Tính năng            | Mô tả                                               | Trạng thái    |
+| -------------------- | --------------------------------------------------- | ------------- |
+| Thêm món vào giỏ     | Chọn số lượng, hiệu ứng thêm thành công             | ✅ Hoàn thành |
+| Xem giỏ hàng         | Danh sách món: Ảnh, Tên, Giá, Số lượng, Tổng tiền   | ✅ Hoàn thành |
+| Thay đổi số lượng    | Tăng/giảm, tổng tiền tự động cập nhật               | ✅ Hoàn thành |
+| Xóa món khỏi giỏ     | Xóa từng món, vuốt trái để xóa, Snackbar Hoàn tác   | ✅ Hoàn thành |
+| Xóa toàn bộ giỏ hàng | Xóa tất cả, Snackbar Hoàn tác, tổng tiền reset về 0 | ✅ Hoàn thành |
 
 #### Nhóm 11: Đặt hàng
 
@@ -110,7 +110,7 @@
 | --------------------- | ------------------------------------------------------------ | ------------- |
 | Tạo đơn hàng          | Nhập tên, SĐT, địa chỉ, chọn thanh toán, ghi chú             | ✅ Hoàn thành |
 | Xác nhận đặt hàng     | Hiển thị mã đơn, thời gian dự kiến, nút xem đơn/về trang chủ | ✅ Hoàn thành |
-| Lưu địa chỉ giao hàng | Lưu nhiều địa chỉ, đặt mặc định, chọn nhanh khi checkout         | ✅ Hoàn thành |
+| Lưu địa chỉ giao hàng | Lưu nhiều địa chỉ, đặt mặc định, chọn nhanh khi checkout     | ✅ Hoàn thành |
 
 #### Nhóm 12: Lịch sử đơn hàng
 
@@ -213,9 +213,9 @@
 
 #### Nhóm 16: Thông báo (Admin)
 
-| Tính năng         | Mô tả                                                     | Trạng thái  |
-| ----------------- | --------------------------------------------------------- | ----------- |
-| Gửi thông báo đẩy | Gửi cho khách khi thay đổi trạng thái đơn, khuyến mãi mới | ⬜ Chưa làm |
+| Tính năng         | Mô tả                                                     | Trạng thái    |
+| ----------------- | --------------------------------------------------------- | ------------- |
+| Gửi thông báo đẩy | Gửi cho khách khi thay đổi trạng thái đơn, khuyến mãi mới | ✅ Hoàn thành |
 
 ---
 
@@ -251,7 +251,7 @@
 | 13   | Phản hồi & Đánh giá (User) | Cường           | ⬜ Chưa làm              |
 | 14   | Thông tin liên hệ          | Hùng            | ⬜ Chưa làm              |
 | 15   | Tính năng AI               | Khải            | ✅ Hoàn thành            |
-| 16   | Thông báo                  | Cường + Khải    | ⬜ Chưa làm              |
+| 16   | Thông báo                  | Cường + Khải    | ✅ Hoàn thành            |
 | 17   | Yêu thích                  | Hùng            | ⬜ Chưa làm              |
 | 18   | Khuyến mãi & Mã giảm giá   | Khoa + Khải     | ⬜ Chưa làm              |
 | 19   | Báo cáo & Thống kê (Admin) | Thắng           | ⬜ Chưa làm              |

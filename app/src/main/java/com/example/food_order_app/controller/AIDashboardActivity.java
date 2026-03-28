@@ -20,14 +20,12 @@ import com.example.food_order_app.model.OverallSentimentStats;
 import com.example.food_order_app.model.Review;
 import com.example.food_order_app.network.RetrofitClient;
 import com.example.food_order_app.network.SupabaseDbService;
-import com.example.food_order_app.utils.SentimentAnalysisService;
+import com.example.food_order_app.network.SupabaseFunctionsService;
 import com.google.android.material.card.MaterialCardView;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -44,6 +42,7 @@ public class AIDashboardActivity extends AppCompatActivity {
     private ImageView btnBack;
 
     private SupabaseDbService dbService;
+    private SupabaseFunctionsService functionsService;
     private SentimentStatsAdapter topPositiveAdapter, topNegativeAdapter;
 
     @Override
@@ -52,6 +51,7 @@ public class AIDashboardActivity extends AppCompatActivity {
         setContentView(R.layout.activity_ai_dashboard);
 
         dbService = RetrofitClient.getDbService();
+        functionsService = RetrofitClient.getFunctionsService();
         initViews();
         setupListeners();
         loadOverallSentimentStats();
@@ -257,27 +257,22 @@ public class AIDashboardActivity extends AppCompatActivity {
         }
 
         Review review = reviews.get(index);
-        
-        // Analyze sentiment
-        Map<String, Object> result = SentimentAnalysisService.analyzeSentiment(review.getComment());
-        String sentiment = (String) result.get("sentiment");
-        double score = (double) result.get("score");
 
-        // Update review in database
-        Map<String, Object> updates = new HashMap<>();
-        updates.put("sentiment", sentiment);
-        updates.put("sentiment_score", score);
+        java.util.Map<String, Object> payload = new java.util.HashMap<>();
+        payload.put("review_id", review.getId());
+        payload.put("content", review.getComment() == null ? "" : review.getComment());
+        payload.put("rating", review.getRating());
 
-        dbService.updateReviewSentiment("eq." + review.getId(), updates).enqueue(new Callback<List<Review>>() {
+        functionsService.analyzeReview(payload).enqueue(new Callback<java.util.Map<String, Object>>() {
             @Override
-            public void onResponse(Call<List<Review>> call, Response<List<Review>> response) {
-                // Continue with next review
+            public void onResponse(Call<java.util.Map<String, Object>> call, Response<java.util.Map<String, Object>> response) {
+                // Continue with next review regardless of individual response body
                 analyzeReviewsBatch(reviews, index + 1);
             }
 
             @Override
-            public void onFailure(Call<List<Review>> call, Throwable t) {
-                // Continue anyway
+            public void onFailure(Call<java.util.Map<String, Object>> call, Throwable t) {
+                // Continue anyway to avoid breaking whole batch
                 analyzeReviewsBatch(reviews, index + 1);
             }
         });

@@ -150,6 +150,37 @@
         <!-- ==================== CHAT FEATURE ==================== -->
         <activity android:name=".controller.ChatRoomActivity" android:exported="false" />
         <activity android:name=".controller.AdminChatListActivity" android:exported="false" />
+        <!-- Báo cáo & Thống kê (Nhóm 19) -->
+        <activity
+            android:name=".controller.AdminReportStatisticsActivity"
+            android:exported="false" />
+
+        <!-- Thống kê đơn hàng -->
+        <activity
+            android:name=".controller.AdminOrderStatisticsActivity"
+            android:exported="false" />
+
+        <!-- Gửi thông báo cho hệ thống -->
+        <activity
+            android:name=".controller.AdminSendNotificationActivity"
+            android:exported="false" />
+
+        <!-- ==================== AI FEATURES ==================== -->
+
+        <!-- AI Dashboard -->
+        <activity
+            android:name=".controller.AIDashboardActivity"
+            android:exported="false" />
+
+        <!-- Thống kê cảm xúc -->
+        <activity
+            android:name=".controller.SentimentStatisticsActivity"
+            android:exported="false" />
+
+        <!-- Dự đoán xu hướng -->
+        <activity
+            android:name=".controller.FoodTrendPredictionActivity"
+            android:exported="false" />
 
     </application>
 
