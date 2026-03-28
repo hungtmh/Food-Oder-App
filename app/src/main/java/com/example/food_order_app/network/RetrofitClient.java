@@ -20,6 +20,7 @@ public class RetrofitClient {
     private static Retrofit authRetrofit = null;
     private static Retrofit dbRetrofit = null;
     private static Retrofit storageRetrofit = null;
+    private static Retrofit functionsRetrofit = null;
 
     /**
      * Tạo OkHttpClient với interceptor thêm apikey header
@@ -141,5 +142,26 @@ public class RetrofitClient {
      */
     public static SupabaseStorageService getStorageService() {
         return getStorageClient().create(SupabaseStorageService.class);
+    }
+
+    /**
+     * Lấy Retrofit instance cho Edge Functions API
+     */
+    public static synchronized Retrofit getFunctionsClient() {
+        if (functionsRetrofit == null) {
+            functionsRetrofit = new Retrofit.Builder()
+                    .baseUrl(SupabaseConfig.FUNCTIONS_URL)
+                    .client(createClient())
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
+        }
+        return functionsRetrofit;
+    }
+
+    /**
+     * Lấy SupabaseFunctionsService
+     */
+    public static SupabaseFunctionsService getFunctionsService() {
+        return getFunctionsClient().create(SupabaseFunctionsService.class);
     }
 }
