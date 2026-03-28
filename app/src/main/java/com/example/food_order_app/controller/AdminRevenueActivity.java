@@ -16,15 +16,17 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Button;
 import android.widget.ScrollView;
+import android.widget.SearchView;
+import android.widget.AutoCompleteTextView;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.food_order_app.R;
-import com.example.food_order_app.adapter.TopFoodAdapter;
 import com.example.food_order_app.model.Order;
 import com.example.food_order_app.model.OrderItem;
 import com.example.food_order_app.model.User;
@@ -64,28 +66,30 @@ public class AdminRevenueActivity extends AppCompatActivity {
     public static final String SECTION_CUSTOMER = "customer";
 
     private ImageButton btnBack;
-    private Button btnDateFrom, btnDateTo, btnToday, btnThisMonth, btnLastMonth, btnSingleDay, btnApplyFilter, btnExportRevenuePdf, btnExportRevenueExcel, btnSendRevenueEmail;
+    private Button btnDateFrom, btnDateTo, btnApplyFilter, btnExportRevenuePdf;
     private TextView tvTotalRevenue, tvTotalOrders;
     private TextView tvStatTotal, tvStatPending, tvStatConfirmed, tvStatDelivering, tvStatDelivered, tvStatCancelled;
-    private RecyclerView rvTopFoods;
+    private android.widget.TableLayout tableTopFoods;
     private TextView tvNoTopFoods;
-    
-    // Daily revenue chart and comparison views
+    // Daily revenue chart and monthly trend views
     private LinearLayout llDailyRevenueChart;
     private TextView tvDailyRevenueEmpty;
-    private TextView tvCurrentMonthRevenue, tvCurrentMonthOrders;
-    private TextView tvPreviousMonthRevenue, tvPreviousMonthOrders;
-    private TextView tvRevenueChange, tvOrdersChange;
+    private android.widget.TableLayout tableMonthlyTrend;
+    private com.github.mikephil.charting.charts.BarChart chartMonthlyRevenue;
+    private com.github.mikephil.charting.charts.BarChart chartMonthlyOrders;
+    private TextView tvMonthlyTrendComment;
     private TextView tvDashRevenueToday, tvDashOrdersToday, tvDashNewCustomersToday, tvDashTop5Foods;
-    private TextView tvCustomerTotal, tvCustomerNewRange, tvCustomerTopBuyer, tvCustomerFrequency;
+    private TextView tvDashAvgOrderValue, tvDashSuccessRate, tvDashCancelRate;
+    private android.widget.TableLayout tableCustomerStats;
+    private TextView tvNoCustomerData;
     private ScrollView scrollRevenue;
     private android.view.View cardDashboardOverview;
     private android.view.View cardRevenueReport;
-    private android.view.View cardCustomerStats;
-    private BarChart barChartLast7Days;
+    private AutoCompleteTextView atvMonthSelector;
+    private AutoCompleteTextView atvYearSelector;
 
     private SupabaseDbService dbService;
-    private TopFoodAdapter topFoodAdapter;
+    private final Map<String, List<CustomerRecord>> monthlyCustomerData = new LinkedHashMap<>();
 
     private Calendar dateFrom = Calendar.getInstance();
     private Calendar dateTo = Calendar.getInstance();
@@ -94,7 +98,7 @@ public class AdminRevenueActivity extends AppCompatActivity {
     private final NumberFormat nf = NumberFormat.getInstance(new Locale("vi", "VN"));
     private double currentRevenueValue = 0;
     private int currentDeliveredCount = 0;
-    private final List<TopFoodAdapter.TopFood> currentTopFoods = new ArrayList<>();
+    private final List<TopFoodRecord> currentTopFoods = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,9 +109,10 @@ public class AdminRevenueActivity extends AppCompatActivity {
         initViews();
         setupListeners();
 
-        // Default: today
+        // Default: today (no comparison on first load)
         setToday();
-        loadRevenue();
+        loadRevenue(false);
+        loadAllTimeTopFoods();
         handleSectionNavigationIntent();
     }
 
@@ -121,14 +126,8 @@ public class AdminRevenueActivity extends AppCompatActivity {
         btnBack = findViewById(R.id.btnBackRevenue);
         btnDateFrom = findViewById(R.id.btnDateFrom);
         btnDateTo = findViewById(R.id.btnDateTo);
-        btnToday = findViewById(R.id.btnToday);
-        btnThisMonth = findViewById(R.id.btnThisMonth);
-        btnLastMonth = findViewById(R.id.btnLastMonth);
-        btnSingleDay = findViewById(R.id.btnSingleDay);
         btnApplyFilter = findViewById(R.id.btnApplyFilter);
         btnExportRevenuePdf = findViewById(R.id.btnExportRevenuePdf);
-        btnExportRevenueExcel = findViewById(R.id.btnExportRevenueExcel);
-        btnSendRevenueEmail = findViewById(R.id.btnSendRevenueEmail);
 
         tvTotalRevenue = findViewById(R.id.tvTotalRevenue);
         tvTotalOrders = findViewById(R.id.tvTotalOrders);
@@ -140,40 +139,35 @@ public class AdminRevenueActivity extends AppCompatActivity {
         tvStatCancelled = findViewById(R.id.tvStatCancelled);
 
         tvNoTopFoods = findViewById(R.id.tvNoTopFoods);
-        rvTopFoods = findViewById(R.id.rvTopFoods);
-        
+        tableTopFoods = findViewById(R.id.tableTopFoods);
+
         // Daily revenue chart views
         llDailyRevenueChart = findViewById(R.id.llDailyRevenueChart);
         tvDailyRevenueEmpty = findViewById(R.id.tvDailyRevenueEmpty);
-        
-        // Comparison views
-        tvCurrentMonthRevenue = findViewById(R.id.tvCurrentMonthRevenue);
-        tvCurrentMonthOrders = findViewById(R.id.tvCurrentMonthOrders);
-        tvPreviousMonthRevenue = findViewById(R.id.tvPreviousMonthRevenue);
-        tvPreviousMonthOrders = findViewById(R.id.tvPreviousMonthOrders);
-        tvRevenueChange = findViewById(R.id.tvRevenueChange);
-        tvOrdersChange = findViewById(R.id.tvOrdersChange);
+
+        // Monthly trend views
+        tableMonthlyTrend = findViewById(R.id.tableMonthlyTrend);
+        chartMonthlyRevenue = findViewById(R.id.chartMonthlyRevenue);
+        chartMonthlyOrders = findViewById(R.id.chartMonthlyOrders);
+        tvMonthlyTrendComment = findViewById(R.id.tvMonthlyTrendComment);
 
         // Dashboard overview
         tvDashRevenueToday = findViewById(R.id.tvDashRevenueToday);
         tvDashOrdersToday = findViewById(R.id.tvDashOrdersToday);
         tvDashNewCustomersToday = findViewById(R.id.tvDashNewCustomersToday);
         tvDashTop5Foods = findViewById(R.id.tvDashTop5Foods);
-        barChartLast7Days = findViewById(R.id.barChartLast7Days);
+        tvDashAvgOrderValue = findViewById(R.id.tvDashAvgOrderValue);
+        tvDashSuccessRate = findViewById(R.id.tvDashSuccessRate);
+        tvDashCancelRate = findViewById(R.id.tvDashCancelRate);
 
         // Customer statistics
-        tvCustomerTotal = findViewById(R.id.tvCustomerTotal);
-        tvCustomerNewRange = findViewById(R.id.tvCustomerNewRange);
-        tvCustomerTopBuyer = findViewById(R.id.tvCustomerTopBuyer);
-        tvCustomerFrequency = findViewById(R.id.tvCustomerFrequency);
+        tableCustomerStats = findViewById(R.id.tableCustomerStats);
+        tvNoCustomerData = findViewById(R.id.tvNoCustomerData);
+        atvMonthSelector = findViewById(R.id.atvMonthSelector);
+        atvYearSelector = findViewById(R.id.atvYearSelector);
         scrollRevenue = findViewById(R.id.scrollRevenue);
         cardDashboardOverview = findViewById(R.id.cardDashboardOverview);
         cardRevenueReport = findViewById(R.id.cardRevenueReport);
-        cardCustomerStats = findViewById(R.id.cardCustomerStats);
-
-        topFoodAdapter = new TopFoodAdapter(this);
-        rvTopFoods.setLayoutManager(new LinearLayoutManager(this));
-        rvTopFoods.setAdapter(topFoodAdapter);
     }
 
     private void handleSectionNavigationIntent() {
@@ -188,7 +182,7 @@ public class AdminRevenueActivity extends AppCompatActivity {
         } else if (SECTION_REPORT.equals(section)) {
             target = cardRevenueReport;
         } else if (SECTION_CUSTOMER.equals(section)) {
-            target = cardCustomerStats;
+            target = tableCustomerStats;
         }
 
         if (target != null) {
@@ -203,26 +197,11 @@ public class AdminRevenueActivity extends AppCompatActivity {
         btnDateFrom.setOnClickListener(v -> showDatePicker(true));
         btnDateTo.setOnClickListener(v -> showDatePicker(false));
 
-        btnToday.setOnClickListener(v -> {
-            setToday();
-            loadRevenue();
-        });
-        btnThisMonth.setOnClickListener(v -> {
-            setThisMonth();
-            loadRevenue();
-        });
-        btnLastMonth.setOnClickListener(v -> {
-            setLastMonth();
-            loadRevenue();
-        });
-        btnSingleDay.setOnClickListener(v -> showSingleDayPickerAndLoad());
         btnApplyFilter.setOnClickListener(v -> {
             Toast.makeText(this, "Đang tải dữ liệu...", Toast.LENGTH_SHORT).show();
-            loadRevenue();
+            loadRevenue(true);
         });
         btnExportRevenuePdf.setOnClickListener(v -> exportRevenueReportPdf());
-        btnExportRevenueExcel.setOnClickListener(v -> exportRevenueReportExcel());
-        btnSendRevenueEmail.setOnClickListener(v -> sendRevenueReportEmail());
     }
 
     private void showDatePicker(boolean isFrom) {
@@ -231,22 +210,6 @@ public class AdminRevenueActivity extends AppCompatActivity {
             cal.set(year, month, day);
             updateDateButtons();
         }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show();
-    }
-
-    private void showSingleDayPickerAndLoad() {
-        Calendar pickerCal = Calendar.getInstance();
-        new DatePickerDialog(this, (view, year, month, day) -> {
-            dateFrom = Calendar.getInstance();
-            dateFrom.set(year, month, day, 0, 0, 0);
-            dateFrom.set(Calendar.MILLISECOND, 0);
-
-            dateTo = Calendar.getInstance();
-            dateTo.set(year, month, day, 23, 59, 59);
-            dateTo.set(Calendar.MILLISECOND, 0);
-
-            updateDateButtons();
-            loadRevenue();
-        }, pickerCal.get(Calendar.YEAR), pickerCal.get(Calendar.MONTH), pickerCal.get(Calendar.DAY_OF_MONTH)).show();
     }
 
     private void setToday() {
@@ -258,35 +221,18 @@ public class AdminRevenueActivity extends AppCompatActivity {
         updateDateButtons();
     }
 
-    private void setThisMonth() {
-        dateFrom = Calendar.getInstance();
-        dateFrom.set(Calendar.DAY_OF_MONTH, 1);
-        dateTo = Calendar.getInstance();
-        updateDateButtons();
-    }
-
-    private void setLastMonth() {
-        dateFrom = Calendar.getInstance();
-        dateFrom.add(Calendar.MONTH, -1);
-        dateFrom.set(Calendar.DAY_OF_MONTH, 1);
-        dateTo = Calendar.getInstance();
-        dateTo.set(Calendar.DAY_OF_MONTH, 1);
-        dateTo.add(Calendar.DAY_OF_MONTH, -1);
-        updateDateButtons();
-    }
-
     private void updateDateButtons() {
         btnDateFrom.setText(displayFormat.format(dateFrom.getTime()));
         btnDateTo.setText(displayFormat.format(dateTo.getTime()));
     }
 
-    private void loadRevenue() {
-        String fromStr = isoFormat.format(dateFrom.getTime()) + "T00:00:00";
-        String toStr = isoFormat.format(dateTo.getTime()) + "T23:59:59";
+    private void loadRevenue(boolean includeComparison) {
+        String fromStr = formatToUtcIso(dateFrom, true);
+        String toStr = formatToUtcIso(dateTo, false);
 
         // Load ALL orders in date range (no status filter) to get breakdown
         Map<String, String> filters = new HashMap<>();
-        filters.put("created_at", "gte." + fromStr);
+        filters.put("and", "(created_at.gte." + fromStr + ",created_at.lte." + toStr + ")");
 
         dbService.getOrdersByDateRange(
                 filters,
@@ -302,19 +248,16 @@ public class AdminRevenueActivity extends AppCompatActivity {
                                 }
                             }
                             processOrders(validOrders);
-                            loadCustomerStatistics(validOrders);
+                            loadCustomerStatistics();
                             loadDashboardOverview();
-                            
-                            // Load comparison data if this is "this month" or custom range
-                            if (isThisMonthRange()) {
-                                loadPreviousMonthComparison();
-                            } else {
-                                resetComparisonStats();
-                            }
+
+                            // Load monthly trend data (independent of date filter)
+                            loadMonthlyTrend();
                         } else {
                             resetStats();
                             resetDashboardOverview();
                             resetCustomerStatistics();
+
                         }
                     }
 
@@ -324,20 +267,8 @@ public class AdminRevenueActivity extends AppCompatActivity {
                     }
                 });
     }
-    
-    private boolean isThisMonthRange() {
-        Calendar today = Calendar.getInstance();
-        Calendar dayOne = Calendar.getInstance();
-        dayOne.set(Calendar.DAY_OF_MONTH, 1);
-        dayOne.set(Calendar.HOUR_OF_DAY, 0);
-        dayOne.set(Calendar.MINUTE, 0);
-        dayOne.set(Calendar.SECOND, 0);
-        
-        return dateFrom.get(Calendar.YEAR) == dayOne.get(Calendar.YEAR) &&
-               dateFrom.get(Calendar.MONTH) == dayOne.get(Calendar.MONTH) &&
-               dateFrom.get(Calendar.DAY_OF_MONTH) == dayOne.get(Calendar.DAY_OF_MONTH) &&
-               Math.abs(dateTo.getTimeInMillis() - today.getTimeInMillis()) < 86400000;
-    }
+
+    // Removed isThisMonthRange() as comparison is now dynamic
 
     private void processOrders(List<Order> orders) {
         double totalRevenue = 0;
@@ -387,12 +318,10 @@ public class AdminRevenueActivity extends AppCompatActivity {
         int totalOrdersCount = pending + confirmed + delivering + delivered + cancelled;
         currentRevenueValue = totalRevenue;
         currentDeliveredCount = deliveredCount;
-        
+
         tvTotalRevenue.setText(nf.format(totalRevenue) + " VNĐ");
         tvTotalOrders.setText(String.valueOf(deliveredCount));
-        tvCurrentMonthRevenue.setText(nf.format(totalRevenue) + " VNĐ");
-        tvCurrentMonthOrders.setText(String.valueOf(deliveredCount));
-        
+
         tvStatTotal.setText(String.valueOf(totalOrdersCount));
         tvStatPending.setText(String.valueOf(pending));
         tvStatConfirmed.setText(String.valueOf(confirmed));
@@ -400,28 +329,44 @@ public class AdminRevenueActivity extends AppCompatActivity {
         tvStatDelivered.setText(String.valueOf(delivered));
         tvStatCancelled.setText(String.valueOf(cancelled));
 
-        // Draw daily revenue chart by month blocks (e.g., Thang 2 va Thang 3 separately).
+        // Draw daily revenue chart by month blocks (e.g., Thang 2 va Thang 3
+        // separately).
         drawDailyRevenueChart(monthlyRevenue);
+    }
 
-        // Load top foods from delivered orders
-        if (!deliveredOrderIds.isEmpty()) {
-            loadTopFoods(deliveredOrderIds);
-        } else {
-            topFoodAdapter.setItems(new ArrayList<>());
-            currentTopFoods.clear();
-            updateTop5Text();
-            tvNoTopFoods.setVisibility(android.view.View.VISIBLE);
-            rvTopFoods.setVisibility(android.view.View.GONE);
+    private String extractDateFromTimestamp(String timestamp) {
+        if (timestamp == null || timestamp.isEmpty())
+            return "";
+        try {
+            java.text.SimpleDateFormat parser = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss",
+                    Locale.getDefault());
+            parser.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
+            String safeString = timestamp.length() >= 19 ? timestamp.substring(0, 19) : timestamp;
+            java.util.Date date = parser.parse(safeString);
+
+            java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            formatter.setTimeZone(java.util.TimeZone.getDefault());
+            return formatter.format(date);
+        } catch (Exception e) {
+            return timestamp.length() >= 10 ? timestamp.substring(0, 10) : "";
         }
     }
-    
-    private String extractDateFromTimestamp(String timestamp) {
-        if (timestamp == null || timestamp.isEmpty()) return "";
-        try {
-            return timestamp.substring(0, 10); // Extract YYYY-MM-DD
-        } catch (Exception e) {
-            return "";
+
+    private String formatToUtcIso(Calendar cal, boolean isStartOfDay) {
+        Calendar cloned = (Calendar) cal.clone();
+        if (isStartOfDay) {
+            cloned.set(Calendar.HOUR_OF_DAY, 0);
+            cloned.set(Calendar.MINUTE, 0);
+            cloned.set(Calendar.SECOND, 0);
+        } else {
+            cloned.set(Calendar.HOUR_OF_DAY, 23);
+            cloned.set(Calendar.MINUTE, 59);
+            cloned.set(Calendar.SECOND, 59);
         }
+        java.text.SimpleDateFormat apiFormat = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'",
+                Locale.getDefault());
+        apiFormat.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
+        return apiFormat.format(cloned.getTime());
     }
 
     private LinkedHashMap<String, LinkedHashMap<Integer, Double>> initializeMonthlyRangeBuckets() {
@@ -518,11 +463,10 @@ public class AdminRevenueActivity extends AppCompatActivity {
 
             XAxis xAxis = barChart.getXAxis();
             xAxis.setValueFormatter(new IndexAxisValueFormatter(xLabels));
-            xAxis.setLabelCount(Math.min(xLabels.size(), 12), false);
+            xAxis.setLabelCount(xLabels.size(), false);
 
-            if (xLabels.size() > 12) {
-                barChart.setVisibleXRangeMaximum(12f);
-                barChart.moveViewToX(0f);
+            if (xLabels.size() > 10) {
+                barChart.setVisibleXRangeMaximum(10f);
             }
 
             barChart.invalidate();
@@ -535,8 +479,10 @@ public class AdminRevenueActivity extends AppCompatActivity {
         barChart.getDescription().setEnabled(false);
         barChart.setDrawGridBackground(false);
         barChart.setFitBars(true);
-        barChart.setPinchZoom(false);
-        barChart.setDoubleTapToZoomEnabled(false);
+        barChart.setPinchZoom(true);
+        barChart.setDoubleTapToZoomEnabled(true);
+        barChart.setDragEnabled(true);
+        barChart.setScaleEnabled(true);
         barChart.animateY(600);
         barChart.getLegend().setEnabled(true);
         barChart.getLegend().setTextSize(10f);
@@ -563,7 +509,8 @@ public class AdminRevenueActivity extends AppCompatActivity {
 
     private String buildMonthTitle(String monthKey) {
         // monthKey format yyyy-MM
-        if (monthKey == null || monthKey.length() != 7) return "Thang";
+        if (monthKey == null || monthKey.length() != 7)
+            return "Thang";
         String year = monthKey.substring(0, 4);
         String month = monthKey.substring(5, 7);
         return "Thang " + month + "/" + year;
@@ -585,119 +532,366 @@ public class AdminRevenueActivity extends AppCompatActivity {
                 dp,
                 getResources().getDisplayMetrics());
     }
-    
-    private void loadPreviousMonthComparison() {
-        Calendar prevMonth = Calendar.getInstance();
-        prevMonth.add(Calendar.MONTH, -1);
-        
-        Calendar prevFrom = Calendar.getInstance();
-        prevFrom.setTimeInMillis(prevMonth.getTimeInMillis());
-        prevFrom.set(Calendar.DAY_OF_MONTH, 1);
-        prevFrom.set(Calendar.HOUR_OF_DAY, 0);
-        prevFrom.set(Calendar.MINUTE, 0);
-        prevFrom.set(Calendar.SECOND, 0);
-        
-        Calendar prevTo = Calendar.getInstance();
-        prevTo.setTimeInMillis(prevMonth.getTimeInMillis());
-        prevTo.set(Calendar.DAY_OF_MONTH, prevTo.getActualMaximum(Calendar.DAY_OF_MONTH));
-        prevTo.set(Calendar.HOUR_OF_DAY, 23);
-        prevTo.set(Calendar.MINUTE, 59);
-        prevTo.set(Calendar.SECOND, 59);
-        
-        String fromStr = isoFormat.format(prevFrom.getTime()) + "T00:00:00";
-        String toStr = isoFormat.format(prevTo.getTime()) + "T23:59:59";
-        
-        Map<String, String> filters = new HashMap<>();
-        filters.put("created_at", "gte." + fromStr);
-        
-        dbService.getOrdersByDateRange(filters, "*").enqueue(new Callback<List<Order>>() {
-            @Override
-            public void onResponse(Call<List<Order>> call, Response<List<Order>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    List<Order> validOrders = new ArrayList<>();
-                    for (Order o : response.body()) {
-                        if (o.getCreatedAt() != null && o.getCreatedAt().compareTo(toStr) <= 0) {
-                            validOrders.add(o);
+
+    private void loadMonthlyTrend() {
+        if (tvMonthlyTrendComment != null)
+            tvMonthlyTrendComment.setText("Đang tải dữ liệu biến động...");
+
+        dbService.getOrdersByStatus("eq.served", "id,total_amount,created_at", "created_at.asc")
+                .enqueue(new Callback<List<Order>>() {
+                    @Override
+                    public void onResponse(Call<List<Order>> call, Response<List<Order>> response) {
+                        if (!response.isSuccessful() || response.body() == null || response.body().isEmpty()) {
+                            if (tvMonthlyTrendComment != null)
+                                tvMonthlyTrendComment.setText("Chưa có dữ liệu đơn hoàn thành.");
+                            return;
                         }
+
+                        // Group by month
+                        LinkedHashMap<String, double[]> monthData = new LinkedHashMap<>(); // key=MM/yyyy,
+                                                                                           // value=[revenue,
+                                                                                           // orderCount]
+                        for (Order o : response.body()) {
+                            if (o.getCreatedAt() == null)
+                                continue;
+                            String dateISO = extractDateFromTimestamp(o.getCreatedAt());
+                            if (dateISO.length() < 7)
+                                continue;
+                            String y = dateISO.substring(0, 4);
+                            String m = dateISO.substring(5, 7);
+                            String monthKey = m + "/" + y;
+
+                            double[] vals = monthData.get(monthKey);
+                            if (vals == null) {
+                                vals = new double[] { 0, 0 };
+                                monthData.put(monthKey, vals);
+                            }
+                            vals[0] += o.getTotalAmount();
+                            vals[1] += 1;
+                        }
+
+                        if (monthData.isEmpty()) {
+                            if (tvMonthlyTrendComment != null)
+                                tvMonthlyTrendComment.setText("Chưa có dữ liệu.");
+                            return;
+                        }
+
+                        populateMonthlyTrend(monthData);
                     }
-                    calculateComparisonStats(validOrders);
-                }
+
+                    @Override
+                    public void onFailure(Call<List<Order>> call, Throwable t) {
+                        if (tvMonthlyTrendComment != null)
+                            tvMonthlyTrendComment.setText("Lỗi kết nối khi tải dữ liệu biến động.");
+                    }
+                });
+    }
+
+    private void populateMonthlyTrend(LinkedHashMap<String, double[]> monthData) {
+        // Clear old rows (keep header)
+        if (tableMonthlyTrend != null) {
+            int count = tableMonthlyTrend.getChildCount();
+            if (count > 1)
+                tableMonthlyTrend.removeViews(1, count - 1);
+        }
+
+        List<String> months = new ArrayList<>(monthData.keySet());
+        List<Float> revenues = new ArrayList<>();
+        List<Float> orders = new ArrayList<>();
+
+        double prevRevenue = -1;
+        double prevOrders = -1;
+        StringBuilder aiDataSummary = new StringBuilder();
+
+        for (int i = 0; i < months.size(); i++) {
+            String monthKey = months.get(i);
+            double[] vals = monthData.get(monthKey);
+            double revenue = vals[0];
+            int orderCount = (int) vals[1];
+
+            revenues.add((float) revenue);
+            orders.add((float) orderCount);
+
+            String revChangeStr = "---";
+            String ordChangeStr = "---";
+            int revChangeColor = Color.parseColor("#999999");
+            int ordChangeColor = Color.parseColor("#999999");
+
+            if (prevRevenue >= 0 && i > 0) {
+                double revPercent = prevRevenue > 0 ? ((revenue - prevRevenue) / prevRevenue) * 100
+                        : (revenue > 0 ? 100 : 0);
+                double ordPercent = prevOrders > 0 ? ((orderCount - prevOrders) / prevOrders) * 100
+                        : (orderCount > 0 ? 100 : 0);
+
+                revChangeStr = (revPercent >= 0 ? "+" : "") + String.format("%.0f%%", revPercent);
+                ordChangeStr = (ordPercent >= 0 ? "+" : "") + String.format("%.0f%%", ordPercent);
+                revChangeColor = revPercent >= 0 ? Color.parseColor("#4CAF50") : Color.parseColor("#F44336");
+                ordChangeColor = ordPercent >= 0 ? Color.parseColor("#4CAF50") : Color.parseColor("#F44336");
+            }
+
+            addTrendTableRow(monthKey, nf.format(revenue) + "đ", String.valueOf(orderCount), revChangeStr,
+                    revChangeColor, ordChangeStr, ordChangeColor);
+            aiDataSummary.append("Tháng ").append(monthKey).append(": Doanh thu=").append(nf.format(revenue))
+                    .append("đ, Đơn hàng=").append(orderCount).append("\n");
+
+            prevRevenue = revenue;
+            prevOrders = orderCount;
+        }
+
+        // Build two separate charts
+        buildSingleBarChart(chartMonthlyRevenue, months, revenues, "Doanh thu", Color.parseColor("#FF5722"), true);
+        buildSingleBarChart(chartMonthlyOrders, months, orders, "Đơn hàng", Color.parseColor("#4CAF50"), false);
+
+        // Request AI commentary
+        requestAiCommentary(aiDataSummary.toString());
+    }
+
+    private void addTrendTableRow(String month, String revenue, String orderCount, String revChange, int revColor,
+            String ordChange, int ordColor) {
+        if (tableMonthlyTrend == null)
+            return;
+
+        android.widget.TableRow row = new android.widget.TableRow(this);
+        row.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        int pad = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 6, getResources().getDisplayMetrics());
+
+        // Month
+        android.widget.TextView tvM = new android.widget.TextView(this);
+        tvM.setText(month);
+        tvM.setTextColor(Color.parseColor("#333333"));
+        tvM.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
+        tvM.setPadding(pad, pad, pad, pad);
+        tvM.setGravity(android.view.Gravity.CENTER);
+        tvM.setMinWidth(dpToPx(70));
+        row.addView(tvM);
+
+        row.addView(createTrendDivider());
+
+        // Revenue
+        android.widget.TextView tvR = new android.widget.TextView(this);
+        tvR.setText(revenue);
+        tvR.setTextColor(Color.parseColor("#FF5722"));
+        tvR.setTypeface(null, android.graphics.Typeface.BOLD);
+        tvR.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
+        tvR.setPadding(pad, pad, pad, pad);
+        tvR.setGravity(android.view.Gravity.CENTER);
+        tvR.setMinWidth(dpToPx(100));
+        row.addView(tvR);
+
+        row.addView(createTrendDivider());
+
+        // Order count
+        android.widget.TextView tvO = new android.widget.TextView(this);
+        tvO.setText(orderCount);
+        tvO.setTextColor(Color.parseColor("#333333"));
+        tvO.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
+        tvO.setPadding(pad, pad, pad, pad);
+        tvO.setGravity(android.view.Gravity.CENTER);
+        tvO.setMinWidth(dpToPx(55));
+        row.addView(tvO);
+
+        row.addView(createTrendDivider());
+
+        // Revenue change %
+        android.widget.TextView tvRC = new android.widget.TextView(this);
+        tvRC.setText(revChange);
+        tvRC.setTextColor(revColor);
+        tvRC.setTypeface(null, android.graphics.Typeface.BOLD);
+        tvRC.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
+        tvRC.setPadding(pad, pad, pad, pad);
+        tvRC.setGravity(android.view.Gravity.CENTER);
+        tvRC.setMinWidth(dpToPx(60));
+        row.addView(tvRC);
+
+        row.addView(createTrendDivider());
+
+        // Order change %
+        android.widget.TextView tvOC = new android.widget.TextView(this);
+        tvOC.setText(ordChange);
+        tvOC.setTextColor(ordColor);
+        tvOC.setTypeface(null, android.graphics.Typeface.BOLD);
+        tvOC.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
+        tvOC.setPadding(pad, pad, pad, pad);
+        tvOC.setGravity(android.view.Gravity.CENTER);
+        tvOC.setMinWidth(dpToPx(60));
+        row.addView(tvOC);
+
+        tableMonthlyTrend.addView(row);
+
+        android.view.View divider = new android.view.View(this);
+        divider.setBackgroundColor(Color.parseColor("#CCCCCC"));
+        android.widget.TableLayout.LayoutParams lpDiv = new android.widget.TableLayout.LayoutParams(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT, 1);
+        tableMonthlyTrend.addView(divider, lpDiv);
+    }
+
+    private android.view.View createTrendDivider() {
+        android.view.View v = new android.view.View(this);
+        v.setBackgroundColor(Color.parseColor("#CCCCCC"));
+        android.widget.TableRow.LayoutParams lp = new android.widget.TableRow.LayoutParams(1,
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT);
+        v.setLayoutParams(lp);
+        return v;
+    }
+
+    private void buildSingleBarChart(com.github.mikephil.charting.charts.BarChart chart, List<String> months,
+            List<Float> values, String label, int color, boolean isCurrency) {
+        if (chart == null)
+            return;
+
+        List<BarEntry> entries = new ArrayList<>();
+        for (int i = 0; i < values.size(); i++) {
+            entries.add(new BarEntry(i, values.get(i)));
+        }
+
+        BarDataSet dataSet = new BarDataSet(entries, label);
+        dataSet.setColor(color);
+        dataSet.setValueTextSize(9f);
+        dataSet.setValueFormatter(new com.github.mikephil.charting.formatter.ValueFormatter() {
+            @Override
+            public String getFormattedValue(float value) {
+                if (isCurrency)
+                    return formatCompactCurrency(value);
+                return String.format("%.0f", value);
+            }
+        });
+
+        BarData barData = new BarData(dataSet);
+        barData.setBarWidth(0.5f);
+
+        chart.setData(barData);
+        chart.getDescription().setEnabled(false);
+        chart.setFitBars(true);
+        chart.setScaleEnabled(false);
+        chart.setPinchZoom(false);
+        chart.animateY(500);
+        chart.getLegend().setEnabled(false);
+
+        XAxis xAxis = chart.getXAxis();
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setGranularity(1f);
+        xAxis.setDrawGridLines(false);
+        final List<String> labels = months;
+        xAxis.setValueFormatter(new com.github.mikephil.charting.formatter.ValueFormatter() {
+            @Override
+            public String getFormattedValue(float value) {
+                int idx = (int) value;
+                if (idx >= 0 && idx < labels.size())
+                    return labels.get(idx);
+                return "";
+            }
+        });
+
+        chart.getAxisLeft().setAxisMinimum(0f);
+        chart.getAxisRight().setEnabled(false);
+        chart.invalidate();
+    }
+
+    private void requestAiCommentary(String dataSummary) {
+        if (tvMonthlyTrendComment == null)
+            return;
+        tvMonthlyTrendComment.setText("🤖 Đang phân tích dữ liệu...");
+
+        String prompt = "Bạn là chuyên gia phân tích kinh doanh nhà hàng. Dựa vào dữ liệu biến động doanh thu và đơn hàng theo từng tháng dưới đây, hãy đưa ra nhận xét ngắn gọn (3-5 câu) bằng tiếng Việt. Tập trung vào xu hướng tăng/giảm, tháng nào tốt nhất/kém nhất, và đề xuất 1 hành động cải thiện.\n\nDữ liệu:\n"
+                + dataSummary;
+
+        String apiKey = com.example.food_order_app.config.GeminiAiConfig.GEMINI_API_KEY;
+        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent";
+
+        org.json.JSONObject requestBody = new org.json.JSONObject();
+        try {
+            org.json.JSONArray contents = new org.json.JSONArray();
+            org.json.JSONObject content = new org.json.JSONObject();
+            content.put("role", "user");
+            org.json.JSONArray parts = new org.json.JSONArray();
+            org.json.JSONObject part = new org.json.JSONObject();
+            part.put("text", prompt);
+            parts.put(part);
+            content.put("parts", parts);
+            contents.put(content);
+            requestBody.put("contents", contents);
+        } catch (org.json.JSONException e) {
+            tvMonthlyTrendComment.setText("Lỗi tạo yêu cầu AI.");
+            return;
+        }
+
+        okhttp3.OkHttpClient client = new okhttp3.OkHttpClient.Builder()
+                .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+                .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+                .build();
+
+        okhttp3.RequestBody body = okhttp3.RequestBody.create(
+                requestBody.toString(),
+                okhttp3.MediaType.parse("application/json"));
+
+        okhttp3.Request request = new okhttp3.Request.Builder()
+                .url(url)
+                .addHeader("x-goog-api-key", apiKey)
+                .addHeader("Content-Type", "application/json")
+                .post(body)
+                .build();
+
+        client.newCall(request).enqueue(new okhttp3.Callback() {
+            @Override
+            public void onFailure(okhttp3.Call call, java.io.IOException e) {
+                runOnUiThread(() -> tvMonthlyTrendComment
+                        .setText("Lỗi kết nối AI: " + e.getMessage() + ". Vui lòng kiểm tra internet."));
             }
 
             @Override
-            public void onFailure(Call<List<Order>> call, Throwable t) {
-                resetComparisonStats();
+            public void onResponse(okhttp3.Call call, okhttp3.Response response) throws java.io.IOException {
+                String responseBody = response.body() != null ? response.body().string() : "";
+                runOnUiThread(() -> {
+                    if (!response.isSuccessful()) {
+                        String errMsg = "Lỗi " + response.code();
+                        try {
+                            org.json.JSONObject errorJson = new org.json.JSONObject(responseBody);
+                            if (errorJson.has("error")) {
+                                errMsg += ": " + errorJson.getJSONObject("error").getString("message");
+                            }
+                        } catch (Exception ignored) {
+                        }
+                        tvMonthlyTrendComment.setText("AI trả về lỗi (" + errMsg
+                                + "). Kiểm tra giới hạn Quota hoặc vùng hỗ trợ của API Key.");
+                        return;
+                    }
+                    try {
+                        org.json.JSONObject json = new org.json.JSONObject(responseBody);
+                        String aiText = json.getJSONArray("candidates")
+                                .getJSONObject(0)
+                                .getJSONObject("content")
+                                .getJSONArray("parts")
+                                .getJSONObject(0)
+                                .getString("text");
+                        tvMonthlyTrendComment.setText(aiText.trim());
+                    } catch (org.json.JSONException e) {
+                        tvMonthlyTrendComment.setText("Phản hồi AI không đúng định dạng. Chi tiết: " + e.getMessage());
+                    }
+                });
             }
         });
     }
-    
-    private void calculateComparisonStats(List<Order> prevOrders) {
-        double prevRevenue = 0;
-        int prevDelivered = 0;
-        
-        for (Order o : prevOrders) {
-            if ("served".equals(o.getStatus())) {
-                prevRevenue += o.getTotalAmount();
-                prevDelivered++;
-            }
+
+    private void resetMonthlyTrend() {
+        if (tableMonthlyTrend != null) {
+            int count = tableMonthlyTrend.getChildCount();
+            if (count > 1)
+                tableMonthlyTrend.removeViews(1, count - 1);
         }
-        
-        double currentRevenue = currentRevenueValue;
-        int currentDelivered = currentDeliveredCount;
-        
-        tvPreviousMonthRevenue.setText(nf.format(prevRevenue) + " VNĐ");
-        tvPreviousMonthOrders.setText(String.valueOf(prevDelivered));
-        
-        // Calculate percentage changes
-        double revenueChangePercent = prevRevenue > 0 ? ((currentRevenue - prevRevenue) / prevRevenue) * 100 : 0;
-        double ordersChangePercent = prevDelivered > 0 ? ((currentDelivered - prevDelivered) / (double) prevDelivered) * 100 : 0;
-        
-        updateChangeIndicator(tvRevenueChange, revenueChangePercent);
-        updateChangeIndicator(tvOrdersChange, ordersChangePercent);
-    }
-    
-    private void updateChangeIndicator(TextView tv, double changePercent) {
-        String changeText = (changePercent >= 0 ? "+" : "") + String.format("%.0f%%", changePercent);
-        tv.setText(changeText);
-        
-        if (changePercent > 0) {
-            tv.setTextColor(Color.WHITE);
-            tv.setBackgroundColor(Color.parseColor("#66BB6A")); // Green success color
-        } else if (changePercent < 0) {
-            tv.setTextColor(Color.WHITE);
-            tv.setBackgroundColor(Color.parseColor("#EF5350")); // Red error color
-        } else {
-            tv.setTextColor(Color.parseColor("#999999"));
-            tv.setBackgroundColor(Color.parseColor("#F0F0F0")); // Gray neutral
-        }
-    }
-    
-    private void resetComparisonStats() {
-        tvPreviousMonthRevenue.setText("0 VNĐ");
-        tvPreviousMonthOrders.setText("0");
-        tvRevenueChange.setText("+0%");
-        tvOrdersChange.setText("+0%");
+        if (chartMonthlyRevenue != null)
+            chartMonthlyRevenue.clear();
+        if (chartMonthlyOrders != null)
+            chartMonthlyOrders.clear();
+        if (tvMonthlyTrendComment != null)
+            tvMonthlyTrendComment.setText("Đang phân tích dữ liệu...");
     }
 
     private void loadDashboardOverview() {
-        Calendar todayStart = Calendar.getInstance();
-        todayStart.set(Calendar.HOUR_OF_DAY, 0);
-        todayStart.set(Calendar.MINUTE, 0);
-        todayStart.set(Calendar.SECOND, 0);
-        todayStart.set(Calendar.MILLISECOND, 0);
-
-        Calendar last7Start = Calendar.getInstance();
-        last7Start.add(Calendar.DAY_OF_MONTH, -6);
-        last7Start.set(Calendar.HOUR_OF_DAY, 0);
-        last7Start.set(Calendar.MINUTE, 0);
-        last7Start.set(Calendar.SECOND, 0);
-        last7Start.set(Calendar.MILLISECOND, 0);
-
-        String fromStr = isoFormat.format(last7Start.getTime()) + "T00:00:00";
-        String toStr = isoFormat.format(Calendar.getInstance().getTime()) + "T23:59:59";
+        String fromStr = isoFormat.format(dateFrom.getTime()) + "T00:00:00";
+        String toStr = isoFormat.format(dateTo.getTime()) + "T23:59:59";
 
         Map<String, String> filters = new HashMap<>();
-        filters.put("created_at", "gte." + fromStr);
+        filters.put("and", "(created_at.gte." + fromStr + ",created_at.lte." + toStr + ")");
 
         dbService.getOrdersByDateRange(filters, "*").enqueue(new Callback<List<Order>>() {
             @Override
@@ -714,7 +908,7 @@ public class AdminRevenueActivity extends AppCompatActivity {
                     }
                 }
 
-                updateDashboardFromOrders(validOrders, todayStart);
+                updateDashboardFromOrders(validOrders);
             }
 
             @Override
@@ -723,7 +917,7 @@ public class AdminRevenueActivity extends AppCompatActivity {
             }
         });
 
-        // New customers today
+        // New customers in selected range
         dbService.getUsersByRole("eq.user", "*", "created_at.desc").enqueue(new Callback<List<User>>() {
             @Override
             public void onResponse(Call<List<User>> call, Response<List<User>> response) {
@@ -732,14 +926,18 @@ public class AdminRevenueActivity extends AppCompatActivity {
                     return;
                 }
 
-                int newToday = 0;
-                String todayIso = isoFormat.format(Calendar.getInstance().getTime());
+                int newInRange = 0;
+                String fromIso = isoFormat.format(dateFrom.getTime());
+                String toIso = isoFormat.format(dateTo.getTime());
                 for (User user : response.body()) {
-                    if (user.getCreatedAt() != null && user.getCreatedAt().startsWith(todayIso)) {
-                        newToday++;
+                    if (user.getCreatedAt() != null) {
+                        String createdDate = extractDateFromTimestamp(user.getCreatedAt());
+                        if (createdDate.compareTo(fromIso) >= 0 && createdDate.compareTo(toIso) <= 0) {
+                            newInRange++;
+                        }
                     }
                 }
-                tvDashNewCustomersToday.setText(String.valueOf(newToday));
+                tvDashNewCustomersToday.setText(String.valueOf(newInRange));
             }
 
             @Override
@@ -749,14 +947,25 @@ public class AdminRevenueActivity extends AppCompatActivity {
         });
     }
 
-    private void updateDashboardFromOrders(List<Order> orders, Calendar todayStart) {
-        double todayRevenue = 0;
-        int todayOrders = 0;
+    private void updateDashboardFromOrders(List<Order> orders) {
+        double rangeRevenue = 0;
+        int rangeOrders = 0;
 
+        // Build day buckets from dateFrom to dateTo
         LinkedHashMap<String, Double> dayRevenue = new LinkedHashMap<>();
-        Calendar cursor = (Calendar) todayStart.clone();
-        cursor.add(Calendar.DAY_OF_MONTH, -6);
-        for (int i = 0; i < 7; i++) {
+        Calendar cursor = (Calendar) dateFrom.clone();
+        cursor.set(Calendar.HOUR_OF_DAY, 0);
+        cursor.set(Calendar.MINUTE, 0);
+        cursor.set(Calendar.SECOND, 0);
+        cursor.set(Calendar.MILLISECOND, 0);
+
+        Calendar end = (Calendar) dateTo.clone();
+        end.set(Calendar.HOUR_OF_DAY, 0);
+        end.set(Calendar.MINUTE, 0);
+        end.set(Calendar.SECOND, 0);
+        end.set(Calendar.MILLISECOND, 0);
+
+        while (!cursor.after(end)) {
             String key = isoFormat.format(cursor.getTime());
             dayRevenue.put(key, 0.0);
             cursor.add(Calendar.DAY_OF_MONTH, 1);
@@ -767,56 +976,52 @@ public class AdminRevenueActivity extends AppCompatActivity {
                 continue;
             }
 
-            String dayKey = order.getCreatedAt().substring(0, 10);
+            String dayKey = extractDateFromTimestamp(order.getCreatedAt());
             if (dayRevenue.containsKey(dayKey)) {
                 dayRevenue.put(dayKey, dayRevenue.get(dayKey) + order.getTotalAmount());
             }
 
-            if (dayKey.equals(isoFormat.format(Calendar.getInstance().getTime()))) {
-                todayRevenue += order.getTotalAmount();
-                todayOrders++;
+            rangeRevenue += order.getTotalAmount();
+            rangeOrders++;
+        }
+
+        // Count total orders and cancelled for rates
+        int totalAll = orders.size();
+        int cancelledCount = 0;
+        for (Order order : orders) {
+            if ("cancelled".equals(order.getStatus())) {
+                cancelledCount++;
             }
         }
 
-        tvDashRevenueToday.setText(nf.format(todayRevenue) + " VNĐ");
-        tvDashOrdersToday.setText(String.valueOf(todayOrders));
+        tvDashRevenueToday.setText(nf.format(rangeRevenue) + " VNĐ");
+        tvDashOrdersToday.setText(String.valueOf(rangeOrders));
 
-        updateLast7DaysChart(dayRevenue);
+        // Average order value
+        if (rangeOrders > 0) {
+            double avgValue = rangeRevenue / rangeOrders;
+            tvDashAvgOrderValue.setText(nf.format(avgValue) + " VNĐ");
+        } else {
+            tvDashAvgOrderValue.setText("0 VNĐ");
+        }
+
+        // Success rate
+        if (totalAll > 0) {
+            double successRate = (double) rangeOrders / totalAll * 100;
+            tvDashSuccessRate.setText(String.format(Locale.getDefault(), "%.0f%%", successRate));
+        } else {
+            tvDashSuccessRate.setText("0%");
+        }
+
+        // Cancel rate
+        if (totalAll > 0) {
+            double cancelRate = (double) cancelledCount / totalAll * 100;
+            tvDashCancelRate.setText(String.format(Locale.getDefault(), "%.0f%%", cancelRate));
+        } else {
+            tvDashCancelRate.setText("0%");
+        }
+
         updateTop5Text();
-    }
-
-    private void updateLast7DaysChart(LinkedHashMap<String, Double> dayRevenue) {
-        if (barChartLast7Days == null) {
-            return;
-        }
-
-        configureDailyBarChart(barChartLast7Days);
-
-        List<BarEntry> entries = new ArrayList<>();
-        List<String> labels = new ArrayList<>();
-        int index = 0;
-        for (Map.Entry<String, Double> entry : dayRevenue.entrySet()) {
-            entries.add(new BarEntry(index, entry.getValue().floatValue()));
-            labels.add(entry.getKey().substring(8, 10));
-            index++;
-        }
-
-        BarDataSet dataSet = new BarDataSet(entries, "Doanh thu 7 ngày");
-        dataSet.setColor(Color.parseColor("#42A5F5"));
-        dataSet.setValueTextSize(9f);
-        dataSet.setValueFormatter(new ValueFormatter() {
-            @Override
-            public String getFormattedValue(float value) {
-                return value == 0f ? "" : formatCompactCurrency(value);
-            }
-        });
-
-        BarData data = new BarData(dataSet);
-        data.setBarWidth(0.65f);
-        barChartLast7Days.setData(data);
-        barChartLast7Days.getXAxis().setValueFormatter(new IndexAxisValueFormatter(labels));
-        barChartLast7Days.getXAxis().setLabelCount(labels.size(), true);
-        barChartLast7Days.invalidate();
     }
 
     private void updateTop5Text() {
@@ -840,126 +1045,397 @@ public class AdminRevenueActivity extends AppCompatActivity {
         tvDashTop5Foods.setText(sb.toString());
     }
 
-    private void loadCustomerStatistics(List<Order> rangeOrders) {
-        Map<String, Integer> ordersByUser = new HashMap<>();
-        int totalOrdersInRange = 0;
-
-        for (Order order : rangeOrders) {
-            if (order.getUserId() == null || order.getUserId().isEmpty()) {
-                continue;
-            }
-            totalOrdersInRange++;
-            ordersByUser.put(order.getUserId(), ordersByUser.getOrDefault(order.getUserId(), 0) + 1);
+    private void loadCustomerStatistics() {
+        if (tvNoCustomerData != null) {
+            tvNoCustomerData.setVisibility(android.view.View.VISIBLE);
+            tvNoCustomerData.setText("Đang tải dữ liệu...");
         }
 
-        String topBuyerId = "";
-        int maxOrders = 0;
-        for (Map.Entry<String, Integer> entry : ordersByUser.entrySet()) {
-            if (entry.getValue() > maxOrders) {
-                maxOrders = entry.getValue();
-                topBuyerId = entry.getKey();
-            }
-        }
+        if (atvMonthSelector != null)
+            atvMonthSelector.setText("", false);
+        if (atvYearSelector != null)
+            atvYearSelector.setText("", false);
+        resetCustomerStatistics();
 
-        final String finalTopBuyerId = topBuyerId;
-        final int finalMaxOrders = maxOrders;
-        final int finalTotalOrdersInRange = totalOrdersInRange;
-
-        dbService.getUsersByRole("eq.user", "*", "created_at.desc").enqueue(new Callback<List<User>>() {
-            @Override
-            public void onResponse(Call<List<User>> call, Response<List<User>> response) {
-                if (!response.isSuccessful() || response.body() == null) {
-                    resetCustomerStatistics();
-                    return;
-                }
-
-                List<User> users = response.body();
-                tvCustomerTotal.setText(String.valueOf(users.size()));
-
-                int newInRange = 0;
-                String fromIso = isoFormat.format(dateFrom.getTime());
-                String toIso = isoFormat.format(dateTo.getTime());
-                String topBuyerName = "-";
-
-                for (User user : users) {
-                    if (user.getCreatedAt() != null) {
-                        String createdDate = user.getCreatedAt().substring(0, 10);
-                        if (createdDate.compareTo(fromIso) >= 0 && createdDate.compareTo(toIso) <= 0) {
-                            newInRange++;
+        // Fetch ALL orders (all-time) to build the monthly history
+        dbService.getAllOrders("receiver_name,created_at,status", "created_at.desc")
+                .enqueue(new Callback<List<Order>>() {
+                    @Override
+                    public void onResponse(Call<List<Order>> call, Response<List<Order>> response) {
+                        if (!response.isSuccessful() || response.body() == null || response.body().isEmpty()) {
+                            if (tvNoCustomerData != null)
+                                tvNoCustomerData.setText("Chưa có dữ liệu khách hàng.");
+                            return;
                         }
+
+                        monthlyCustomerData.clear();
+                        Map<String, Map<String, Integer>> tempMap = new LinkedHashMap<>();
+
+                        for (Order order : response.body()) {
+                            if (!"served".equals(order.getStatus()) || order.getCreatedAt() == null
+                                    || order.getReceiverName() == null) {
+                                continue;
+                            }
+                            String fullDateISO = extractDateFromTimestamp(order.getCreatedAt()); // yyyy-MM-dd
+                            if (fullDateISO.length() < 10)
+                                continue;
+
+                            String monthKey = fullDateISO.substring(0, 7); // yyyy-MM
+
+                            // Convert yyyy-MM-dd to dd/MM/yyyy
+                            String y = fullDateISO.substring(0, 4);
+                            String m = fullDateISO.substring(5, 7);
+                            String d = fullDateISO.substring(8, 10);
+                            String dateDisplay = d + "/" + m + "/" + y;
+
+                            tempMap.putIfAbsent(monthKey, new LinkedHashMap<>());
+                            Map<String, Integer> userDateCounts = tempMap.get(monthKey);
+
+                            String name = order.getReceiverName();
+                            String entryKey = name + "|" + dateDisplay;
+                            userDateCounts.put(entryKey, userDateCounts.getOrDefault(entryKey, 0) + 1);
+                        }
+
+                        if (tempMap.isEmpty()) {
+                            if (tvNoCustomerData != null)
+                                tvNoCustomerData.setText("Chưa có dữ liệu đơn thành công.");
+                            return;
+                        }
+
+                        // Convert to sorted lists
+                        for (String month : tempMap.keySet()) {
+                            List<CustomerRecord> records = new ArrayList<>();
+                            for (Map.Entry<String, Integer> e : tempMap.get(month).entrySet()) {
+                                String[] parts = e.getKey().split("\\|");
+                                String name = parts[0];
+                                String dateDisplay = (parts.length > 1) ? parts[1] : "";
+                                records.add(new CustomerRecord(name, e.getValue(), dateDisplay));
+                            }
+                            // Sort descending by order count
+                            Collections.sort(records, (a, b) -> Integer.compare(b.orderCount, a.orderCount));
+                            monthlyCustomerData.put(month, records);
+                        }
+
+                        setupMonthYearDropdowns();
+
+                        // Defaults are set inside setupMonthYearDropdowns
                     }
-                    if (!finalTopBuyerId.isEmpty() && finalTopBuyerId.equals(user.getId())) {
-                        topBuyerName = (user.getFullName() == null || user.getFullName().isEmpty())
-                                ? user.getEmail()
-                                : user.getFullName();
+
+                    @Override
+                    public void onFailure(Call<List<Order>> call, Throwable t) {
+                        if (tvNoCustomerData != null)
+                            tvNoCustomerData.setText("Lỗi kết nối khi tải thống kê khách");
                     }
-                }
+                });
+    }
 
-                tvCustomerNewRange.setText(String.valueOf(newInRange));
-                if (finalMaxOrders > 0) {
-                    tvCustomerTopBuyer.setText(topBuyerName + " (" + finalMaxOrders + " đơn)");
-                } else {
-                    tvCustomerTopBuyer.setText("-");
-                }
+    private void setupMonthYearDropdowns() {
+        if (atvMonthSelector == null || atvYearSelector == null)
+            return;
 
-                int uniqueBuyers = ordersByUser.size();
-                if (uniqueBuyers > 0) {
-                    double frequency = (double) finalTotalOrdersInRange / uniqueBuyers;
-                    tvCustomerFrequency.setText(String.format(Locale.getDefault(), "%.1f đơn/khách", frequency));
-                } else {
-                    tvCustomerFrequency.setText("0 đơn/khách");
-                }
+        // Months 01 - 12
+        List<String> months = new ArrayList<>();
+        for (int i = 1; i <= 12; i++) {
+            months.add(String.format(Locale.getDefault(), "%02d", i));
+        }
+        android.widget.ArrayAdapter<String> monthAdapter = new android.widget.ArrayAdapter<>(
+                this, android.R.layout.simple_dropdown_item_1line, months);
+        atvMonthSelector.setAdapter(monthAdapter);
+
+        // Years (expanded range: 2000 to 2100)
+        List<String> years = new ArrayList<>();
+        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+        for (int y = 2100; y >= 2000; y--) {
+            years.add(String.valueOf(y));
+        }
+        android.widget.ArrayAdapter<String> yearAdapter = new android.widget.ArrayAdapter<>(
+                this, android.R.layout.simple_dropdown_item_1line, years);
+        atvYearSelector.setAdapter(yearAdapter);
+
+        // Initial selection: current month and year
+        String curMonth = String.format(Locale.getDefault(), "%02d", Calendar.getInstance().get(Calendar.MONTH) + 1);
+        String curYear = String.valueOf(currentYear);
+        atvMonthSelector.setText(curMonth, false);
+        atvYearSelector.setText(curYear, false);
+
+        atvMonthSelector.setOnItemClickListener((parent, view, position, id) -> updateCustomerStatsFromSelection());
+        atvYearSelector.setOnItemClickListener((parent, view, position, id) -> updateCustomerStatsFromSelection());
+
+        // Initial trigger
+        updateCustomerStatsFromSelection();
+    }
+
+    private void updateCustomerStatsFromSelection() {
+        String m = atvMonthSelector.getText().toString();
+        String y = atvYearSelector.getText().toString();
+        if (m.isEmpty() || y.isEmpty())
+            return;
+
+        String monthKey = y + "-" + m; // yyyy-MM
+        showCustomerStatsForMonth(monthKey);
+    }
+
+    private void showCustomerStatsForMonth(String monthKey) {
+        resetCustomerStatistics();
+
+        List<CustomerRecord> records = monthlyCustomerData.get(monthKey);
+        if (records == null || records.isEmpty()) {
+            if (tvNoCustomerData != null) {
+                tvNoCustomerData.setVisibility(android.view.View.VISIBLE);
+                tvNoCustomerData.setText("Không có dữ liệu cho tháng này.");
             }
+            return;
+        }
 
-            @Override
-            public void onFailure(Call<List<User>> call, Throwable t) {
-                resetCustomerStatistics();
-            }
-        });
+        String displayMonth = monthKey.substring(5, 7) + "/" + monthKey.substring(0, 4);
+        int rank = 1;
+        for (CustomerRecord record : records) {
+            addCustomerTableRow(record.dateDisplay, record.name, String.valueOf(record.orderCount),
+                    String.valueOf(rank));
+            rank++;
+        }
+    }
+
+    private void addCustomerTableRow(String date, String name, String count, String rank) {
+        android.widget.TableRow row = new android.widget.TableRow(this);
+        row.setGravity(android.view.Gravity.CENTER_VERTICAL);
+
+        int pad = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics());
+
+        android.widget.TextView tvDate = new android.widget.TextView(this);
+        tvDate.setText(date);
+        tvDate.setTextColor(Color.parseColor("#333333"));
+        tvDate.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
+        tvDate.setPadding(pad, pad, pad, pad);
+        tvDate.setGravity(android.view.Gravity.CENTER);
+        android.widget.TableRow.LayoutParams lpDate = new android.widget.TableRow.LayoutParams(0,
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT, 0.8f);
+        tvDate.setLayoutParams(lpDate);
+
+        android.view.View vLine1 = new android.view.View(this);
+        vLine1.setBackgroundColor(Color.parseColor("#CCCCCC"));
+        android.widget.TableRow.LayoutParams lpLine1 = new android.widget.TableRow.LayoutParams(1,
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT);
+        vLine1.setLayoutParams(lpLine1);
+
+        android.widget.TextView tvName = new android.widget.TextView(this);
+        tvName.setText(name);
+        tvName.setTextColor(Color.parseColor("#333333"));
+        tvName.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
+        tvName.setPadding(pad, pad, pad, pad);
+        android.widget.TableRow.LayoutParams lpName = new android.widget.TableRow.LayoutParams(0,
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT, 1.2f);
+        tvName.setLayoutParams(lpName);
+
+        android.view.View vLine2 = new android.view.View(this);
+        vLine2.setBackgroundColor(Color.parseColor("#CCCCCC"));
+        android.widget.TableRow.LayoutParams lpLine2 = new android.widget.TableRow.LayoutParams(1,
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT);
+        vLine2.setLayoutParams(lpLine2);
+
+        android.widget.TextView tvCount = new android.widget.TextView(this);
+        tvCount.setText(count);
+        tvCount.setTextColor(Color.parseColor("#333333"));
+        tvCount.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
+        tvCount.setPadding(pad, pad, pad, pad);
+        tvCount.setGravity(android.view.Gravity.CENTER);
+        android.widget.TableRow.LayoutParams lpCount = new android.widget.TableRow.LayoutParams(0,
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT, 0.8f);
+        tvCount.setLayoutParams(lpCount);
+
+        android.view.View vLine3 = new android.view.View(this);
+        vLine3.setBackgroundColor(Color.parseColor("#CCCCCC"));
+        android.widget.TableRow.LayoutParams lpLine3 = new android.widget.TableRow.LayoutParams(1,
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT);
+        vLine3.setLayoutParams(lpLine3);
+
+        android.widget.TextView tvRank = new android.widget.TextView(this);
+        tvRank.setText(rank);
+        tvRank.setTextColor(Color.parseColor("#333333"));
+        tvRank.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
+        tvRank.setPadding(pad, pad, pad, pad);
+        tvRank.setGravity(android.view.Gravity.CENTER);
+        android.widget.TableRow.LayoutParams lpRank = new android.widget.TableRow.LayoutParams(0,
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT, 0.5f);
+        tvRank.setLayoutParams(lpRank);
+
+        row.addView(tvDate);
+        row.addView(vLine1);
+        row.addView(tvName);
+        row.addView(vLine2);
+        row.addView(tvCount);
+        row.addView(vLine3);
+        row.addView(tvRank);
+        tableCustomerStats.addView(row);
+
+        android.view.View divider = new android.view.View(this);
+        divider.setBackgroundColor(Color.parseColor("#CCCCCC"));
+        android.widget.TableLayout.LayoutParams lpDiv = new android.widget.TableLayout.LayoutParams(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT, 1);
+        tableCustomerStats.addView(divider, lpDiv);
+    }
+
+    private static class CustomerRecord {
+        String name;
+        int orderCount;
+        String dateDisplay;
+
+        CustomerRecord(String name, int orderCount, String dateDisplay) {
+            this.name = name;
+            this.orderCount = orderCount;
+            this.dateDisplay = dateDisplay;
+        }
     }
 
     private void resetDashboardOverview() {
         tvDashRevenueToday.setText("0 VNĐ");
         tvDashOrdersToday.setText("0");
         tvDashNewCustomersToday.setText("0");
+        tvDashAvgOrderValue.setText("0 VNĐ");
+        tvDashSuccessRate.setText("0%");
+        tvDashCancelRate.setText("0%");
         tvDashTop5Foods.setText("Top 5 món: chưa có dữ liệu");
-        if (barChartLast7Days != null) {
-            barChartLast7Days.clear();
-            barChartLast7Days.invalidate();
-        }
     }
 
     private void resetCustomerStatistics() {
-        tvCustomerTotal.setText("0");
-        tvCustomerNewRange.setText("0");
-        tvCustomerTopBuyer.setText("-");
-        tvCustomerFrequency.setText("0 đơn/khách");
+        if (tvNoCustomerData != null) {
+            tvNoCustomerData.setVisibility(android.view.View.GONE);
+        }
+        if (tableCustomerStats != null) {
+            int count = tableCustomerStats.getChildCount();
+            if (count > 1)
+                tableCustomerStats.removeViews(1, count - 1);
+        }
     }
 
-    private void loadTopFoods(List<String> orderIds) {
-        // Build filter: order_id=in.(id1,id2,...)
-        StringBuilder sb = new StringBuilder("in.(");
-        for (int i = 0; i < orderIds.size(); i++) {
-            if (i > 0)
-                sb.append(",");
-            sb.append(orderIds.get(i));
+    private void loadAllTimeTopFoods() {
+        if (tvNoTopFoods != null) {
+            tvNoTopFoods.setVisibility(android.view.View.VISIBLE);
+            tvNoTopFoods.setText("Đang tải Top 10...");
         }
-        sb.append(")");
+        // rvTopFoods.setVisibility(android.view.View.GONE); // This line was commented
+        // out or removed in a previous edit, keeping it out.
 
-        dbService.getOrderItems(sb.toString(), "*").enqueue(new Callback<List<OrderItem>>() {
+        dbService.getOrdersByStatus("eq.served", "id", "created_at.desc").enqueue(new Callback<List<Order>>() {
             @Override
-            public void onResponse(Call<List<OrderItem>> call, Response<List<OrderItem>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    buildTopFoods(response.body());
+            public void onResponse(Call<List<Order>> call, Response<List<Order>> response) {
+                if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                    List<String> allServedIds = new ArrayList<>();
+                    for (Order o : response.body()) {
+                        if (o.getId() != null)
+                            allServedIds.add(o.getId());
+                    }
+                    if (!allServedIds.isEmpty()) {
+                        loadTopFoods(allServedIds);
+                    } else {
+                        showNoTopFoods();
+                    }
+                } else {
+                    showNoTopFoods();
                 }
             }
 
             @Override
-            public void onFailure(Call<List<OrderItem>> call, Throwable t) {
-                tvNoTopFoods.setVisibility(android.view.View.VISIBLE);
-                rvTopFoods.setVisibility(android.view.View.GONE);
+            public void onFailure(Call<List<Order>> call, Throwable t) {
+                showNoTopFoods();
             }
         });
+    }
+
+    private void showNoTopFoods() {
+        if (tvNoTopFoods != null) {
+            tvNoTopFoods.setVisibility(android.view.View.VISIBLE);
+            tvNoTopFoods.setText("Chưa có dữ liệu Top 10.");
+        }
+        if (tableTopFoods != null) {
+            tableTopFoods.setVisibility(android.view.View.GONE);
+            int count = tableTopFoods.getChildCount();
+            if (count > 1)
+                tableTopFoods.removeViews(1, count - 1);
+        }
+        currentTopFoods.clear();
+        updateTop5Text();
+    }
+
+    private void loadTopFoods(List<String> orderIds) {
+        if (orderIds == null || orderIds.isEmpty()) {
+            android.util.Log.d("Top10Debug", "No orderIds provided for Top 10");
+            tvNoTopFoods.setVisibility(android.view.View.VISIBLE);
+            if (tableTopFoods != null)
+                tableTopFoods.setVisibility(android.view.View.GONE);
+            return;
+        }
+
+        android.util.Log.d("Top10Debug", "Loading Top 10 for " + orderIds.size() + " orders");
+
+        List<OrderItem> allItems = new ArrayList<>();
+        int batchSize = 30;
+        int totalBatches = (int) Math.ceil((double) orderIds.size() / batchSize);
+        final int[] completedBatches = { 0 };
+        final boolean[] hasError = { false };
+
+        for (int i = 0; i < totalBatches; i++) {
+            int start = i * batchSize;
+            int end = Math.min(start + batchSize, orderIds.size());
+            List<String> batchIds = orderIds.subList(start, end);
+
+            StringBuilder sb = new StringBuilder("in.(");
+            for (int j = 0; j < batchIds.size(); j++) {
+                if (j > 0)
+                    sb.append(",");
+                sb.append(batchIds.get(j));
+            }
+            sb.append(")");
+
+            dbService.getOrderItems(sb.toString(), "*").enqueue(new Callback<List<OrderItem>>() {
+                @Override
+                public void onResponse(Call<List<OrderItem>> call, Response<List<OrderItem>> response) {
+                    completedBatches[0]++;
+                    if (response.isSuccessful() && response.body() != null) {
+                        android.util.Log.d("Top10Debug", "Batch loaded " + response.body().size() + " items");
+                        allItems.addAll(response.body());
+                    } else {
+                        android.util.Log.e("Top10Debug",
+                                "Batch load failed with code: " + response.code() + ", error: " + response.message());
+                        try {
+                            if (response.errorBody() != null) {
+                                android.util.Log.e("Top10Debug", "Error body: " + response.errorBody().string());
+                            }
+                        } catch (Exception e) {
+                        }
+                        hasError[0] = true;
+                    }
+
+                    if (completedBatches[0] == totalBatches) {
+                        android.util.Log.d("Top10Debug",
+                                "All batches done. Total items: " + allItems.size() + ", hasError: " + hasError[0]);
+                        if (allItems.isEmpty() && hasError[0]) {
+                            tvNoTopFoods.setVisibility(android.view.View.VISIBLE);
+                            if (tableTopFoods != null)
+                                tableTopFoods.setVisibility(android.view.View.GONE);
+                        } else {
+                            buildTopFoods(allItems);
+                        }
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<List<OrderItem>> call, Throwable t) {
+                    android.util.Log.e("Top10Debug", "API call failed", t);
+                    completedBatches[0]++;
+                    hasError[0] = true;
+                    if (completedBatches[0] == totalBatches) {
+                        if (allItems.isEmpty()) {
+                            tvNoTopFoods.setVisibility(android.view.View.VISIBLE);
+                            if (tableTopFoods != null)
+                                tableTopFoods.setVisibility(android.view.View.GONE);
+                        } else {
+                            buildTopFoods(allItems);
+                        }
+                    }
+                }
+            });
+        }
     }
 
     private void buildTopFoods(List<OrderItem> items) {
@@ -969,6 +1445,10 @@ public class AdminRevenueActivity extends AppCompatActivity {
 
         for (OrderItem item : items) {
             String name = item.getFoodName();
+            if (name == null || name.trim().isEmpty()) {
+                name = "Món không tên";
+            }
+
             if (!qtyMap.containsKey(name)) {
                 qtyMap.put(name, new int[] { 0 });
                 revMap.put(name, new double[] { 0 });
@@ -977,12 +1457,17 @@ public class AdminRevenueActivity extends AppCompatActivity {
             revMap.get(name)[0] += item.getSubtotal();
         }
 
-        // Build list and sort by revenue descending
-        List<TopFoodAdapter.TopFood> topFoods = new ArrayList<>();
+        // Build list and sort by quantity descending, then by revenue
+        List<TopFoodRecord> topFoods = new ArrayList<>();
         for (String name : qtyMap.keySet()) {
-            topFoods.add(new TopFoodAdapter.TopFood(name, qtyMap.get(name)[0], revMap.get(name)[0]));
+            topFoods.add(new TopFoodRecord(name, qtyMap.get(name)[0], revMap.get(name)[0]));
         }
-        Collections.sort(topFoods, (a, b) -> Double.compare(b.revenue, a.revenue));
+        Collections.sort(topFoods, (a, b) -> {
+            if (b.quantity != a.quantity) {
+                return Integer.compare(b.quantity, a.quantity);
+            }
+            return Double.compare(b.revenue, a.revenue);
+        });
 
         // Take top 10
         if (topFoods.size() > 10) {
@@ -992,16 +1477,119 @@ public class AdminRevenueActivity extends AppCompatActivity {
         currentTopFoods.clear();
         currentTopFoods.addAll(topFoods);
 
-        if (topFoods.isEmpty()) {
-            tvNoTopFoods.setVisibility(android.view.View.VISIBLE);
-            rvTopFoods.setVisibility(android.view.View.GONE);
-        } else {
-            tvNoTopFoods.setVisibility(android.view.View.GONE);
-            rvTopFoods.setVisibility(android.view.View.VISIBLE);
-        }
+        if (tableTopFoods != null) {
+            int count = tableTopFoods.getChildCount();
+            if (count > 1)
+                tableTopFoods.removeViews(1, count - 1);
 
-        topFoodAdapter.setItems(topFoods);
+            if (topFoods.isEmpty()) {
+                tvNoTopFoods.setVisibility(android.view.View.VISIBLE);
+                tableTopFoods.setVisibility(android.view.View.GONE);
+            } else {
+                tvNoTopFoods.setVisibility(android.view.View.GONE);
+                tableTopFoods.setVisibility(android.view.View.VISIBLE);
+
+                int rank = 1;
+                for (TopFoodRecord tf : topFoods) {
+                    addTopFoodTableRow(String.valueOf(rank), tf.name, String.valueOf(tf.quantity),
+                            nf.format(tf.revenue) + "đ");
+                    rank++;
+                }
+            }
+        }
         updateTop5Text();
+    }
+
+    private void addTopFoodTableRow(String rank, String name, String qty, String rev) {
+        android.widget.TableRow row = new android.widget.TableRow(this);
+        row.setGravity(android.view.Gravity.CENTER_VERTICAL);
+
+        int pad = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics());
+
+        android.widget.TextView tvRank = new android.widget.TextView(this);
+        tvRank.setText(rank);
+        tvRank.setTextColor(Color.parseColor("#333333"));
+        tvRank.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
+        tvRank.setPadding(pad, pad, pad, pad);
+        tvRank.setGravity(android.view.Gravity.CENTER);
+        android.widget.TableRow.LayoutParams lpRank = new android.widget.TableRow.LayoutParams(0,
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT, 0.4f);
+        tvRank.setLayoutParams(lpRank);
+
+        android.view.View vLine1 = new android.view.View(this);
+        vLine1.setBackgroundColor(Color.parseColor("#CCCCCC"));
+        android.widget.TableRow.LayoutParams lpLine1 = new android.widget.TableRow.LayoutParams(1,
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT);
+        vLine1.setLayoutParams(lpLine1);
+
+        android.widget.TextView tvName = new android.widget.TextView(this);
+        tvName.setText(name);
+        tvName.setTextColor(Color.parseColor("#333333"));
+        tvName.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
+        tvName.setPadding(pad, pad, pad, pad);
+        android.widget.TableRow.LayoutParams lpName = new android.widget.TableRow.LayoutParams(0,
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT, 1.2f);
+        tvName.setLayoutParams(lpName);
+
+        android.view.View vLine2 = new android.view.View(this);
+        vLine2.setBackgroundColor(Color.parseColor("#CCCCCC"));
+        android.widget.TableRow.LayoutParams lpLine2 = new android.widget.TableRow.LayoutParams(1,
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT);
+        vLine2.setLayoutParams(lpLine2);
+
+        android.widget.TextView tvQty = new android.widget.TextView(this);
+        tvQty.setText(qty);
+        tvQty.setTextColor(Color.parseColor("#333333"));
+        tvQty.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
+        tvQty.setPadding(pad, pad, pad, pad);
+        tvQty.setGravity(android.view.Gravity.CENTER);
+        android.widget.TableRow.LayoutParams lpQty = new android.widget.TableRow.LayoutParams(0,
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT, 0.6f);
+        tvQty.setLayoutParams(lpQty);
+
+        android.view.View vLine3 = new android.view.View(this);
+        vLine3.setBackgroundColor(Color.parseColor("#CCCCCC"));
+        android.widget.TableRow.LayoutParams lpLine3 = new android.widget.TableRow.LayoutParams(1,
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT);
+        vLine3.setLayoutParams(lpLine3);
+
+        android.widget.TextView tvRev = new android.widget.TextView(this);
+        tvRev.setText(rev);
+        tvRev.setTextColor(Color.parseColor("#FF5722")); // Highlighting revenue
+        tvRev.setTypeface(null, android.graphics.Typeface.BOLD);
+        tvRev.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
+        tvRev.setPadding(pad, pad, pad, pad);
+        tvRev.setGravity(android.view.Gravity.CENTER);
+        android.widget.TableRow.LayoutParams lpRev = new android.widget.TableRow.LayoutParams(0,
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT, 0.8f);
+        tvRev.setLayoutParams(lpRev);
+
+        row.addView(tvRank);
+        row.addView(vLine1);
+        row.addView(tvName);
+        row.addView(vLine2);
+        row.addView(tvQty);
+        row.addView(vLine3);
+        row.addView(tvRev);
+        tableTopFoods.addView(row);
+
+        android.view.View divider = new android.view.View(this);
+        divider.setBackgroundColor(Color.parseColor("#CCCCCC"));
+        android.widget.TableLayout.LayoutParams lpDiv = new android.widget.TableLayout.LayoutParams(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT, 1);
+        tableTopFoods.addView(divider, lpDiv);
+    }
+
+    private static class TopFoodRecord {
+        String name;
+        int quantity;
+        double revenue;
+
+        TopFoodRecord(String name, int quantity, double revenue) {
+            this.name = name;
+            this.quantity = quantity;
+            this.revenue = revenue;
+        }
     }
 
     private void resetStats() {
@@ -1009,21 +1597,24 @@ public class AdminRevenueActivity extends AppCompatActivity {
         tvTotalOrders.setText("0");
         currentRevenueValue = 0;
         currentDeliveredCount = 0;
-        tvCurrentMonthRevenue.setText("0 VNĐ");
-        tvCurrentMonthOrders.setText("0");
         tvStatTotal.setText("0");
         tvStatPending.setText("0");
         tvStatConfirmed.setText("0");
         tvStatDelivering.setText("0");
         tvStatDelivered.setText("0");
         tvStatCancelled.setText("0");
-        topFoodAdapter.setItems(new ArrayList<>());
+        tvStatCancelled.setText("0");
         currentTopFoods.clear();
         tvNoTopFoods.setVisibility(android.view.View.VISIBLE);
-        rvTopFoods.setVisibility(android.view.View.GONE);
+        if (tableTopFoods != null) {
+            tableTopFoods.setVisibility(android.view.View.GONE);
+            int count = tableTopFoods.getChildCount();
+            if (count > 1)
+                tableTopFoods.removeViews(1, count - 1);
+        }
         llDailyRevenueChart.removeAllViews();
         tvDailyRevenueEmpty.setVisibility(android.view.View.VISIBLE);
-        resetComparisonStats();
+        resetMonthlyTrend();
         resetDashboardOverview();
         resetCustomerStatistics();
     }
@@ -1035,80 +1626,10 @@ public class AdminRevenueActivity extends AppCompatActivity {
         }
     }
 
-    private void exportRevenueReportExcel() {
-        String fileName = "BaoCaoDoanhThu_" + new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Calendar.getInstance().getTime()) + ".csv";
-        ContentValues values = new ContentValues();
-        values.put(MediaStore.Downloads.DISPLAY_NAME, fileName);
-        values.put(MediaStore.Downloads.MIME_TYPE, "text/csv");
-        values.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/FoodOrderReports");
-
-        Uri uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
-        if (uri == null) {
-            Toast.makeText(this, "Khong the tao file Excel", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        StringBuilder csv = new StringBuilder();
-        csv.append("Bao cao doanh thu\n");
-        csv.append("Khoang ngay,").append(btnDateFrom.getText()).append(" - ").append(btnDateTo.getText()).append("\n");
-        csv.append("Tong doanh thu,").append(tvTotalRevenue.getText()).append("\n");
-        csv.append("Don hoan thanh,").append(tvTotalOrders.getText()).append("\n");
-        csv.append("Tong don,").append(tvStatTotal.getText()).append("\n");
-        csv.append("Cho xac nhan,").append(tvStatPending.getText()).append("\n");
-        csv.append("Dang xu ly,").append(tvStatConfirmed.getText()).append("\n");
-        csv.append("Da giao,").append(tvStatDelivering.getText()).append("\n");
-        csv.append("Da huy,").append(tvStatCancelled.getText()).append("\n\n");
-        csv.append("Top mon ban chay\n");
-        csv.append("STT,Ten mon,So luong,Doanh thu\n");
-
-        for (int i = 0; i < currentTopFoods.size(); i++) {
-            TopFoodAdapter.TopFood food = currentTopFoods.get(i);
-            csv.append(i + 1).append(",")
-                    .append(food.name.replace(",", " ")).append(",")
-                    .append(food.quantity).append(",")
-                    .append(nf.format(food.revenue)).append("\n");
-        }
-
-        try (OutputStream outputStream = getContentResolver().openOutputStream(uri)) {
-            if (outputStream == null) {
-                Toast.makeText(this, "Khong the mo file de ghi", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            outputStream.write(csv.toString().getBytes());
-            outputStream.flush();
-            Toast.makeText(this, "Da xuat Excel vao Downloads/FoodOrderReports", Toast.LENGTH_LONG).show();
-        } catch (IOException e) {
-            Toast.makeText(this, "Loi xuat Excel: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void sendRevenueReportEmail() {
-        Uri pdfUri = createRevenueReportPdf(true);
-        if (pdfUri == null) {
-            Toast.makeText(this, "Khong the tao tep PDF de gui", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        Intent emailIntent = new Intent(Intent.ACTION_SEND);
-        emailIntent.setType("application/pdf");
-        emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Bao cao doanh thu admin");
-        emailIntent.putExtra(Intent.EXTRA_TEXT,
-                "Bao cao doanh thu dinh kem.\n" +
-                        "Khoang ngay: " + btnDateFrom.getText() + " - " + btnDateTo.getText() + "\n" +
-                        "Tong doanh thu: " + tvTotalRevenue.getText() + "\n" +
-                        "Don hoan thanh: " + tvTotalOrders.getText());
-        emailIntent.putExtra(Intent.EXTRA_STREAM, pdfUri);
-        emailIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
-        try {
-            startActivity(Intent.createChooser(emailIntent, "Gui bao cao qua email"));
-        } catch (Exception e) {
-            Toast.makeText(this, "Khong tim thay ung dung email", Toast.LENGTH_SHORT).show();
-        }
-    }
-
     private Uri createRevenueReportPdf(boolean silent) {
-        String fileName = "BaoCaoDoanhThu_" + new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Calendar.getInstance().getTime()) + ".pdf";
+        String fileName = "BaoCaoDoanhThu_"
+                + new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Calendar.getInstance().getTime())
+                + ".pdf";
 
         PdfDocument document = new PdfDocument();
         PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(595, 842, 1).create();
@@ -1133,9 +1654,11 @@ public class AdminRevenueActivity extends AppCompatActivity {
 
         page.getCanvas().drawText("BAO CAO DOANH THU", x, y, titlePaint);
         y += 24;
-        page.getCanvas().drawText("Khoang ngay: " + btnDateFrom.getText() + " - " + btnDateTo.getText(), x, y, bodyPaint);
+        page.getCanvas().drawText("Khoang ngay: " + btnDateFrom.getText() + " - " + btnDateTo.getText(), x, y,
+                bodyPaint);
         y += 16;
-        page.getCanvas().drawText("Ngay xuat: " + new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Calendar.getInstance().getTime()), x, y, bodyPaint);
+        page.getCanvas().drawText("Ngay xuat: " + new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+                .format(Calendar.getInstance().getTime()), x, y, bodyPaint);
         y += 20;
 
         page.getCanvas().drawLine(x, y, 555, y, bodyPaint);
@@ -1149,9 +1672,13 @@ public class AdminRevenueActivity extends AppCompatActivity {
         y += 15;
         page.getCanvas().drawText("- Tong don: " + tvStatTotal.getText(), x, y, bodyPaint);
         y += 15;
-        page.getCanvas().drawText("- Cho xac nhan: " + tvStatPending.getText() + " | Dang xu ly: " + tvStatConfirmed.getText(), x, y, bodyPaint);
+        page.getCanvas().drawText(
+                "- Cho xac nhan: " + tvStatPending.getText() + " | Dang xu ly: " + tvStatConfirmed.getText(), x, y,
+                bodyPaint);
         y += 15;
-        page.getCanvas().drawText("- Dang giao: " + tvStatDelivering.getText() + " | Da huy: " + tvStatCancelled.getText(), x, y, bodyPaint);
+        page.getCanvas().drawText(
+                "- Dang giao: " + tvStatDelivering.getText() + " | Da huy: " + tvStatCancelled.getText(), x, y,
+                bodyPaint);
         y += 20;
 
         page.getCanvas().drawText("Top mon ban chay", x, y, headingPaint);
@@ -1162,13 +1689,14 @@ public class AdminRevenueActivity extends AppCompatActivity {
             y += 15;
         } else {
             for (int i = 0; i < currentTopFoods.size(); i++) {
-                TopFoodAdapter.TopFood topFood = currentTopFoods.get(i);
+                TopFoodRecord topFood = currentTopFoods.get(i);
+                String rank = String.valueOf(i + 1);
+                String name = topFood.name;
+                String qty = String.valueOf(topFood.quantity);
+                String rev = nf.format(topFood.revenue) + "đ";
                 String line = String.format(Locale.getDefault(),
-                        "%d. %s | So luong: %d | Doanh thu: %s VNĐ",
-                        i + 1,
-                        topFood.name,
-                        topFood.quantity,
-                        nf.format(topFood.revenue));
+                        "%s. %s | So luong: %s | Doanh thu: %s",
+                        rank, name, qty, rev);
                 page.getCanvas().drawText(line, x, y, bodyPaint);
                 y += 15;
                 if (y > 800) {

@@ -14,3 +14,6 @@
 .cxx
 local.properties
 node_modules/
+
+# API Configuration (Private)
+app/src/main/java/com/example/food_order_app/config/

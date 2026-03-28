@@ -153,7 +153,7 @@ public class AdminOrderStatisticsActivity extends AppCompatActivity {
         String toStr = isoFormat.format(dateTo.getTime()) + "T23:59:59";
 
         Map<String, String> filters = new HashMap<>();
-        filters.put("created_at", "gte." + fromStr);
+        filters.put("and", "(created_at.gte." + fromStr + ",created_at.lte." + toStr + ")");
         // Supabase doesn't easily support two filters on the same column via query map keys without a custom filter string.
         // We will query gte locally and let's just fetch everything after fromStr.
         // BUT Retrofit query map allows overwriting keys.
