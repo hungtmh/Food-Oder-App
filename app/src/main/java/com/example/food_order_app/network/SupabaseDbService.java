@@ -67,6 +67,19 @@ public interface SupabaseDbService {
             @Query("is_active") String isActive,
             @Query("order") String order);
 
+    @Headers("Prefer: return=representation")
+    @POST("categories")
+    Call<List<Category>> createCategory(@Body Category category);
+
+    @Headers("Prefer: return=representation")
+    @PATCH("categories")
+    Call<List<Category>> updateCategory(
+            @Query("id") String idFilter,
+            @Body Map<String, Object> updates);
+
+    @DELETE("categories")
+    Call<Void> deleteCategory(@Query("id") String idFilter);
+
     // ==================== FOODS ====================
     @GET("foods")
     Call<List<Food>> getPopularFoods(
@@ -196,6 +209,12 @@ public interface SupabaseDbService {
             @Query("order") String order);
 
     @GET("foods")
+    Call<List<Food>> getFoodsByCategoryFilter(
+            @Query("category_id") String categoryFilter,
+            @Query("select") String select,
+            @Query("order") String order);
+
+    @GET("foods")
     Call<List<Food>> adminSearchFoods(
             @Query("name") String nameFilter,
             @Query("select") String select);
@@ -213,6 +232,16 @@ public interface SupabaseDbService {
     @DELETE("foods")
     Call<Void> deleteFood(
             @Query("id") String idFilter);
+
+    @DELETE("foods")
+    Call<Void> deleteFoodsByCategory(
+            @Query("category_id") String categoryFilter);
+
+    @Headers("Prefer: return=representation")
+    @PATCH("foods")
+    Call<List<Food>> updateFoodsByCategory(
+            @Query("category_id") String categoryFilter,
+            @Body Map<String, Object> updates);
 
     // ==================== ADMIN: FEEDBACKS ====================
     @GET("feedbacks")
