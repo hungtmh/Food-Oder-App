@@ -16,4 +16,5 @@ local.properties
 node_modules/
 
 # API Configuration (Private)
-app/src/main/java/com/example/food_order_app/config/
+# Bỏ chặn thư mục config để file SupabaseConfig.java (đã an toàn) có thể được git push lên mạng
+# app/src/main/java/com/example/food_order_app/config/
