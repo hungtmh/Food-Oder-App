@@ -20,6 +20,7 @@ import com.example.food_order_app.controller.ProfileActivity;
 public final class AdminBottomNavHelper {
 
     public static final int TAB_FOOD = R.id.navAdminFood;
+    public static final int TAB_CATEGORY = R.id.navAdminCategory;
     public static final int TAB_REVENUE = R.id.navAdminRevenue;
     public static final int TAB_FEEDBACK = R.id.navAdminFeedback;
     public static final int TAB_REPORT = R.id.navAdminReport;
@@ -33,6 +34,8 @@ public final class AdminBottomNavHelper {
     public static void setup(AppCompatActivity activity, @IdRes int selectedTabId) {
         bindItem(activity, TAB_FOOD, R.id.navAdminFoodIconWrap, R.id.navAdminFoodIcon, R.id.navAdminFoodLabel,
                 selectedTabId, AdminHomeActivity.class);
+        bindItem(activity, TAB_CATEGORY, R.id.navAdminCategoryIconWrap, R.id.navAdminCategoryIcon, R.id.navAdminCategoryLabel,
+                selectedTabId, com.example.food_order_app.controller.AdminCategoryActivity.class);
         bindItem(activity, TAB_REVENUE, R.id.navAdminRevenueIconWrap, R.id.navAdminRevenueIcon, R.id.navAdminRevenueLabel,
                 selectedTabId, AdminRevenueActivity.class);
         bindItem(activity, TAB_FEEDBACK, R.id.navAdminFeedbackIconWrap, R.id.navAdminFeedbackIcon, R.id.navAdminFeedbackLabel,
