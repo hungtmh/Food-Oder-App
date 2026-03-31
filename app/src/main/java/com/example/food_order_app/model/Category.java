@@ -13,6 +13,15 @@ public class Category {
     private int sortOrder;
     @SerializedName("is_active")
     private boolean isActive;
+    @SerializedName("name_en")
+    private String nameEn;
+    @SerializedName("name_ja")
+    private String nameJa;
+
+    // Client-side computed fields for admin dashboard (must not be sent to API payload).
+    private transient int totalFoods;
+    private transient int activeFoods;
+    private transient double revenueLast7Days;
 
     public Category() {}
 
@@ -23,5 +32,19 @@ public class Category {
     public String getIconUrl() { return iconUrl; }
     public void setIconUrl(String iconUrl) { this.iconUrl = iconUrl; }
     public int getSortOrder() { return sortOrder; }
+    public void setSortOrder(int sortOrder) { this.sortOrder = sortOrder; }
     public boolean isActive() { return isActive; }
+    public void setActive(boolean active) { isActive = active; }
+
+    public String getNameEn() { return nameEn; }
+    public void setNameEn(String nameEn) { this.nameEn = nameEn; }
+    public String getNameJa() { return nameJa; }
+    public void setNameJa(String nameJa) { this.nameJa = nameJa; }
+
+    public int getTotalFoods() { return totalFoods; }
+    public void setTotalFoods(int totalFoods) { this.totalFoods = totalFoods; }
+    public int getActiveFoods() { return activeFoods; }
+    public void setActiveFoods(int activeFoods) { this.activeFoods = activeFoods; }
+    public double getRevenueLast7Days() { return revenueLast7Days; }
+    public void setRevenueLast7Days(double revenueLast7Days) { this.revenueLast7Days = revenueLast7Days; }
 }
