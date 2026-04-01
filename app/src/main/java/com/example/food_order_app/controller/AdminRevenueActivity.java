@@ -794,8 +794,7 @@ public class AdminRevenueActivity extends AppCompatActivity {
 
         String prompt = "Bạn là chuyên gia phân tích kinh doanh nhà hàng. Dựa vào dữ liệu biến động doanh thu và đơn hàng theo từng tháng dưới đây, hãy đưa ra nhận xét ngắn gọn (3-5 câu) bằng tiếng Việt. Tập trung vào xu hướng tăng/giảm, tháng nào tốt nhất/kém nhất, và đề xuất 1 hành động cải thiện.\n\nDữ liệu:\n"
                 + dataSummary;
-
-        String apiKey = com.example.food_order_app.config.GeminiAiConfig.GEMINI_API_KEY;
+        String apiKey = "AIzaSyDITmES-nUJm55CFiACh1jj3QhQ2FJI920";
         String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent";
 
         org.json.JSONObject requestBody = new org.json.JSONObject();
