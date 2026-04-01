@@ -20,6 +20,7 @@ import com.example.food_order_app.network.RetrofitClient;
 import com.example.food_order_app.network.SupabaseDbService;
 import com.example.food_order_app.utils.SessionManager;
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,6 +37,7 @@ public class ChatRoomActivity extends AppCompatActivity {
     private RecyclerView rvChatMessages;
     private EditText etMessage;
     private ImageButton btnSend;
+    private BottomNavigationView bottomNav;
 
     private ChatAdapter chatAdapter;
     private List<ChatMessage> messageList = new ArrayList<>();
@@ -72,9 +74,13 @@ public class ChatRoomActivity extends AppCompatActivity {
             roomUserId = intent.getStringExtra("room_user_id");
             isAdminViewer = true; // since it was passed in, we assume it's the admin opening it
             toolbar.setTitle("Chat với Khách hàng");
+            bottomNav.setVisibility(View.GONE);
         } else {
             roomUserId = sessionManager.getUserId();
             isAdminViewer = false;
+            toolbar.setNavigationIcon(null);
+            bottomNav.setVisibility(View.VISIBLE);
+            setupBottomNav();
         }
 
         chatAdapter = new ChatAdapter(this, messageList, sessionManager.getUserId(), isAdminViewer);
@@ -87,15 +93,59 @@ public class ChatRoomActivity extends AppCompatActivity {
         startPolling();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (!isAdminViewer && bottomNav != null) {
+            bottomNav.setSelectedItemId(R.id.nav_chat);
+        }
+    }
+
     private void initViews() {
         toolbar = findViewById(R.id.toolbarChat);
         rvChatMessages = findViewById(R.id.rvChatMessages);
         etMessage = findViewById(R.id.etMessage);
         btnSend = findViewById(R.id.btnSend);
+        bottomNav = findViewById(R.id.bottomNav);
 
         toolbar.setNavigationOnClickListener(v -> finish());
 
         btnSend.setOnClickListener(v -> sendMessage());
+    }
+
+    private void setupBottomNav() {
+        bottomNav.setSelectedItemId(R.id.nav_chat);
+        bottomNav.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_home) {
+                Intent nIntent = new Intent(this, HomeActivity.class);
+                nIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(nIntent);
+                finish();
+                return true;
+            } else if (id == R.id.nav_cart) {
+                Intent nIntent = new Intent(this, CartActivity.class);
+                nIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(nIntent);
+                finish();
+                return true;
+            } else if (id == R.id.nav_chat) {
+                return true;
+            } else if (id == R.id.nav_contact) {
+                Intent nIntent = new Intent(this, ContactActivity.class);
+                nIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(nIntent);
+                finish();
+                return true;
+            } else if (id == R.id.nav_account) {
+                Intent nIntent = new Intent(this, ProfileActivity.class);
+                nIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(nIntent);
+                finish();
+                return true;
+            }
+            return false;
+        });
     }
 
     private void loadMessages() {
