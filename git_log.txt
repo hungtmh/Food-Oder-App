@@ -1,0 +1,71 @@
+﻿hungtmh|H├╣ng: Chß╗ënh sß╗¡a trang li├¬n hß╗ç vß╗øi lß║íi gß║»n cß╗æ ─æß╗ïnh navbar ß╗ƒ dã░ß╗øi, chß╗ënh giao diß╗çn trang li├¬n hß╗ç
+hungtmh|H├╣ng: fix supabaseCongif
+hungtmh|Merge branch 'khoa' into main - Keep both features
+hungtmh|H├╣ng:Th├¬m trß║íng th├íi ─æang giao
+hungtmh|Merge pull request #14 from hungtmh/TMH
+hungtmh|Merge branch 'main' of https://github.com/hungtmh/Food-Oder-App into TMH
+hungtmh|Sß╗¡a navbar admin
+thangak18|Merge branch 'Thang'
+thangak18|feat(category): add basic admin category management
+hungtmh|Merge pull request #13 from hungtmh/TMH
+hungtmh|H├╣ng :─Éß╗òi lß║íi SupabaseConfig + vß╗øi th├¬m c├ích giß║Ñu c├íc api tß╗æi mß║¡t
+hungtmh|Update README.md
+Khß║úi|Merge pull request #12 from hungtmh/NVK
+nvkhai238|Xoa file env bi lo
+nvkhai238|Giß║úi quyß║┐t conflict khi merge main v├áo NVK
+nvkhai238|fix(Khai): Chinh sua phan sentiment AI va prediction AI bang API call
+thangak18|chore: exclude entire config directory from git tracking
+thangak18|fix(main): add missing import for AdminReportStatisticsActivity
+thangak18|fix(main): restore missing navigation IDs to XML to resolve compilation errors
+thangak18|fix: restore TAB_CHAT and TAB_REPORT constants to fix build error
+thangak18|Update AI model to gemini-3-flash-preview
+thangak18|feat(ai): update model to gemini-3-flash-preview as per playground snippet
+thangak18|Merge branch 'Thang' into main (Resolved conflicts in favor of Thang branch improvements)
+thangak18|Refactor: improve Monthly Trend Analysis with dual charts and Gemini AI integration. Hide GeminiAiConfig.java
+thangak18|Security: hide GeminiAiConfig.java
+nvkhai238|Merge v├á xß╗¡ l├¢ xung ─æß╗Öt trong AndroidManifest.xml
+wokovn|Add SEPay webhook testing guide (Vietnamese)
+wokovn|Add voucher & Sepay QR payment support
+hungtmh|Merge pull request #11 from hungtmh/TMH
+hungtmh|H├╣ng :  b─âm t├ích viß╗çc quß║ún l├¢ ─æß╗ïa chß╗ë ra khß╗Åi Profile c├í nh├ón, t├¡ch hß╗úp thß║│ng v├áo bã░ß╗øc thanh to├ín, hiß╗ân thß╗ï dß╗» liß╗çu Tß╗ënh/Th├ánh/Phã░ß╗Øng/Quß║¡n bß║▒ng Spinner, chß╗ìn chß║┐ ─æß╗Ö ─én tß║íi qu├ín (─æiß╗ün sß╗æ b├án) v├á tß╗▒ ─æß╗Öng set ─æß╗ïa chß╗ë ─æ├ú th├¬m l├ám mß║Àc ─æß╗ïnh
+hungtmh|Merge pull request #10 from hungtmh/TMH
+hungtmh|H├╣ng: ─æß╗òi phß║ún hß╗ôi th├ánh chat vß╗øi c├íc admin cß╗ºa qu├ín , chat li├¬n quan ─æß║┐n th├║c giß╗Ñc m├│n ─ân gß╗ìi m├│n nhanh l├¬n
+hungtmh|Merge pull request #9 from hungtmh/TMH
+hungtmh|H├╣ng : Fix lß║íi phß║ºn ─æ├ính gi├í t├¡nh n─âng th├¬m nhiß╗üu ß║únh , fix trung b├¼nh sß╗æ sao, t├ích viß║┐t ─æ├ính gi├í ra th├ánh 1 trang ri├¬ng
+hungtmh|Merge pull request #8 from hungtmh/TMH
+hungtmh|H├╣ng: chß╗ënh sß╗¡a phß║ºn ─æ├ính gi├í chi tiß║┐t sß║ún phß║®m ─æß║╣p, c├│ gß╗¡i ß║únh ─æã░ß╗úc lu├┤n
+hungtmh|Revise README for Week 3 report and updates
+nvkhai238|feat(Khai): Thuc hien thong bao day tu Admin toi khach hang (still bug)
+hungtmh|Merge pull request #7 from hungtmh/TMH
+hungtmh|H├╣ng(feat): Th├¬m t├¡nh n─âng ─æß║Àt ─ân tß║íi qu├ín v├á cß║¡p nhß║¡t giao diß╗çn avatar cho hß╗ç thß╗æng
+Dicun|Merge pull request #6 from hungtmh/DC
+Dicun|feat: Add Hot Offers UI and adapt slider to banners
+Dicun|feat: Add personalized recommendations and UI updates
+thangak18|Merge branch 'Thang'
+thangak18|feat(admin): update report/statistics screens and custom bottom nav
+thangak18|feat(admin): add report-statistics module and enhance revenue analytics
+thangak18|Merge branch 'Thang'
+thangak18|fix: resolve XML parsing error and re-separate Statistics from Revenue as per project requirements
+thangak18|Merge branch 'Thang'
+thangak18|feat: Add Order Statistics, UI improvements, Notification updates, and merge Revenue Dashboard
+hungtmh|Update README.md
+hungtmh|Update README.md
+hungtmh|Update README.md
+thangak18|Merge with GitHub's version - resolve conflicts
+thangak18|feature: admin statistics UI updates
+Dicun|Merge pull request #5 from hungtmh/khoa
+Dicun|Merge branch 'main' into khoa
+hungtmh|Merge pull request #4 from hungtmh/TMH
+hungtmh|H├╣ng: Th├¬m t├¡nh n─âng y├¬u th├¡ch sß║ún phß║®m , li├¬n lß║íc vß╗øi qu├ín, sß║»p xß║┐p m├│n ─ân
+wokovn|Add address management, reorder and cart undo
+hungtmh|Merge pull request #3 from hungtmh/TMH
+hungtmh|H├╣ng: Th├¬m logic quß║ún l├¢ ─æãín h├áng cho cß║ú admin v├á user
+hungtmh|Merge pull request #2 from hungtmh/TMH
+hungtmh|Hung: sß╗¡a lß╗ùi ─æß╗òi mß║¡t khß║®u v├á x├│a c├íc caterogies tr├╣ng
+hungtmh|fix: add network error UI with retry button and improve error logging in HomeActivity
+thangak18|feat: th├¬m th├┤ng b├ío ─æãín h├áng, thß╗æng k├¬ ─æãín h├áng, cß║úi thiß╗çn UI admin
+Khß║úi|Merge pull request #1 from hungtmh/NVK
+nvkhai238|feat(Khai): Co ban them tinh nang phan tich AI (chua co du lieu de test)
+hungtmh|docs: Add task assignment for team members
+hungtmh|docs: Add README.md with full project documentation
+hungtmh|Initial commit: Food Order App with admin features
