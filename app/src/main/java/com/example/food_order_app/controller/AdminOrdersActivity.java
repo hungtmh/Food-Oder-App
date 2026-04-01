@@ -39,7 +39,7 @@ public class AdminOrdersActivity extends AppCompatActivity implements AdminOrder
     private TextView tvEmpty, tvStats;
     private FloatingActionButton fabRevenue;
     private ImageView btnOrderStatistics;
-    private Button btnStatusAll, btnStatusPending, btnStatusConfirmed, btnStatusDelivered, btnStatusCancelled;
+    private Button btnStatusAll, btnStatusPending, btnStatusConfirmed, btnStatusDelivering, btnStatusDelivered, btnStatusCancelled;
 
     private AdminOrderAdapter adapter;
     private SupabaseDbService dbService;
@@ -72,6 +72,7 @@ public class AdminOrdersActivity extends AppCompatActivity implements AdminOrder
         btnStatusAll = findViewById(R.id.btnStatusAll);
         btnStatusPending = findViewById(R.id.btnStatusPending);
         btnStatusConfirmed = findViewById(R.id.btnStatusConfirmed);
+        btnStatusDelivering = findViewById(R.id.btnStatusDelivering);
         btnStatusDelivered = findViewById(R.id.btnStatusDelivered);
         btnStatusCancelled = findViewById(R.id.btnStatusCancelled);
         fabRevenue = findViewById(R.id.fabRevenue);
@@ -88,6 +89,7 @@ public class AdminOrdersActivity extends AppCompatActivity implements AdminOrder
             if (id == R.id.btnStatusAll) currentFilter = "all";
             else if (id == R.id.btnStatusPending) currentFilter = "pending";
             else if (id == R.id.btnStatusConfirmed) currentFilter = "processing";
+            else if (id == R.id.btnStatusDelivering) currentFilter = "delivering";
             else if (id == R.id.btnStatusDelivered) currentFilter = "served";
             else if (id == R.id.btnStatusCancelled) currentFilter = "cancelled";
             updateFilterUI();
@@ -97,6 +99,7 @@ public class AdminOrdersActivity extends AppCompatActivity implements AdminOrder
         btnStatusAll.setOnClickListener(filterClick);
         btnStatusPending.setOnClickListener(filterClick);
         btnStatusConfirmed.setOnClickListener(filterClick);
+        btnStatusDelivering.setOnClickListener(filterClick);
         btnStatusDelivered.setOnClickListener(filterClick);
         btnStatusCancelled.setOnClickListener(filterClick);
 
@@ -117,8 +120,8 @@ public class AdminOrdersActivity extends AppCompatActivity implements AdminOrder
     }
 
     private void updateFilterUI() {
-        Button[] buttons = {btnStatusAll, btnStatusPending, btnStatusConfirmed, btnStatusDelivered, btnStatusCancelled};
-        String[] filters = {"all", "pending", "processing", "served", "cancelled"};
+        Button[] buttons = {btnStatusAll, btnStatusPending, btnStatusConfirmed, btnStatusDelivering, btnStatusDelivered, btnStatusCancelled};
+        String[] filters = {"all", "pending", "processing", "delivering", "served", "cancelled"};
         for (int i = 0; i < buttons.length; i++) {
             boolean selected = currentFilter.equals(filters[i]);
             buttons[i].setBackgroundResource(selected ? R.drawable.bg_category_selected : R.drawable.bg_category_normal);
@@ -220,6 +223,7 @@ public class AdminOrdersActivity extends AppCompatActivity implements AdminOrder
         intent.putExtra("order_user_id", order.getUserId());
         intent.putExtra("order_code", order.getOrderCode());
         intent.putExtra("order_status", order.getStatus());
+        intent.putExtra("order_type", order.getOrderType());
         intent.putExtra("order_customer", order.getReceiverName());
         intent.putExtra("order_phone", order.getPhone());
         intent.putExtra("order_address", order.getAddress());

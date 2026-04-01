@@ -41,13 +41,14 @@ public class AdminOrderDetailActivity extends AppCompatActivity {
     private TextView tvSubtotal, tvDiscount, tvTotal, tvDate;
     private TextView tvCurrentStatus, tvStatusMessage;
     private LinearLayout layoutActionButtons;
-    private Button btnConfirmOrder, btnServeOrder, btnCancelOrder;
+    private Button btnConfirmOrder, btnDeliverOrder, btnServeOrder, btnCancelOrder;
     private RecyclerView rvItems;
 
     private SupabaseDbService dbService;
     private OrderItemAdapter itemAdapter;
     private String orderId;
     private String currentStatus;
+    private String orderType;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +77,7 @@ public class AdminOrderDetailActivity extends AppCompatActivity {
         tvStatusMessage = findViewById(R.id.tvStatusMessage);
         layoutActionButtons = findViewById(R.id.layoutActionButtons);
         btnConfirmOrder = findViewById(R.id.btnConfirmOrder);
+        btnDeliverOrder = findViewById(R.id.btnDeliverOrder);
         btnServeOrder = findViewById(R.id.btnServeOrder);
         btnCancelOrder = findViewById(R.id.btnCancelOrder);
         rvItems = findViewById(R.id.rvOrderItems);
@@ -97,6 +99,16 @@ public class AdminOrderDetailActivity extends AppCompatActivity {
                     .setMessage(
                             "Bạn có chắc muốn xác nhận đơn hàng này?\nĐơn hàng sẽ chuyển sang trạng thái \"Chờ chế biến\".")
                     .setPositiveButton("Xác nhận", (dialog, which) -> updateStatus("processing"))
+                    .setNegativeButton("Không", null)
+                    .show();
+        });
+
+        // Deliver: processing -> delivering (cho đơn delivery)
+        btnDeliverOrder.setOnClickListener(v -> {
+            new AlertDialog.Builder(this)
+                    .setTitle("Giao đơn hàng")
+                    .setMessage("Chuyển trạng thái đơn hàng sang Đang giao?")
+                    .setPositiveButton("Giao hàng", (dialog, which) -> updateStatus("delivering"))
                     .setNegativeButton("Không", null)
                     .show();
         });
@@ -125,6 +137,10 @@ public class AdminOrderDetailActivity extends AppCompatActivity {
     private void loadData() {
         orderId = getIntent().getStringExtra("order_id");
         currentStatus = getIntent().getStringExtra("order_status");
+        orderType = getIntent().getStringExtra("order_type");
+        if (orderType == null || orderType.isEmpty()) {
+            orderType = "delivery"; // mặc định cho đơn cũ
+        }
 
         tvOrderCode.setText(getIntent().getStringExtra("order_code"));
         tvCustomer.setText("Tên: " + getIntent().getStringExtra("order_customer"));
@@ -165,6 +181,7 @@ public class AdminOrderDetailActivity extends AppCompatActivity {
     private void updateStatusUI() {
         // Reset all buttons
         btnConfirmOrder.setVisibility(View.GONE);
+        btnDeliverOrder.setVisibility(View.GONE);
         btnServeOrder.setVisibility(View.GONE);
         btnCancelOrder.setVisibility(View.GONE);
         tvStatusMessage.setVisibility(View.GONE);
@@ -181,9 +198,19 @@ public class AdminOrderDetailActivity extends AppCompatActivity {
                 break;
 
             case "processing":
-                // Show: Phục vụ + Hủy
-                btnServeOrder.setVisibility(View.VISIBLE);
+                if ("delivery".equals(orderType)) {
+                    // Show: Giao hàng + Hủy
+                    btnDeliverOrder.setVisibility(View.VISIBLE);
+                } else {
+                    // Show: Phục vụ + Hủy (cho đơn dine-in)
+                    btnServeOrder.setVisibility(View.VISIBLE);
+                }
                 btnCancelOrder.setVisibility(View.VISIBLE);
+                break;
+
+            case "delivering":
+                // Show: Đã giao (Serve)
+                btnServeOrder.setVisibility(View.VISIBLE);
                 break;
 
             case "served":
@@ -208,6 +235,8 @@ public class AdminOrderDetailActivity extends AppCompatActivity {
                 return "Chờ xác nhận";
             case "processing":
                 return "Chờ chế biến";
+            case "delivering":
+                return "Đang giao";
             case "served":
                 return "Đã phục vụ";
             case "cancelled":
@@ -225,6 +254,8 @@ public class AdminOrderDetailActivity extends AppCompatActivity {
                 return R.drawable.bg_status_pending;
             case "processing":
                 return R.drawable.bg_status_processing;
+            case "delivering":
+                return R.drawable.bg_status_delivering;
             case "served":
                 return R.drawable.bg_status_delivered;
             case "cancelled":
@@ -253,6 +284,7 @@ public class AdminOrderDetailActivity extends AppCompatActivity {
     private void updateStatus(String newStatus) {
         // Disable buttons during update
         btnConfirmOrder.setEnabled(false);
+        btnDeliverOrder.setEnabled(false);
         btnServeOrder.setEnabled(false);
         btnCancelOrder.setEnabled(false);
 
@@ -298,8 +330,11 @@ public class AdminOrderDetailActivity extends AppCompatActivity {
             case "processing":
                 message = "Đơn hàng của bạn đã được xác nhận và đang được chế biến.";
                 break;
+            case "delivering":
+                message = "Đơn hàng của bạn đang được giao tới.";
+                break;
             case "served":
-                message = "Đơn hàng của bạn đã làm xong và sẵn sàng phục vụ!";
+                message = "Đơn hàng của bạn đã làm xong và sẵn sàng phục vụ/giao thành công!";
                 break;
             case "cancelled":
                 message = "Rất tiếc, đơn hàng của bạn đã bị hủy.";
@@ -331,6 +366,7 @@ public class AdminOrderDetailActivity extends AppCompatActivity {
 
     private void enableButtons() {
         btnConfirmOrder.setEnabled(true);
+        btnDeliverOrder.setEnabled(true);
         btnServeOrder.setEnabled(true);
         btnCancelOrder.setEnabled(true);
     }

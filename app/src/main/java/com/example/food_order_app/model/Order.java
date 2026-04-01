@@ -29,6 +29,8 @@ public class Order {
     private double totalAmount;
     @SerializedName("status")
     private String status;
+    @SerializedName("order_type")
+    private String orderType;
     @SerializedName("estimated_delivery")
     private String estimatedDelivery;
     @SerializedName("created_at")
@@ -62,6 +64,8 @@ public class Order {
     public void setTotalAmount(double totalAmount) { this.totalAmount = totalAmount; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public String getOrderType() { return orderType; }
+    public void setOrderType(String orderType) { this.orderType = orderType; }
     public String getEstimatedDelivery() { return estimatedDelivery; }
     public void setEstimatedDelivery(String estimatedDelivery) { this.estimatedDelivery = estimatedDelivery; }
     public String getCreatedAt() { return createdAt; }

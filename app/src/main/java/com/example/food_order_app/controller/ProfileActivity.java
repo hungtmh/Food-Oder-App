@@ -130,6 +130,12 @@ public class ProfileActivity extends AppCompatActivity {
 
         // Set initial expand state
         updateSectionVisibility(sectionPersonalContent, ivExpandPersonal, isPersonalExpanded);
+
+        // Admin checks
+        if (sessionManager.isAdmin()) {
+            sectionOrdersHeader.setVisibility(View.GONE);
+            sectionFavoritesHeader.setVisibility(View.GONE);
+        }
     }
 
     private void loadUserData() {
