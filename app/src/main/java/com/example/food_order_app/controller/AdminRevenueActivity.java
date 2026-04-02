@@ -27,6 +27,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.food_order_app.R;
+import com.example.food_order_app.config.GeminiAiConfig;
 import com.example.food_order_app.model.Order;
 import com.example.food_order_app.model.OrderItem;
 import com.example.food_order_app.model.User;
@@ -794,21 +795,32 @@ public class AdminRevenueActivity extends AppCompatActivity {
 
         String prompt = "Bạn là chuyên gia phân tích kinh doanh nhà hàng. Dựa vào dữ liệu biến động doanh thu và đơn hàng theo từng tháng dưới đây, hãy đưa ra nhận xét ngắn gọn (3-5 câu) bằng tiếng Việt. Tập trung vào xu hướng tăng/giảm, tháng nào tốt nhất/kém nhất, và đề xuất 1 hành động cải thiện.\n\nDữ liệu:\n"
                 + dataSummary;
-        String apiKey = "AIzaSyDITmES-nUJm55CFiACh1jj3QhQ2FJI920";
-        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent";
+        String hfToken = GeminiAiConfig.HF_TOKEN;
+        if (hfToken == null || hfToken.trim().isEmpty()) {
+            tvMonthlyTrendComment.setText("Thiếu cấu hình HF_TOKEN. Vui lòng kiểm tra file môi trường.");
+            return;
+        }
+        String url = "https://router.huggingface.co/v1/chat/completions";
 
         org.json.JSONObject requestBody = new org.json.JSONObject();
         try {
-            org.json.JSONArray contents = new org.json.JSONArray();
-            org.json.JSONObject content = new org.json.JSONObject();
-            content.put("role", "user");
-            org.json.JSONArray parts = new org.json.JSONArray();
-            org.json.JSONObject part = new org.json.JSONObject();
-            part.put("text", prompt);
-            parts.put(part);
-            content.put("parts", parts);
-            contents.put(content);
-            requestBody.put("contents", contents);
+            org.json.JSONArray messages = new org.json.JSONArray();
+
+            org.json.JSONObject systemMessage = new org.json.JSONObject();
+            systemMessage.put("role", "system");
+            systemMessage.put("content",
+                    "Bạn là chuyên gia phân tích doanh thu nhà hàng. Trả lời bằng tiếng Việt ngắn gọn, thực tế và dễ hành động.");
+            messages.put(systemMessage);
+
+            org.json.JSONObject userMessage = new org.json.JSONObject();
+            userMessage.put("role", "user");
+            userMessage.put("content", prompt);
+            messages.put(userMessage);
+
+            requestBody.put("model", "Qwen/Qwen2.5-72B-Instruct");
+            requestBody.put("messages", messages);
+            requestBody.put("temperature", 0.3);
+            requestBody.put("max_tokens", 220);
         } catch (org.json.JSONException e) {
             tvMonthlyTrendComment.setText("Lỗi tạo yêu cầu AI.");
             return;
@@ -825,7 +837,7 @@ public class AdminRevenueActivity extends AppCompatActivity {
 
         okhttp3.Request request = new okhttp3.Request.Builder()
                 .url(url)
-                .addHeader("x-goog-api-key", apiKey)
+                .addHeader("Authorization", "Bearer " + hfToken)
                 .addHeader("Content-Type", "application/json")
                 .post(body)
                 .build();
@@ -851,17 +863,15 @@ public class AdminRevenueActivity extends AppCompatActivity {
                         } catch (Exception ignored) {
                         }
                         tvMonthlyTrendComment.setText("AI trả về lỗi (" + errMsg
-                                + "). Kiểm tra giới hạn Quota hoặc vùng hỗ trợ của API Key.");
+                                + "). Kiểm tra HF_TOKEN hoặc quota của Hugging Face.");
                         return;
                     }
                     try {
                         org.json.JSONObject json = new org.json.JSONObject(responseBody);
-                        String aiText = json.getJSONArray("candidates")
+                        String aiText = json.getJSONArray("choices")
                                 .getJSONObject(0)
-                                .getJSONObject("content")
-                                .getJSONArray("parts")
-                                .getJSONObject(0)
-                                .getString("text");
+                                .getJSONObject("message")
+                                .getString("content");
                         tvMonthlyTrendComment.setText(aiText.trim());
                     } catch (org.json.JSONException e) {
                         tvMonthlyTrendComment.setText("Phản hồi AI không đúng định dạng. Chi tiết: " + e.getMessage());

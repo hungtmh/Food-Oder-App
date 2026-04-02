@@ -15,11 +15,14 @@ import com.example.food_order_app.R;
 import com.example.food_order_app.model.FoodSentimentStats;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class SentimentStatsAdapter extends RecyclerView.Adapter<SentimentStatsAdapter.ViewHolder> {
     private List<FoodSentimentStats> stats = new ArrayList<>();
+    private Map<String, String> insights = new HashMap<>();
     private final Context context;
     private OnItemClickListener listener;
 
@@ -34,6 +37,11 @@ public class SentimentStatsAdapter extends RecyclerView.Adapter<SentimentStatsAd
 
     public void setStats(List<FoodSentimentStats> stats) {
         this.stats = stats;
+        notifyDataSetChanged();
+    }
+
+    public void setInsights(Map<String, String> insights) {
+        this.insights = insights != null ? insights : new HashMap<>();
         notifyDataSetChanged();
     }
 
@@ -66,7 +74,7 @@ public class SentimentStatsAdapter extends RecyclerView.Adapter<SentimentStatsAd
         String dominantSentiment = stat.getDominantSentiment();
         holder.tvSentimentEmoji.setText(getSentimentEmoji(dominantSentiment));
         holder.tvSentimentName.setText(getSentimentName(dominantSentiment));
-        
+
         double percent = 0;
         if (dominantSentiment.equals("positive")) {
             percent = stat.getPositivePercent();
@@ -80,6 +88,13 @@ public class SentimentStatsAdapter extends RecyclerView.Adapter<SentimentStatsAd
 
         // Rating
         holder.tvAvgRating.setText(String.format(Locale.getDefault(), "%.1f", stat.getAvgRating()));
+
+        String insight = insights.get(stat.getFoodId());
+        if (insight == null || insight.trim().isEmpty()) {
+            holder.tvAiInsight.setText("Đang tạo insight AI...");
+        } else {
+            holder.tvAiInsight.setText(insight.trim());
+        }
 
         // Click listener
         holder.itemView.setOnClickListener(v -> {
@@ -96,35 +111,44 @@ public class SentimentStatsAdapter extends RecyclerView.Adapter<SentimentStatsAd
 
     private String getSentimentEmoji(String sentiment) {
         switch (sentiment) {
-            case "positive": return "😊";
-            case "negative": return "😞";
+            case "positive":
+                return "😊";
+            case "negative":
+                return "😞";
             case "neutral":
-            default: return "😐";
+            default:
+                return "😐";
         }
     }
 
     private String getSentimentName(String sentiment) {
         switch (sentiment) {
-            case "positive": return "Tich cuc";
-            case "negative": return "Tieu cuc";
+            case "positive":
+                return "Tich cuc";
+            case "negative":
+                return "Tieu cuc";
             case "neutral":
-            default: return "Trung tinh";
+            default:
+                return "Trung tinh";
         }
     }
 
     private int getSentimentColor(String sentiment) {
         switch (sentiment) {
-            case "positive": return 0xFF4CAF50;
-            case "negative": return 0xFFF44336;
+            case "positive":
+                return 0xFF4CAF50;
+            case "negative":
+                return 0xFFF44336;
             case "neutral":
-            default: return 0xFFFF9800;
+            default:
+                return 0xFFFF9800;
         }
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView ivFoodImage;
         TextView tvFoodName, tvSentimentEmoji, tvSentimentName, tvSentimentPercent;
-        TextView tvReviewCount, tvAvgRating;
+        TextView tvReviewCount, tvAvgRating, tvAiInsight;
 
         ViewHolder(View view) {
             super(view);
@@ -135,6 +159,7 @@ public class SentimentStatsAdapter extends RecyclerView.Adapter<SentimentStatsAd
             tvSentimentPercent = view.findViewById(R.id.tvSentimentPercent);
             tvReviewCount = view.findViewById(R.id.tvReviewCount);
             tvAvgRating = view.findViewById(R.id.tvAvgRating);
+            tvAiInsight = view.findViewById(R.id.tvAiInsight);
         }
     }
 }
