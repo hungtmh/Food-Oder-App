@@ -9,6 +9,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -74,8 +75,8 @@ public class FoodTrendPredictionActivity extends AppCompatActivity {
         adapter = new FoodTrendAdapter(this, trend -> {
             // Show trend details
             if (trend.getFood() != null) {
-                Toast.makeText(this, "Chi tiết xu hướng: " + trend.getFood().getName(), 
-                    Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Chi tiết xu hướng: " + trend.getFood().getName(),
+                        Toast.LENGTH_SHORT).show();
             }
         });
         rvTrends.setLayoutManager(new LinearLayoutManager(this));
@@ -121,34 +122,23 @@ public class FoodTrendPredictionActivity extends AppCompatActivity {
     }
 
     private void updateFilterButtonUI() {
-        btnFilterAll.setBackgroundTintList(null);
-        btnFilterHotSeller.setBackgroundTintList(null);
-        btnFilterDeclining.setBackgroundTintList(null);
-        btnFilterAtRisk.setBackgroundTintList(null);
-        btnFilterStable.setBackgroundTintList(null);
+        styleFilterButton(btnFilterAll, "all".equals(currentFilter));
+        styleFilterButton(btnFilterHotSeller, "hot_seller".equals(currentFilter));
+        styleFilterButton(btnFilterDeclining, "declining".equals(currentFilter));
+        styleFilterButton(btnFilterAtRisk, "at_risk".equals(currentFilter));
+        styleFilterButton(btnFilterStable, "stable".equals(currentFilter));
+    }
 
-        Button selectedButton = null;
-        switch (currentFilter) {
-            case "all":
-                selectedButton = btnFilterAll;
-                break;
-            case "hot_seller":
-                selectedButton = btnFilterHotSeller;
-                break;
-            case "declining":
-                selectedButton = btnFilterDeclining;
-                break;
-            case "at_risk":
-                selectedButton = btnFilterAtRisk;
-                break;
-            case "stable":
-                selectedButton = btnFilterStable;
-                break;
-        }
+    private void styleFilterButton(Button button, boolean isSelected) {
+        button.setSelected(isSelected);
+        button.setBackgroundTintList(null);
 
-        if (selectedButton != null) {
-            selectedButton.setBackgroundTintList(
-                    getResources().getColorStateList(R.color.primary, null));
+        if (isSelected) {
+            button.setBackgroundResource(R.drawable.bg_trend_filter_button_selected);
+            button.setTextColor(ContextCompat.getColor(this, R.color.white)); // Chữ trắng cho nổi
+        } else {
+            button.setBackgroundResource(R.drawable.bg_trend_filter_button_default);
+            button.setTextColor(ContextCompat.getColor(this, R.color.trend_filter_button_text_default));
         }
     }
 
@@ -162,7 +152,7 @@ public class FoodTrendPredictionActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<List<FoodTrend>> call, Response<List<FoodTrend>> response) {
                 progressBar.setVisibility(View.GONE);
-                
+
                 if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
                     allTrends = response.body();
                     filterTrends();
@@ -179,16 +169,16 @@ public class FoodTrendPredictionActivity extends AppCompatActivity {
                 progressBar.setVisibility(View.GONE);
                 tvEmpty.setVisibility(View.VISIBLE);
                 rvTrends.setVisibility(View.GONE);
-                Toast.makeText(FoodTrendPredictionActivity.this, 
-                    "Lỗi: " + t.getMessage(), 
-                    Toast.LENGTH_SHORT).show();
+                Toast.makeText(FoodTrendPredictionActivity.this,
+                        "Lỗi: " + t.getMessage(),
+                        Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private void filterTrends() {
         List<FoodTrend> filteredTrends;
-        
+
         if (currentFilter.equals("all")) {
             filteredTrends = new ArrayList<>(allTrends);
         } else {
@@ -223,9 +213,9 @@ public class FoodTrendPredictionActivity extends AppCompatActivity {
                     btnGeneratePredictions.setEnabled(true);
                     btnGeneratePredictions.setText("Phân tích");
                     progressBar.setVisibility(View.GONE);
-                    Toast.makeText(FoodTrendPredictionActivity.this, 
-                        "Không tìm thấy món ăn", 
-                        Toast.LENGTH_SHORT).show();
+                    Toast.makeText(FoodTrendPredictionActivity.this,
+                            "Không tìm thấy món ăn",
+                            Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -234,9 +224,9 @@ public class FoodTrendPredictionActivity extends AppCompatActivity {
                 btnGeneratePredictions.setEnabled(true);
                 btnGeneratePredictions.setText("Phân tích");
                 progressBar.setVisibility(View.GONE);
-                Toast.makeText(FoodTrendPredictionActivity.this, 
-                    "Lỗi: " + t.getMessage(), 
-                    Toast.LENGTH_SHORT).show();
+                Toast.makeText(FoodTrendPredictionActivity.this,
+                        "Lỗi: " + t.getMessage(),
+                        Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -280,7 +270,7 @@ public class FoodTrendPredictionActivity extends AppCompatActivity {
 
                 if (sentimentStats != null && sentimentStats.getTotalReviews() > 0) {
                     sentimentTrend = sentimentStats.getAvgSentimentScore();
-                    
+
                     if (sentimentStats.getPositivePercent() > 70 && food.isPopular()) {
                         trendType = "hot_seller";
                         confidenceScore = 0.85;
@@ -313,13 +303,14 @@ public class FoodTrendPredictionActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<List<FoodSentimentStats>> call, Throwable t) {
                 // Skip this food
-                if (onComplete != null) onComplete.run();
+                if (onComplete != null)
+                    onComplete.run();
             }
         });
     }
 
-    private void saveFoodTrend(String foodId, String trendType, double confidenceScore, 
-                              double salesTrend, double sentimentTrend, Runnable onComplete) {
+    private void saveFoodTrend(String foodId, String trendType, double confidenceScore,
+            double salesTrend, double sentimentTrend, Runnable onComplete) {
         // First, delete existing trend for this food
         dbService.deleteFoodTrend("eq." + foodId).enqueue(new Callback<Void>() {
             @Override
@@ -336,12 +327,14 @@ public class FoodTrendPredictionActivity extends AppCompatActivity {
                 dbService.createFoodTrend(trendData).enqueue(new Callback<List<FoodTrend>>() {
                     @Override
                     public void onResponse(Call<List<FoodTrend>> call, Response<List<FoodTrend>> response) {
-                        if (onComplete != null) onComplete.run();
+                        if (onComplete != null)
+                            onComplete.run();
                     }
 
                     @Override
                     public void onFailure(Call<List<FoodTrend>> call, Throwable t) {
-                        if (onComplete != null) onComplete.run();
+                        if (onComplete != null)
+                            onComplete.run();
                     }
                 });
             }
@@ -349,7 +342,8 @@ public class FoodTrendPredictionActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<Void> call, Throwable t) {
                 // Continue anyway
-                if (onComplete != null) onComplete.run();
+                if (onComplete != null)
+                    onComplete.run();
             }
         });
     }

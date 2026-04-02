@@ -107,37 +107,48 @@ public class AIDashboardActivity extends AppCompatActivity {
     private void loadOverallSentimentStats() {
         dbService.getOverallSentimentStats().enqueue(new Callback<List<OverallSentimentStats>>() {
             @Override
-            public void onResponse(Call<List<OverallSentimentStats>> call, Response<List<OverallSentimentStats>> response) {
+            public void onResponse(Call<List<OverallSentimentStats>> call,
+                    Response<List<OverallSentimentStats>> response) {
                 if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
                     OverallSentimentStats stats = response.body().get(0);
                     updateOverallStats(stats);
                 } else {
-                    // Show default values
-                    tvTotalReviews.setText("Tổng đánh giá: 0");
-                    Toast.makeText(AIDashboardActivity.this, 
-                        "Chưa có dữ liệu cảm xúc. Hãy phân tích đánh giá trước.", 
-                        Toast.LENGTH_SHORT).show();
+                    resetOverallStats();
+                    Toast.makeText(AIDashboardActivity.this,
+                            "Chưa có dữ liệu cảm xúc hoặc không thể tải thống kê.",
+                            Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<List<OverallSentimentStats>> call, Throwable t) {
-                Toast.makeText(AIDashboardActivity.this, 
-                    "Lỗi tải dữ liệu: " + t.getMessage(), 
-                    Toast.LENGTH_SHORT).show();
+                resetOverallStats();
+                Toast.makeText(AIDashboardActivity.this,
+                        "Lỗi tải dữ liệu: " + t.getMessage(),
+                        Toast.LENGTH_SHORT).show();
             }
         });
     }
 
+    private void resetOverallStats() {
+        tvTotalReviews.setText("Tổng đánh giá: 0");
+        tvPositivePercent.setText("0%");
+        tvPositiveCount.setText("(0)");
+        tvNeutralPercent.setText("0%");
+        tvNeutralCount.setText("(0)");
+        tvNegativePercent.setText("0%");
+        tvNegativeCount.setText("(0)");
+    }
+
     private void updateOverallStats(OverallSentimentStats stats) {
         tvTotalReviews.setText("Tổng đánh giá: " + stats.getTotalReviews());
-        
+
         tvPositivePercent.setText(String.format(Locale.getDefault(), "%.0f%%", stats.getPositivePercent()));
         tvPositiveCount.setText("(" + stats.getPositiveCount() + ")");
-        
+
         tvNeutralPercent.setText(String.format(Locale.getDefault(), "%.0f%%", stats.getNeutralPercent()));
         tvNeutralCount.setText("(" + stats.getNeutralCount() + ")");
-        
+
         tvNegativePercent.setText(String.format(Locale.getDefault(), "%.0f%%", stats.getNegativePercent()));
         tvNegativeCount.setText("(" + stats.getNegativeCount() + ")");
     }
@@ -151,14 +162,14 @@ public class AIDashboardActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     List<FoodSentimentStats> allStats = response.body();
                     List<FoodSentimentStats> topPositive = new ArrayList<>();
-                    
+
                     // Get top 5 with reviews
                     for (FoodSentimentStats stat : allStats) {
                         if (stat.getTotalReviews() > 0 && topPositive.size() < 5) {
                             topPositive.add(stat);
                         }
                     }
-                    
+
                     if (topPositive.isEmpty()) {
                         tvTopPositiveEmpty.setVisibility(View.VISIBLE);
                         rvTopPositive.setVisibility(View.GONE);
@@ -185,14 +196,14 @@ public class AIDashboardActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     List<FoodSentimentStats> allStats = response.body();
                     List<FoodSentimentStats> topNegative = new ArrayList<>();
-                    
+
                     // Get top 5 with reviews and negative sentiment
                     for (FoodSentimentStats stat : allStats) {
                         if (stat.getTotalReviews() > 0 && stat.getNegativePercent() > 0 && topNegative.size() < 5) {
                             topNegative.add(stat);
                         }
                     }
-                    
+
                     if (topNegative.isEmpty()) {
                         tvTopNegativeEmpty.setVisibility(View.VISIBLE);
                         rvTopNegative.setVisibility(View.GONE);
@@ -215,41 +226,42 @@ public class AIDashboardActivity extends AppCompatActivity {
     private void analyzeAllReviews() {
         btnAnalyzeAllReviews.setEnabled(false);
         btnAnalyzeAllReviews.setText("Đang phân tích...");
-        
+
         // Get all reviews
         dbService.getAllReviews("*", "created_at.desc").enqueue(new Callback<List<Review>>() {
             @Override
             public void onResponse(Call<List<Review>> call, Response<List<Review>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     List<Review> reviews = response.body();
-                    analyzeReviewsBatch(reviews, 0);
+                    analyzeReviewsBatch(reviews, 0, 0, 0);
                 } else {
                     btnAnalyzeAllReviews.setEnabled(true);
-                    btnAnalyzeAllReviews.setText("🔄 Phân tích lại tất cả đánh giá");
-                    Toast.makeText(AIDashboardActivity.this, 
-                        "Không tìm thấy đánh giá nào", 
-                        Toast.LENGTH_SHORT).show();
+                    btnAnalyzeAllReviews.setText("Phân tích lại tất cả đánh giá");
+                    Toast.makeText(AIDashboardActivity.this,
+                            "Không tìm thấy đánh giá nào",
+                            Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<List<Review>> call, Throwable t) {
                 btnAnalyzeAllReviews.setEnabled(true);
-                btnAnalyzeAllReviews.setText("🔄 Phân tích lại tất cả đánh giá");
-                Toast.makeText(AIDashboardActivity.this, 
-                    "Lỗi: " + t.getMessage(), 
-                    Toast.LENGTH_SHORT).show();
+                btnAnalyzeAllReviews.setText("Phân tích lại tất cả đánh giá");
+                Toast.makeText(AIDashboardActivity.this,
+                        "Lỗi: " + t.getMessage(),
+                        Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    private void analyzeReviewsBatch(List<Review> reviews, int index) {
+    private void analyzeReviewsBatch(List<Review> reviews, int index, int successCount, int failureCount) {
         if (index >= reviews.size()) {
             // Done analyzing all reviews
             btnAnalyzeAllReviews.setEnabled(true);
-            btnAnalyzeAllReviews.setText("🔄 Phân tích lại tất cả đánh giá");
-            Toast.makeText(this, "Đã phân tích " + reviews.size() + " đánh giá", Toast.LENGTH_SHORT).show();
-            
+            btnAnalyzeAllReviews.setText("Phân tích lại tất cả đánh giá");
+            String message = "Đã phân tích xong. Thành công: " + successCount + ", lỗi: " + failureCount;
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+
             // Reload stats
             loadOverallSentimentStats();
             loadTopFoods();
@@ -265,15 +277,21 @@ public class AIDashboardActivity extends AppCompatActivity {
 
         functionsService.analyzeReview(payload).enqueue(new Callback<java.util.Map<String, Object>>() {
             @Override
-            public void onResponse(Call<java.util.Map<String, Object>> call, Response<java.util.Map<String, Object>> response) {
-                // Continue with next review regardless of individual response body
-                analyzeReviewsBatch(reviews, index + 1);
+            public void onResponse(Call<java.util.Map<String, Object>> call,
+                    Response<java.util.Map<String, Object>> response) {
+                // HTTP errors also trigger onResponse in Retrofit, so check isSuccessful
+                // explicitly.
+                if (response.isSuccessful()) {
+                    analyzeReviewsBatch(reviews, index + 1, successCount + 1, failureCount);
+                } else {
+                    analyzeReviewsBatch(reviews, index + 1, successCount, failureCount + 1);
+                }
             }
 
             @Override
             public void onFailure(Call<java.util.Map<String, Object>> call, Throwable t) {
-                // Continue anyway to avoid breaking whole batch
-                analyzeReviewsBatch(reviews, index + 1);
+                // Continue anyway to avoid breaking whole batch.
+                analyzeReviewsBatch(reviews, index + 1, successCount, failureCount + 1);
             }
         });
     }

@@ -35,6 +35,9 @@
     <color name="overlay_dark">#80000000</color>
     <color name="overlay_light">#80FFFFFF</color>
 
+    <!-- Trend filter -->
+    <color name="trend_filter_button_text_default">#064E3B</color>
+
     <!-- Radio button -->
     <color name="radio_checked">#4CAF50</color>
     <color name="radio_unchecked">#9E9E9E</color>

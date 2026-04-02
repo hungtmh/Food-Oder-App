@@ -82,6 +82,17 @@
                 android:textSize="12sp"
                 android:textColor="@color/text_hint"
                 android:layout_marginTop="2dp"/>
+
+            <TextView
+                android:id="@+id/tvAiInsight"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Đang tạo insight AI..."
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
+                android:maxLines="2"
+                android:ellipsize="end"/>
         </LinearLayout>
 
         <!-- Rating Badge -->
