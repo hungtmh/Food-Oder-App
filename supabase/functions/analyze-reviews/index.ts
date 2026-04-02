@@ -9,6 +9,24 @@ const MODEL_ID = "Qwen/Qwen2.5-72B-Instruct";
 
 type Sentiment = "positive" | "negative" | "neutral";
 
+function isMissingColumnError(error: unknown, columnName: string): boolean {
+  if (!error || typeof error !== "object") return false;
+
+  const maybe = error as {
+    code?: string;
+    message?: string;
+    details?: string;
+    hint?: string;
+  };
+
+  // Postgres undefined_column code.
+  if (maybe.code === "42703") return true;
+
+  const haystack = [maybe.message, maybe.details, maybe.hint].filter(Boolean).join(" ").toLowerCase();
+
+  return haystack.includes(columnName.toLowerCase());
+}
+
 function normalizeSentiment(raw: unknown): Sentiment {
   const value = String(raw ?? "")
     .trim()
@@ -89,7 +107,7 @@ serve(async (req: Request) => {
     // Cập nhật Database
     const supabase = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
 
-    const { error: updateError } = await supabase
+    const { error: updateErrorWithFlag } = await supabase
       .from("reviews")
       .update({
         sentiment: sentiment,
@@ -98,7 +116,20 @@ serve(async (req: Request) => {
       })
       .eq("id", review_id);
 
-    if (updateError) throw updateError;
+    // Backward compatibility: some environments may not have is_analyzed.
+    if (isMissingColumnError(updateErrorWithFlag, "is_analyzed")) {
+      const { error: updateErrorFallback } = await supabase
+        .from("reviews")
+        .update({
+          sentiment: sentiment,
+          sentiment_score: score,
+        })
+        .eq("id", review_id);
+
+      if (updateErrorFallback) throw updateErrorFallback;
+    } else if (updateErrorWithFlag) {
+      throw updateErrorWithFlag;
+    }
 
     console.log(`Cập nhật thành công! Nhãn: ${sentiment}, Điểm: ${score}`);
 
