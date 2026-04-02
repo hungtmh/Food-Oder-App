@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import com.example.food_order_app.R;
 import com.example.food_order_app.adapter.CartAdapter;
@@ -48,8 +49,9 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
 
     private RecyclerView rvCartItems;
     private LinearLayout emptyState;
-    private TextView tvTotalAmount, tvClearCart, btnBack;
+    private TextView tvTotalAmount, tvClearCart;
     private Button btnCheckout, btnContinueShopping;
+    private BottomNavigationView bottomNav;
 
     private CartAdapter cartAdapter;
     private SupabaseDbService dbService;
@@ -73,6 +75,9 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
     @Override
     protected void onResume() {
         super.onResume();
+        if (bottomNav != null) {
+            bottomNav.setSelectedItemId(R.id.nav_cart);
+        }
         loadCart();
     }
 
@@ -81,9 +86,11 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
         emptyState = findViewById(R.id.emptyState);
         tvTotalAmount = findViewById(R.id.tvTotalAmount);
         tvClearCart = findViewById(R.id.tvClearCart);
-        btnBack = findViewById(R.id.btnBack);
         btnCheckout = findViewById(R.id.btnCheckout);
         btnContinueShopping = findViewById(R.id.btnContinueShopping);
+        bottomNav = findViewById(R.id.bottomNav);
+
+        setupBottomNav();
 
         cartAdapter = new CartAdapter(this, this);
         rvCartItems.setLayoutManager(new LinearLayoutManager(this));
@@ -149,9 +156,9 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
         };
         new ItemTouchHelper(swipeCallback).attachToRecyclerView(rvCartItems);
 
-        btnBack.setOnClickListener(v -> finish());
-
-        btnContinueShopping.setOnClickListener(v -> finish());
+        if (btnContinueShopping != null) {
+            btnContinueShopping.setOnClickListener(v -> finish());
+        }
 
         btnCheckout.setOnClickListener(v -> {
             if (cartAdapter.getCartItems().isEmpty()) {
@@ -172,6 +179,45 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
                     .setPositiveButton("Xóa", (d, w) -> clearCartWithUndo())
                     .setNegativeButton("Hủy", null)
                     .show();
+        });
+    }
+
+    private void setupBottomNav() {
+        bottomNav.setSelectedItemId(R.id.nav_cart);
+        bottomNav.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_home) {
+                Intent intent = new Intent(this, HomeActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                finish();
+                return true;
+            } else if (id == R.id.nav_cart) {
+                return true;
+            } else if (id == R.id.nav_chat) {
+                if (sessionManager != null && sessionManager.isLoggedIn()) {
+                    Intent intent = new Intent(this, ChatRoomActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    Toast.makeText(this, "Vui lòng đăng nhập để chat", Toast.LENGTH_SHORT).show();
+                }
+                return true;
+            } else if (id == R.id.nav_contact) {
+                Intent intent = new Intent(this, ContactActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                finish();
+                return true;
+            } else if (id == R.id.nav_account) {
+                Intent intent = new Intent(this, ProfileActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                finish();
+                return true;
+            }
+            return false;
         });
     }
 

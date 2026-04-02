@@ -1,446 +1,418 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background">
+    android:background="@color/background"
+    android:fitsSystemWindows="true">
 
-    <LinearLayout
+    <ScrollView
+        android:id="@+id/scrollView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-        <!-- Header -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/primary"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:padding="16dp">
-
-            <ImageView
-                android:id="@+id/btnBack"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:padding="4dp"
-                android:src="@drawable/ic_arrow_back"
-                android:contentDescription="Quay lại"
-                android:clickable="true"
-                android:focusable="true"
-                android:background="?attr/selectableItemBackgroundBorderless" />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="12dp"
-                android:text="Liên hệ"
-                android:textColor="@color/white"
-                android:textSize="20sp"
-                android:textStyle="bold" />
-        </LinearLayout>
-
-        <!-- Restaurant Info -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/primary"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:paddingBottom="24dp">
-
-            <ImageView
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:src="@drawable/ic_food_logo"
-                android:background="@drawable/bg_button_primary"
-                android:padding="12dp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Food Order App"
-                android:textColor="@color/white"
-                android:textSize="20sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="Đặt món ngon - Giao nhanh tận nơi"
-                android:textColor="#CCFFFFFF"
-                android:textSize="13sp" />
-        </LinearLayout>
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toTopOf="@id/bottomNav"
+        app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:orientation="vertical">
 
-            <!-- Section: Liên hệ -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="📞  Liên hệ với chúng tôi"
-                android:textColor="@color/text_primary"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-
-            <!-- Phone -->
-            <LinearLayout
-                android:id="@+id/btnPhone"
+            <!-- Hero Section -->
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/bg_section_header"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingHorizontal="16dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="📱"
-                    android:textSize="22sp" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="12dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Gọi điện"
-                        android:textColor="@color/text_primary"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0123 456 789"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="12sp" />
-                </LinearLayout>
+                android:layout_height="280dp"
+                android:background="@drawable/bg_maybe_like_wave">
 
                 <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:rotation="270"
-                    android:src="@drawable/ic_expand_more" />
-            </LinearLayout>
-
-            <!-- Email -->
-            <LinearLayout
-                android:id="@+id/btnEmail"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginTop="8dp"
-                android:background="@drawable/bg_section_header"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingHorizontal="16dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="✉️"
-                    android:textSize="22sp" />
-
+                    android:id="@+id/imgWaveBackground"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="fitXY" />
+                
                 <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="12dp"
-                    android:orientation="vertical">
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:paddingTop="20dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Email"
-                        android:textColor="@color/text_primary"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="foodorderapp@gmail.com"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="12sp" />
-                </LinearLayout>
-
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:rotation="270"
-                    android:src="@drawable/ic_expand_more" />
-            </LinearLayout>
-
-            <!-- Facebook -->
-            <LinearLayout
-                android:id="@+id/btnFacebook"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginTop="8dp"
-                android:background="@drawable/bg_section_header"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingHorizontal="16dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="📘"
-                    android:textSize="22sp" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="12dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Facebook"
-                        android:textColor="@color/text_primary"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
+                        app:cardCornerRadius="50dp"
+                        app:cardElevation="8dp"
+                        android:layout_marginBottom="16dp">
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@color/white"
+                            android:src="@drawable/ic_food_logo"
+                            android:padding="16dp" />
+                    </androidx.cardview.widget.CardView>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Food Order App"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="12sp" />
-                </LinearLayout>
-
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:rotation="270"
-                    android:src="@drawable/ic_expand_more" />
-            </LinearLayout>
-
-            <!-- Zalo -->
-            <LinearLayout
-                android:id="@+id/btnZalo"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginTop="8dp"
-                android:background="@drawable/bg_section_header"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingHorizontal="16dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="💬"
-                    android:textSize="22sp" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="12dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Zalo"
                         android:textColor="@color/text_primary"
-                        android:textSize="14sp"
+                        android:textSize="24sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="0123 456 789"
+                        android:layout_marginTop="8dp"
+                        android:text="Đặt món ngon - Giao nhanh tận nơi"
                         android:textColor="@color/text_secondary"
-                        android:textSize="12sp" />
+                        android:textSize="15sp" />
                 </LinearLayout>
+            </FrameLayout>
 
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:rotation="270"
-                    android:src="@drawable/ic_expand_more" />
-            </LinearLayout>
-
-            <!-- Skype -->
-            <LinearLayout
-                android:id="@+id/btnSkype"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginTop="8dp"
-                android:background="@drawable/bg_section_header"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingHorizontal="16dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="🔵"
-                    android:textSize="22sp" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="12dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Skype"
-                        android:textColor="@color/text_primary"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="foodorderapp.skype"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="12sp" />
-                </LinearLayout>
-
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:rotation="270"
-                    android:src="@drawable/ic_expand_more" />
-            </LinearLayout>
-
-            <!-- YouTube -->
-            <LinearLayout
-                android:id="@+id/btnYoutube"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginTop="8dp"
-                android:background="@drawable/bg_section_header"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingHorizontal="16dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="▶️"
-                    android:textSize="22sp" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="12dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="YouTube"
-                        android:textColor="@color/text_primary"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Kênh giới thiệu món ăn"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="12sp" />
-                </LinearLayout>
-
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:rotation="270"
-                    android:src="@drawable/ic_expand_more" />
-            </LinearLayout>
-
-            <!-- Section: Vị trí -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:text="📍  Vị trí quán"
-                android:textColor="@color/text_primary"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-
-            <!-- Map card -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/bg_section_header"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:paddingHorizontal="16dp"
+                android:paddingBottom="16dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="🏠  12 Nguyễn Văn Bảo, Phường 4, Gò Vấp, TP.HCM"
+                    android:text="Kênh liên lạc"
                     android:textColor="@color/text_primary"
-                    android:textSize="14sp" />
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
 
+                <!-- 2-Column Grid -->
+                <GridLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:columnCount="2"
+                    android:layout_marginTop="16dp"
+                    android:useDefaultMargins="true"
+                    android:padding="0dp">
+
+                    <!-- Phone -->
+                    <LinearLayout
+                        android:id="@+id/btnPhone"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_columnWeight="1"
+                        android:layout_margin="8dp"
+                        android:background="@drawable/bg_item_white_rounded_corner"
+                        android:elevation="4dp"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="20dp"
+                        android:clickable="true"
+                        android:focusable="true">
+
+                        <TextView
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:gravity="center"
+                            android:background="@drawable/bg_icon_blur_circle"
+                            android:text="📞"
+                            android:textSize="28sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:text="Gọi điện"
+                            android:textColor="@color/text_primary"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <!-- Email -->
+                    <LinearLayout
+                        android:id="@+id/btnEmail"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_columnWeight="1"
+                        android:layout_margin="8dp"
+                        android:background="@drawable/bg_item_white_rounded_corner"
+                        android:elevation="4dp"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="20dp"
+                        android:clickable="true"
+                        android:focusable="true">
+
+                        <TextView
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:gravity="center"
+                            android:background="@drawable/bg_icon_blur_circle"
+                            android:text="✉️"
+                            android:textSize="28sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:text="Email"
+                            android:textColor="@color/text_primary"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <!-- Facebook -->
+                    <LinearLayout
+                        android:id="@+id/btnFacebook"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_columnWeight="1"
+                        android:layout_margin="8dp"
+                        android:background="@drawable/bg_item_white_rounded_corner"
+                        android:elevation="4dp"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="20dp"
+                        android:clickable="true"
+                        android:focusable="true">
+
+                        <TextView
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:gravity="center"
+                            android:background="@drawable/bg_icon_blur_circle"
+                            android:text="📘"
+                            android:textSize="28sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:text="Facebook"
+                            android:textColor="@color/text_primary"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <!-- Zalo -->
+                    <LinearLayout
+                        android:id="@+id/btnZalo"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_columnWeight="1"
+                        android:layout_margin="8dp"
+                        android:background="@drawable/bg_item_white_rounded_corner"
+                        android:elevation="4dp"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="20dp"
+                        android:clickable="true"
+                        android:focusable="true">
+
+                        <TextView
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:gravity="center"
+                            android:background="@drawable/bg_icon_blur_circle"
+                            android:text="💬"
+                            android:textSize="28sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:text="Zalo"
+                            android:textColor="@color/text_primary"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <!-- Skype -->
+                    <LinearLayout
+                        android:id="@+id/btnSkype"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_columnWeight="1"
+                        android:layout_margin="8dp"
+                        android:background="@drawable/bg_item_white_rounded_corner"
+                        android:elevation="4dp"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="20dp"
+                        android:clickable="true"
+                        android:focusable="true">
+
+                        <TextView
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:gravity="center"
+                            android:background="@drawable/bg_icon_blur_circle"
+                            android:text="🔵"
+                            android:textSize="28sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:text="Skype"
+                            android:textColor="@color/text_primary"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <!-- YouTube -->
+                    <LinearLayout
+                        android:id="@+id/btnYoutube"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_columnWeight="1"
+                        android:layout_margin="8dp"
+                        android:background="@drawable/bg_item_white_rounded_corner"
+                        android:elevation="4dp"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="20dp"
+                        android:clickable="true"
+                        android:focusable="true">
+
+                        <TextView
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:gravity="center"
+                            android:background="@drawable/bg_icon_blur_circle"
+                            android:text="▶️"
+                            android:textSize="28sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:text="YouTube"
+                            android:textColor="@color/text_primary"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                </GridLayout>
+
+                <!-- Section: Vị trí -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="⏰  Mở cửa: 8:00 - 22:00 hàng ngày"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="13sp" />
+                    android:layout_marginTop="32dp"
+                    android:text="Vị trí trực tiếp"
+                    android:textColor="@color/text_primary"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
 
+                <!-- Map card -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:orientation="horizontal"
-                    android:gravity="center">
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/bg_item_white_rounded_corner"
+                    android:elevation="4dp"
+                    android:orientation="vertical"
+                    android:padding="20dp">
 
-                    <Button
-                        android:id="@+id/btnViewMap"
-                        android:layout_width="0dp"
-                        android:layout_height="44dp"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="6dp"
-                        android:background="@drawable/bg_button_primary"
-                        android:text="🗺  Xem bản đồ"
-                        android:textColor="@color/white"
-                        android:textSize="13sp"
-                        android:textAllCaps="false" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+                        
+                        <TextView
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:gravity="center"
+                            android:background="@drawable/bg_icon_blur_circle"
+                            android:text="🏠"
+                            android:textSize="20sp" />
+                            
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:text="12 Nguyễn Văn Bảo, Phường 4, Gò Vấp, TP.HCM"
+                            android:textColor="@color/text_primary"
+                            android:textSize="15sp"
+                            android:textStyle="bold"/>
+                    </LinearLayout>
 
-                    <Button
-                        android:id="@+id/btnDirections"
-                        android:layout_width="0dp"
-                        android:layout_height="44dp"
-                        android:layout_weight="1"
-                        android:layout_marginStart="6dp"
-                        android:background="@drawable/bg_category_selected"
-                        android:text="🧭  Chỉ đường"
-                        android:textColor="@color/white"
-                        android:textSize="13sp"
-                        android:textAllCaps="false" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+                        
+                        <TextView
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:gravity="center"
+                            android:background="@drawable/bg_icon_blur_circle"
+                            android:text="⏰"
+                            android:textSize="20sp" />
+                            
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:text="Mở cửa: 8:00 - 22:00 (Thứ 2 - Chủ Nhật)"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="24dp"
+                        android:orientation="horizontal"
+                        android:gravity="center">
+
+                        <Button
+                            android:id="@+id/btnViewMap"
+                            android:layout_width="0dp"
+                            android:layout_height="52dp"
+                            android:layout_weight="1"
+                            android:layout_marginEnd="8dp"
+                            android:background="@drawable/bg_button_primary"
+                            android:text="🗺 Xem bản đồ"
+                            android:textColor="@color/white"
+                            android:textSize="15sp"
+                            android:textAllCaps="false" />
+
+                        <Button
+                            android:id="@+id/btnDirections"
+                            android:layout_width="0dp"
+                            android:layout_height="52dp"
+                            android:layout_weight="1"
+                            android:layout_marginStart="8dp"
+                            android:background="@drawable/bg_category_selected"
+                            android:text="🧭 Chỉ đường"
+                            android:textColor="@color/white"
+                            android:textSize="15sp"
+                            android:textAllCaps="false" />
+                    </LinearLayout>
                 </LinearLayout>
-            </LinearLayout>
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="24dp" />
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="32dp" />
+            </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
-</ScrollView>
+    </ScrollView>
+
+    <!-- Bottom Navigation -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNav"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/surface"
+        android:elevation="16dp"
+        app:itemIconTint="@color/bottom_nav_color"
+        app:itemTextColor="@color/bottom_nav_color"
+        app:labelVisibilityMode="labeled"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:menu="@menu/bottom_nav_menu" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

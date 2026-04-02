@@ -21,6 +21,8 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+
 import com.bumptech.glide.Glide;
 import com.example.food_order_app.R;
 import com.example.food_order_app.config.SupabaseConfig;
@@ -55,9 +57,10 @@ public class ProfileActivity extends AppCompatActivity {
     private static final String STORAGE_BUCKET = "avatars";
 
     // Header
-    private ImageView btnBack, btnChangeAvatar;
+    private ImageView btnChangeAvatar;
     private CircleImageView imgAvatar;
     private TextView tvProfileName;
+    private BottomNavigationView bottomNav;
 
     // Personal info section
     private LinearLayout sectionPersonalHeader, sectionPersonalContent;
@@ -98,9 +101,16 @@ public class ProfileActivity extends AppCompatActivity {
         setupImagePicker();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (bottomNav != null) {
+            bottomNav.setSelectedItemId(R.id.nav_account);
+        }
+    }
+
     private void initViews() {
         // Header
-        btnBack = findViewById(R.id.btnBack);
         btnChangeAvatar = findViewById(R.id.btnChangeAvatar);
         imgAvatar = findViewById(R.id.imgAvatar);
         tvProfileName = findViewById(R.id.tvProfileName);
@@ -130,6 +140,15 @@ public class ProfileActivity extends AppCompatActivity {
 
         // Set initial expand state
         updateSectionVisibility(sectionPersonalContent, ivExpandPersonal, isPersonalExpanded);
+
+        bottomNav = findViewById(R.id.bottomNav);
+        setupBottomNav();
+
+        // Admin checks
+        if (sessionManager.isAdmin()) {
+            sectionOrdersHeader.setVisibility(View.GONE);
+            sectionFavoritesHeader.setVisibility(View.GONE);
+        }
     }
 
     private void loadUserData() {
@@ -165,8 +184,6 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void setupListeners() {
-        btnBack.setOnClickListener(v -> finish());
-
         btnChangeAvatar.setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_PICK);
             intent.setType("image/*");
@@ -200,6 +217,45 @@ public class ProfileActivity extends AppCompatActivity {
 
         // Logout
         btnLogout.setOnClickListener(v -> showLogoutConfirmation());
+    }
+
+    private void setupBottomNav() {
+        bottomNav.setSelectedItemId(R.id.nav_account);
+        bottomNav.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_home) {
+                Intent intent = new Intent(this, HomeActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                finish();
+                return true;
+            } else if (id == R.id.nav_cart) {
+                Intent intent = new Intent(this, CartActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                finish();
+                return true;
+            } else if (id == R.id.nav_chat) {
+                if (sessionManager != null && sessionManager.isLoggedIn()) {
+                    Intent intent = new Intent(this, ChatRoomActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    Toast.makeText(this, "Vui lòng đăng nhập để chat", Toast.LENGTH_SHORT).show();
+                }
+                return true;
+            } else if (id == R.id.nav_contact) {
+                Intent intent = new Intent(this, ContactActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                finish();
+                return true;
+            } else if (id == R.id.nav_account) {
+                return true;
+            }
+            return false;
+        });
     }
 
     // ============ AVATAR UPLOAD ============

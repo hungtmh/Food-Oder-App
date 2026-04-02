@@ -21,4 +21,5 @@ public class SupabaseConfig {
 
     // Storage API base URL
     public static final String STORAGE_URL = SUPABASE_URL + "/storage/v1/";
+
 }

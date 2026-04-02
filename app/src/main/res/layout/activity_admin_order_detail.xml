@@ -125,7 +125,21 @@
                     android:textAllCaps="false"
                     android:visibility="gone" />
 
-                <!-- Serve button (shown for processing) -->
+                <!-- Deliver button (shown for processing + delivery) -->
+                <Button
+                    android:id="@+id/btnDeliverOrder"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:background="@drawable/bg_button_primary"
+                    android:text="🛵  Giao hàng"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:textAllCaps="false"
+                    android:visibility="gone" />
+
+                <!-- Serve button (shown for processing/delivering) -->
                 <Button
                     android:id="@+id/btnServeOrder"
                     android:layout_width="0dp"
@@ -133,7 +147,7 @@
                     android:layout_weight="1"
                     android:layout_marginEnd="6dp"
                     android:background="@drawable/bg_button_primary"
-                    android:text="🍽  Phục vụ"
+                    android:text="🍽  Phục vụ / Đã giao"
                     android:textColor="@color/white"
                     android:textSize="14sp"
                     android:textAllCaps="false"

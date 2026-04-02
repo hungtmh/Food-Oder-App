@@ -4,13 +4,14 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.food_order_app.R;
+import com.example.food_order_app.utils.SessionManager;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class ContactActivity extends AppCompatActivity {
 
@@ -27,18 +28,69 @@ public class ContactActivity extends AppCompatActivity {
     private static final double LONGITUDE = 106.6877;
     private static final String ADDRESS = "12 Nguyễn Văn Bảo, Phường 4, Gò Vấp, TP.HCM";
 
+    private BottomNavigationView bottomNav;
+    private SessionManager sessionManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contact);
+        
+        sessionManager = new SessionManager(this);
+        bottomNav = findViewById(R.id.bottomNav);
 
         setupListeners();
+        setupBottomNav();
+    }
+
+    private void setupBottomNav() {
+        bottomNav.setSelectedItemId(R.id.nav_contact);
+        bottomNav.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_home) {
+                Intent intent = new Intent(this, HomeActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                finish();
+                return true;
+            } else if (id == R.id.nav_cart) {
+                Intent intent = new Intent(this, CartActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                finish();
+                return true;
+            } else if (id == R.id.nav_chat) {
+                if (sessionManager != null && sessionManager.isLoggedIn()) {
+                    Intent intent = new Intent(this, ChatRoomActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    Toast.makeText(this, "Vui lòng đăng nhập để chat", Toast.LENGTH_SHORT).show();
+                }
+                return true;
+            } else if (id == R.id.nav_contact) {
+                return true;
+            } else if (id == R.id.nav_account) {
+                Intent intent = new Intent(this, ProfileActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                finish();
+                return true;
+            }
+            return false;
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (bottomNav != null) {
+            bottomNav.setSelectedItemId(R.id.nav_contact);
+        }
     }
 
     private void setupListeners() {
-        ImageView btnBack = findViewById(R.id.btnBack);
-        btnBack.setOnClickListener(v -> finish());
-
         // Phone
         LinearLayout btnPhone = findViewById(R.id.btnPhone);
         btnPhone.setOnClickListener(v -> {

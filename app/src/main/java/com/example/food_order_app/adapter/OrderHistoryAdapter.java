@@ -94,6 +94,7 @@ public class OrderHistoryAdapter extends RecyclerView.Adapter<OrderHistoryAdapte
         switch (status) {
             case "pending": return "Chờ xác nhận";
             case "processing": return "Chờ chế biến";
+            case "delivering": return "Đang giao";
             case "served": return "Đã phục vụ";
             case "cancelled": return "Đã hủy";
             default: return status;
@@ -105,6 +106,7 @@ public class OrderHistoryAdapter extends RecyclerView.Adapter<OrderHistoryAdapte
         switch (status) {
             case "pending": return R.drawable.bg_status_pending;
             case "processing": return R.drawable.bg_status_processing;
+            case "delivering": return R.drawable.bg_status_delivering;
             case "served": return R.drawable.bg_status_delivered;
             case "cancelled": return R.drawable.bg_status_cancelled;
             default: return R.drawable.bg_status_pending;
@@ -116,6 +118,7 @@ public class OrderHistoryAdapter extends RecyclerView.Adapter<OrderHistoryAdapte
         switch (status) {
             case "pending": return ctx.getColor(R.color.warning);
             case "processing": return ctx.getColor(R.color.info);
+            case "delivering": return ctx.getColor(R.color.info);
             case "served": return ctx.getColor(R.color.success);
             case "cancelled": return ctx.getColor(R.color.error);
             default: return ctx.getColor(R.color.text_secondary);

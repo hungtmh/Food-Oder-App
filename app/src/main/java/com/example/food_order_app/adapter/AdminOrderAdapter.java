@@ -78,6 +78,7 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Vi
         switch (status) {
             case "pending": return "Chờ xác nhận";
             case "processing": return "Chờ chế biến";
+            case "delivering": return "Đang giao";
             case "served": return "Đã phục vụ";
             case "cancelled": return "Đã hủy";
             default: return status;
@@ -89,6 +90,7 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Vi
         switch (status) {
             case "pending": return R.drawable.bg_status_pending;
             case "processing": return R.drawable.bg_status_processing;
+            case "delivering": return R.drawable.bg_status_delivering;
             case "served": return R.drawable.bg_status_delivered;
             case "cancelled": return R.drawable.bg_status_unavailable;
             default: return R.drawable.bg_status_pending;
@@ -132,8 +134,11 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Vi
             case "processing":
                 message = "Đơn hàng của bạn đã được xác nhận và đang được chế biến.";
                 break;
+            case "delivering":
+                message = "Đơn hàng của bạn đang được giao tới.";
+                break;
             case "served":
-                message = "Đơn hàng của bạn đã làm xong và sẵn sàng phục vụ!";
+                message = "Đơn hàng của bạn đã làm xong và sẵn sàng phục vụ/giao thành công!";
                 break;
             case "cancelled":
                 message = "Rất tiếc, đơn hàng của bạn đã bị hủy.";
@@ -333,20 +338,52 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Vi
                     btnQuickServe.setVisibility(View.VISIBLE);
                     btnQuickCancel.setVisibility(View.VISIBLE);
 
-                    btnQuickServe.setOnClickListener(v -> {
-                        new AlertDialog.Builder(context)
-                                .setTitle("Phục vụ đơn hàng")
-                                .setMessage("Xác nhận đã phục vụ đơn " + order.getOrderCode() + "?")
-                                .setPositiveButton("Đã phục vụ", (d, w) -> updateOrderStatus(order, "served", "Phục vụ đơn"))
-                                .setNegativeButton("Không", null)
-                                .show();
-                    });
+                    String orderType = order.getOrderType();
+                    if (orderType == null || orderType.isEmpty()) orderType = "delivery";
+
+                    if ("delivery".equals(orderType)) {
+                        btnQuickServe.setText("Giao hàng");
+                        btnQuickServe.setOnClickListener(v -> {
+                            new AlertDialog.Builder(context)
+                                    .setTitle("Giao đơn hàng")
+                                    .setMessage("Chuyển trạng thái đơn sang Đang giao?")
+                                    .setPositiveButton("Giao hàng", (d, w) -> updateOrderStatus(order, "delivering", "Giao hàng"))
+                                    .setNegativeButton("Không", null)
+                                    .show();
+                        });
+                    } else {
+                        btnQuickServe.setText("Phục vụ");
+                        btnQuickServe.setOnClickListener(v -> {
+                            new AlertDialog.Builder(context)
+                                    .setTitle("Phục vụ đơn hàng")
+                                    .setMessage("Xác nhận đã phục vụ đơn " + order.getOrderCode() + "?")
+                                    .setPositiveButton("Đã phục vụ", (d, w) -> updateOrderStatus(order, "served", "Phục vụ đơn"))
+                                    .setNegativeButton("Không", null)
+                                    .show();
+                        });
+                    }
 
                     btnQuickCancel.setOnClickListener(v -> {
                         new AlertDialog.Builder(context)
                                 .setTitle("Hủy đơn hàng")
                                 .setMessage("Hủy đơn " + order.getOrderCode() + "?\nĐơn sau khi hủy không thể khôi phục.")
                                 .setPositiveButton("Hủy đơn", (d, w) -> updateOrderStatus(order, "cancelled", "Hủy đơn"))
+                                .setNegativeButton("Không", null)
+                                .show();
+                    });
+                    break;
+
+                case "delivering":
+                    layoutQuickActions.setVisibility(View.VISIBLE);
+                    btnQuickServe.setVisibility(View.VISIBLE);
+                    btnQuickCancel.setVisibility(View.GONE);
+
+                    btnQuickServe.setText("Đã giao");
+                    btnQuickServe.setOnClickListener(v -> {
+                        new AlertDialog.Builder(context)
+                                .setTitle("Hoàn thành đơn hàng")
+                                .setMessage("Xác nhận đã giao thành công đơn " + order.getOrderCode() + "?")
+                                .setPositiveButton("Đã giao", (d, w) -> updateOrderStatus(order, "served", "Hoàn thành đơn"))
                                 .setNegativeButton("Không", null)
                                 .show();
                     });

@@ -41,7 +41,7 @@ public class OrderHistoryActivity extends AppCompatActivity
     private static final String TAG = "OrderHistoryActivity";
 
     private ImageView btnBack;
-    private Button btnFilterAll, btnFilterPending, btnFilterProcessing, btnFilterServed, btnFilterCancelled;
+    private Button btnFilterAll, btnFilterPending, btnFilterProcessing, btnFilterDelivering, btnFilterServed, btnFilterCancelled;
     private ProgressBar progressOrders;
     private LinearLayout layoutEmpty;
     private TextView tvEmptyMessage;
@@ -77,6 +77,7 @@ public class OrderHistoryActivity extends AppCompatActivity
         btnFilterAll = findViewById(R.id.btnFilterAll);
         btnFilterPending = findViewById(R.id.btnFilterPending);
         btnFilterProcessing = findViewById(R.id.btnFilterProcessing);
+        btnFilterDelivering = findViewById(R.id.btnFilterDelivering);
         btnFilterServed = findViewById(R.id.btnFilterServed);
         btnFilterCancelled = findViewById(R.id.btnFilterCancelled);
         progressOrders = findViewById(R.id.progressOrders);
@@ -97,6 +98,7 @@ public class OrderHistoryActivity extends AppCompatActivity
             if (id == R.id.btnFilterAll) currentFilter = "all";
             else if (id == R.id.btnFilterPending) currentFilter = "pending";
             else if (id == R.id.btnFilterProcessing) currentFilter = "processing";
+            else if (id == R.id.btnFilterDelivering) currentFilter = "delivering";
             else if (id == R.id.btnFilterServed) currentFilter = "served";
             else if (id == R.id.btnFilterCancelled) currentFilter = "cancelled";
             updateFilterUI();
@@ -106,13 +108,14 @@ public class OrderHistoryActivity extends AppCompatActivity
         btnFilterAll.setOnClickListener(filterClick);
         btnFilterPending.setOnClickListener(filterClick);
         btnFilterProcessing.setOnClickListener(filterClick);
+        btnFilterDelivering.setOnClickListener(filterClick);
         btnFilterServed.setOnClickListener(filterClick);
         btnFilterCancelled.setOnClickListener(filterClick);
     }
 
     private void updateFilterUI() {
-        Button[] buttons = {btnFilterAll, btnFilterPending, btnFilterProcessing, btnFilterServed, btnFilterCancelled};
-        String[] filters = {"all", "pending", "processing", "served", "cancelled"};
+        Button[] buttons = {btnFilterAll, btnFilterPending, btnFilterProcessing, btnFilterDelivering, btnFilterServed, btnFilterCancelled};
+        String[] filters = {"all", "pending", "processing", "delivering", "served", "cancelled"};
 
         for (int i = 0; i < buttons.length; i++) {
             boolean selected = currentFilter.equals(filters[i]);
@@ -174,6 +177,7 @@ public class OrderHistoryActivity extends AppCompatActivity
             switch (currentFilter) {
                 case "pending": msg = "Không có đơn hàng chờ xác nhận"; break;
                 case "processing": msg = "Không có đơn hàng chờ chế biến"; break;
+                case "delivering": msg = "Không có đơn hàng đang giao"; break;
                 case "served": msg = "Không có đơn hàng đã phục vụ"; break;
                 case "cancelled": msg = "Không có đơn hàng đã hủy"; break;
                 default: msg = "Chưa có đơn hàng nào"; break;
