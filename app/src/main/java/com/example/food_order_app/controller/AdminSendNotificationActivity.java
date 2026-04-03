@@ -9,11 +9,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.food_order_app.R;
 import com.example.food_order_app.model.Notification;
 import com.example.food_order_app.network.RetrofitClient;
 import com.example.food_order_app.network.SupabaseDbService;
+import com.example.food_order_app.utils.AdminDrawerHelper;
+import com.google.android.material.navigation.NavigationView;
 
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +28,8 @@ import retrofit2.Response;
 
 public class AdminSendNotificationActivity extends AppCompatActivity {
 
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
     private ImageView btnBack;
     private EditText etTitle, etMessage;
     private Button btnSendAll, btnClear;
@@ -43,6 +48,8 @@ public class AdminSendNotificationActivity extends AppCompatActivity {
     }
 
     private void initViews() {
+        drawerLayout = findViewById(R.id.adminDrawerLayout);
+        navigationView = findViewById(R.id.adminNavigationView);
         btnBack = findViewById(R.id.btnBackNotifSend);
         etTitle = findViewById(R.id.etNotifTitle);
         etMessage = findViewById(R.id.etNotifMessage);
@@ -51,7 +58,7 @@ public class AdminSendNotificationActivity extends AppCompatActivity {
         tvCharCount = findViewById(R.id.tvCharCount);
         tvStatus = findViewById(R.id.tvStatus);
 
-        btnBack.setOnClickListener(v -> finish());
+        AdminDrawerHelper.setupDrawer(this, drawerLayout, navigationView, btnBack, R.id.navSendNotification);
         btnClear.setOnClickListener(v -> clearForm());
         btnSendAll.setOnClickListener(v -> sendNotificationToAll());
 
@@ -101,7 +108,8 @@ public class AdminSendNotificationActivity extends AppCompatActivity {
     }
 
     private void performSending(String title, String message) {
-        if (isSending) return;
+        if (isSending)
+            return;
         isSending = true;
 
         disableButtons();
@@ -136,7 +144,8 @@ public class AdminSendNotificationActivity extends AppCompatActivity {
                             clearForm();
                         } else {
                             showStatus("Gửi thất bại: HTTP " + response.code(), false);
-                            Toast.makeText(AdminSendNotificationActivity.this, "Gửi thất bại", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(AdminSendNotificationActivity.this, "Gửi thất bại", Toast.LENGTH_SHORT)
+                                    .show();
                         }
                     }
 
@@ -145,7 +154,8 @@ public class AdminSendNotificationActivity extends AppCompatActivity {
                         isSending = false;
                         enableButtons();
                         showStatus("Lỗi: " + t.getMessage(), false);
-                        Toast.makeText(AdminSendNotificationActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(AdminSendNotificationActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT)
+                                .show();
                     }
                 });
     }

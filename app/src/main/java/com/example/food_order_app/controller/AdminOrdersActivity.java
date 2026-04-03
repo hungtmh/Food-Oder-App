@@ -11,6 +11,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -19,8 +20,9 @@ import com.example.food_order_app.adapter.AdminOrderAdapter;
 import com.example.food_order_app.model.Order;
 import com.example.food_order_app.network.RetrofitClient;
 import com.example.food_order_app.network.SupabaseDbService;
-import com.example.food_order_app.utils.AdminBottomNavHelper;
+import com.example.food_order_app.utils.AdminDrawerHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
 
 import java.text.Normalizer;
 import java.util.ArrayList;
@@ -33,13 +35,16 @@ import retrofit2.Response;
 
 public class AdminOrdersActivity extends AppCompatActivity implements AdminOrderAdapter.OnOrderClickListener {
 
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
     private RecyclerView rvOrders;
     private EditText edtSearch;
-    private ImageView btnSearch;
+    private ImageView btnSearch, btnMenuDrawer;
     private TextView tvEmpty, tvStats;
     private FloatingActionButton fabRevenue;
     private ImageView btnOrderStatistics;
-    private Button btnStatusAll, btnStatusPending, btnStatusConfirmed, btnStatusDelivering, btnStatusDelivered, btnStatusCancelled;
+    private Button btnStatusAll, btnStatusPending, btnStatusConfirmed, btnStatusDelivering, btnStatusDelivered,
+            btnStatusCancelled;
 
     private AdminOrderAdapter adapter;
     private SupabaseDbService dbService;
@@ -59,14 +64,16 @@ public class AdminOrdersActivity extends AppCompatActivity implements AdminOrder
     @Override
     protected void onResume() {
         super.onResume();
-        AdminBottomNavHelper.setup(this, AdminBottomNavHelper.TAB_ORDERS);
         loadOrders();
     }
 
     private void initViews() {
+        drawerLayout = findViewById(R.id.adminDrawerLayout);
+        navigationView = findViewById(R.id.adminNavigationView);
         rvOrders = findViewById(R.id.rvAdminOrders);
         edtSearch = findViewById(R.id.edtOrderSearch);
         btnSearch = findViewById(R.id.btnOrderSearch);
+        btnMenuDrawer = findViewById(R.id.btnMenuDrawerOrders);
         tvEmpty = findViewById(R.id.tvOrderEmpty);
         tvStats = findViewById(R.id.tvOrderStats);
         btnStatusAll = findViewById(R.id.btnStatusAll);
@@ -81,17 +88,25 @@ public class AdminOrdersActivity extends AppCompatActivity implements AdminOrder
         adapter = new AdminOrderAdapter(this, this);
         rvOrders.setLayoutManager(new LinearLayoutManager(this));
         rvOrders.setAdapter(adapter);
+
+        AdminDrawerHelper.setupDrawer(this, drawerLayout, navigationView, btnMenuDrawer, R.id.navAdminOrders);
     }
 
     private void setupListeners() {
         View.OnClickListener filterClick = v -> {
             int id = v.getId();
-            if (id == R.id.btnStatusAll) currentFilter = "all";
-            else if (id == R.id.btnStatusPending) currentFilter = "pending";
-            else if (id == R.id.btnStatusConfirmed) currentFilter = "processing";
-            else if (id == R.id.btnStatusDelivering) currentFilter = "delivering";
-            else if (id == R.id.btnStatusDelivered) currentFilter = "served";
-            else if (id == R.id.btnStatusCancelled) currentFilter = "cancelled";
+            if (id == R.id.btnStatusAll)
+                currentFilter = "all";
+            else if (id == R.id.btnStatusPending)
+                currentFilter = "pending";
+            else if (id == R.id.btnStatusConfirmed)
+                currentFilter = "processing";
+            else if (id == R.id.btnStatusDelivering)
+                currentFilter = "delivering";
+            else if (id == R.id.btnStatusDelivered)
+                currentFilter = "served";
+            else if (id == R.id.btnStatusCancelled)
+                currentFilter = "cancelled";
             updateFilterUI();
             filterOrders();
         };
@@ -112,39 +127,40 @@ public class AdminOrdersActivity extends AppCompatActivity implements AdminOrder
             return false;
         });
 
-        fabRevenue.setOnClickListener(v ->
-                startActivity(new Intent(this, AdminRevenueActivity.class)));
+        fabRevenue.setOnClickListener(v -> startActivity(new Intent(this, AdminRevenueActivity.class)));
 
-        btnOrderStatistics.setOnClickListener(v ->
-                startActivity(new Intent(this, AdminOrderStatisticsActivity.class)));
+        btnOrderStatistics.setOnClickListener(v -> startActivity(new Intent(this, AdminOrderStatisticsActivity.class)));
     }
 
     private void updateFilterUI() {
-        Button[] buttons = {btnStatusAll, btnStatusPending, btnStatusConfirmed, btnStatusDelivering, btnStatusDelivered, btnStatusCancelled};
-        String[] filters = {"all", "pending", "processing", "delivering", "served", "cancelled"};
+        Button[] buttons = { btnStatusAll, btnStatusPending, btnStatusConfirmed, btnStatusDelivering,
+                btnStatusDelivered, btnStatusCancelled };
+        String[] filters = { "all", "pending", "processing", "delivering", "served", "cancelled" };
         for (int i = 0; i < buttons.length; i++) {
             boolean selected = currentFilter.equals(filters[i]);
-            buttons[i].setBackgroundResource(selected ? R.drawable.bg_category_selected : R.drawable.bg_category_normal);
+            buttons[i]
+                    .setBackgroundResource(selected ? R.drawable.bg_category_selected : R.drawable.bg_category_normal);
             buttons[i].setTextColor(getResources().getColor(selected ? R.color.white : R.color.text_primary));
         }
     }
 
     private void loadOrders() {
-        dbService.getAllOrders("*,order_items(food_name,food_image,price,quantity)", "created_at.desc").enqueue(new Callback<List<Order>>() {
-            @Override
-            public void onResponse(Call<List<Order>> call, Response<List<Order>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    allOrders = response.body();
-                    tvStats.setText("Tổng: " + allOrders.size() + " đơn");
-                    filterOrders();
-                }
-            }
+        dbService.getAllOrders("*,order_items(food_name,food_image,price,quantity)", "created_at.desc")
+                .enqueue(new Callback<List<Order>>() {
+                    @Override
+                    public void onResponse(Call<List<Order>> call, Response<List<Order>> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            allOrders = response.body();
+                            tvStats.setText("Tổng: " + allOrders.size() + " đơn");
+                            filterOrders();
+                        }
+                    }
 
-            @Override
-            public void onFailure(Call<List<Order>> call, Throwable t) {
-                Toast.makeText(AdminOrdersActivity.this, "Lỗi tải đơn hàng", Toast.LENGTH_SHORT).show();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<List<Order>> call, Throwable t) {
+                        Toast.makeText(AdminOrdersActivity.this, "Lỗi tải đơn hàng", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     private void filterOrders() {
@@ -190,7 +206,8 @@ public class AdminOrdersActivity extends AppCompatActivity implements AdminOrder
             if (o.getOrderItems() != null) {
                 boolean found = false;
                 for (com.example.food_order_app.model.OrderItem item : o.getOrderItems()) {
-                    if (item.getFoodName() != null && removeDiacritics(item.getFoodName().toLowerCase()).contains(query)) {
+                    if (item.getFoodName() != null
+                            && removeDiacritics(item.getFoodName().toLowerCase()).contains(query)) {
                         found = true;
                         break;
                     }
@@ -207,7 +224,8 @@ public class AdminOrdersActivity extends AppCompatActivity implements AdminOrder
     private static final Pattern DIACRITICS_PATTERN = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
 
     private String removeDiacritics(String input) {
-        if (input == null) return "";
+        if (input == null)
+            return "";
         // Normalize to decompose accented characters, then strip diacritics
         String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
         String result = DIACRITICS_PATTERN.matcher(normalized).replaceAll("");

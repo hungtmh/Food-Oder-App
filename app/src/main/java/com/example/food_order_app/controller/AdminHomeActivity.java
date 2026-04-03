@@ -11,6 +11,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -19,9 +21,10 @@ import com.example.food_order_app.adapter.AdminFoodAdapter;
 import com.example.food_order_app.model.Food;
 import com.example.food_order_app.network.RetrofitClient;
 import com.example.food_order_app.network.SupabaseDbService;
-import com.example.food_order_app.utils.AdminBottomNavHelper;
+import com.example.food_order_app.utils.AdminDrawerHelper;
 import com.example.food_order_app.utils.SessionManager;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
 
 import java.text.Normalizer;
 import java.util.ArrayList;
@@ -34,9 +37,11 @@ import retrofit2.Response;
 
 public class AdminHomeActivity extends AppCompatActivity implements AdminFoodAdapter.OnAdminFoodListener {
 
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
     private RecyclerView rvFoods;
     private EditText edtSearch;
-    private ImageView btnSearch, btnAIInsights, btnSendNotif;
+    private ImageView btnSearch, btnSendNotif, btnMenuDrawer;
     private TextView tvEmpty;
     private FloatingActionButton fabAdd;
     private Button btnFilterAll, btnFilterAvailable, btnFilterUnavailable, btnFilterPopular, btnFilterDiscount;
@@ -62,16 +67,17 @@ public class AdminHomeActivity extends AppCompatActivity implements AdminFoodAda
     @Override
     protected void onResume() {
         super.onResume();
-        AdminBottomNavHelper.setup(this, AdminBottomNavHelper.TAB_FOOD);
         loadFoods();
     }
 
     private void initViews() {
+        drawerLayout = findViewById(R.id.adminDrawerLayout);
+        navigationView = findViewById(R.id.adminNavigationView);
         rvFoods = findViewById(R.id.rvAdminFoods);
         edtSearch = findViewById(R.id.edtAdminSearch);
         btnSearch = findViewById(R.id.btnAdminSearch);
         btnSendNotif = findViewById(R.id.btnSendNotif);
-        btnAIInsights = findViewById(R.id.btnAIInsights);
+        btnMenuDrawer = findViewById(R.id.btnMenuDrawer);
         tvEmpty = findViewById(R.id.tvAdminEmpty);
         fabAdd = findViewById(R.id.fabAddFood);
 
@@ -87,16 +93,14 @@ public class AdminHomeActivity extends AppCompatActivity implements AdminFoodAda
     }
 
     private void setupListeners() {
+        AdminDrawerHelper.setupDrawer(this, drawerLayout, navigationView, btnMenuDrawer, R.id.navAdminFood);
+
         fabAdd.setOnClickListener(v -> {
             startActivity(new Intent(this, AdminAddEditFoodActivity.class));
         });
-        
+
         btnSendNotif.setOnClickListener(v -> {
             startActivity(new Intent(this, AdminSendNotificationActivity.class));
-        });
-        
-        btnAIInsights.setOnClickListener(v -> {
-            startActivity(new Intent(this, AIDashboardActivity.class));
         });
 
         btnSearch.setOnClickListener(v -> performSearch());
@@ -112,11 +116,16 @@ public class AdminHomeActivity extends AppCompatActivity implements AdminFoodAda
         // Filter button click handlers
         android.view.View.OnClickListener filterClick = v -> {
             int id = v.getId();
-            if (id == R.id.btnFilterAll) currentFilter = "all";
-            else if (id == R.id.btnFilterAvailable) currentFilter = "available";
-            else if (id == R.id.btnFilterUnavailable) currentFilter = "unavailable";
-            else if (id == R.id.btnFilterPopular) currentFilter = "popular";
-            else if (id == R.id.btnFilterDiscount) currentFilter = "discount";
+            if (id == R.id.btnFilterAll)
+                currentFilter = "all";
+            else if (id == R.id.btnFilterAvailable)
+                currentFilter = "available";
+            else if (id == R.id.btnFilterUnavailable)
+                currentFilter = "unavailable";
+            else if (id == R.id.btnFilterPopular)
+                currentFilter = "popular";
+            else if (id == R.id.btnFilterDiscount)
+                currentFilter = "discount";
             updateFilterUI();
             performSearch();
         };
@@ -159,7 +168,8 @@ public class AdminHomeActivity extends AppCompatActivity implements AdminFoodAda
                     results.add(food);
                     continue;
                 }
-                if (food.getDescription() != null && removeDiacritics(food.getDescription().toLowerCase()).contains(query)) {
+                if (food.getDescription() != null
+                        && removeDiacritics(food.getDescription().toLowerCase()).contains(query)) {
                     results.add(food);
                 }
             }
@@ -171,22 +181,27 @@ public class AdminHomeActivity extends AppCompatActivity implements AdminFoodAda
     }
 
     private List<Food> filterFoods(List<Food> foods) {
-        if (currentFilter.equals("all")) return foods;
+        if (currentFilter.equals("all"))
+            return foods;
 
         List<Food> filtered = new ArrayList<>();
         for (Food food : foods) {
             switch (currentFilter) {
                 case "available":
-                    if (food.isAvailable()) filtered.add(food);
+                    if (food.isAvailable())
+                        filtered.add(food);
                     break;
                 case "unavailable":
-                    if (!food.isAvailable()) filtered.add(food);
+                    if (!food.isAvailable())
+                        filtered.add(food);
                     break;
                 case "popular":
-                    if (food.isPopular()) filtered.add(food);
+                    if (food.isPopular())
+                        filtered.add(food);
                     break;
                 case "discount":
-                    if (food.getDiscountPercent() > 0) filtered.add(food);
+                    if (food.getDiscountPercent() > 0)
+                        filtered.add(food);
                     break;
             }
         }
@@ -194,11 +209,13 @@ public class AdminHomeActivity extends AppCompatActivity implements AdminFoodAda
     }
 
     private void updateFilterUI() {
-        Button[] buttons = {btnFilterAll, btnFilterAvailable, btnFilterUnavailable, btnFilterPopular, btnFilterDiscount};
-        String[] filters = {"all", "available", "unavailable", "popular", "discount"};
+        Button[] buttons = { btnFilterAll, btnFilterAvailable, btnFilterUnavailable, btnFilterPopular,
+                btnFilterDiscount };
+        String[] filters = { "all", "available", "unavailable", "popular", "discount" };
         for (int i = 0; i < buttons.length; i++) {
             boolean selected = currentFilter.equals(filters[i]);
-            buttons[i].setBackgroundResource(selected ? R.drawable.bg_category_selected : R.drawable.bg_category_normal);
+            buttons[i]
+                    .setBackgroundResource(selected ? R.drawable.bg_category_selected : R.drawable.bg_category_normal);
             buttons[i].setTextColor(getResources().getColor(selected ? R.color.white : R.color.text_primary));
         }
     }
@@ -206,7 +223,8 @@ public class AdminHomeActivity extends AppCompatActivity implements AdminFoodAda
     private static final Pattern DIACRITICS_PATTERN = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
 
     private String removeDiacritics(String input) {
-        if (input == null) return "";
+        if (input == null)
+            return "";
         String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
         String result = DIACRITICS_PATTERN.matcher(normalized).replaceAll("");
         result = result.replace('đ', 'd').replace('Đ', 'D');
@@ -250,5 +268,14 @@ public class AdminHomeActivity extends AppCompatActivity implements AdminFoodAda
     @Override
     public void onFoodClick(Food food) {
         onEditFood(food);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (drawerLayout != null && drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START);
+            return;
+        }
+        super.onBackPressed();
     }
 }

@@ -19,6 +19,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -31,9 +32,10 @@ import com.example.food_order_app.model.Order;
 import com.example.food_order_app.model.OrderItem;
 import com.example.food_order_app.network.RetrofitClient;
 import com.example.food_order_app.network.SupabaseDbService;
-import com.example.food_order_app.utils.AdminBottomNavHelper;
+import com.example.food_order_app.utils.AdminDrawerHelper;
 import com.example.food_order_app.utils.SessionManager;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -59,8 +61,10 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
     private static final Pattern DIACRITICS_PATTERN = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
 
     private RecyclerView rvCategories;
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
     private EditText edtSearch;
-    private ImageView btnSearch;
+    private ImageView btnSearch, btnMenuDrawer;
     private android.widget.TextView tvEmpty;
     private FloatingActionButton fabAdd;
     private Spinner spFilterStatus;
@@ -75,8 +79,9 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
     private List<Food> allFoods = new ArrayList<>();
     private boolean canManage;
 
-    private static final String[] STATUS_OPTIONS = {"Tất cả trạng thái", "Đang hoạt động", "Đang ẩn"};
-    private static final String[] SORT_OPTIONS = {"Thứ tự tăng", "Thứ tự giảm", "Tên A-Z", "Tên Z-A", "Doanh thu 7 ngày giảm"};
+    private static final String[] STATUS_OPTIONS = { "Tất cả trạng thái", "Đang hoạt động", "Đang ẩn" };
+    private static final String[] SORT_OPTIONS = { "Thứ tự tăng", "Thứ tự giảm", "Tên A-Z", "Tên Z-A",
+            "Doanh thu 7 ngày giảm" };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,18 +103,22 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
     @Override
     protected void onResume() {
         super.onResume();
-        AdminBottomNavHelper.setup(this, AdminBottomNavHelper.TAB_CATEGORY);
         loadDashboardData();
     }
 
     private void initViews() {
+        drawerLayout = findViewById(R.id.adminDrawerLayout);
+        navigationView = findViewById(R.id.adminNavigationView);
         rvCategories = findViewById(R.id.rvAdminCategories);
         edtSearch = findViewById(R.id.edtCategorySearch);
         btnSearch = findViewById(R.id.btnCategorySearch);
+        btnMenuDrawer = findViewById(R.id.btnMenuDrawerCategory);
         tvEmpty = findViewById(R.id.tvCategoryEmpty);
         fabAdd = findViewById(R.id.fabAddCategory);
         spFilterStatus = findViewById(R.id.spFilterStatus);
         spSortMode = findViewById(R.id.spSortMode);
+
+        AdminDrawerHelper.setupDrawer(this, drawerLayout, navigationView, btnMenuDrawer, R.id.navAdminCategory);
     }
 
     private void setupRecycler() {
@@ -120,7 +129,8 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
     }
 
     private void setupSpinners() {
-        spFilterStatus.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, STATUS_OPTIONS));
+        spFilterStatus
+                .setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, STATUS_OPTIONS));
         spSortMode.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, SORT_OPTIONS));
     }
 
@@ -142,9 +152,11 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
     }
 
     private void setupDragDrop() {
-        ItemTouchHelper.SimpleCallback callback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0) {
+        ItemTouchHelper.SimpleCallback callback = new ItemTouchHelper.SimpleCallback(
+                ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0) {
             @Override
-            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder,
+                    RecyclerView.ViewHolder target) {
                 adapter.moveItem(viewHolder.getBindingAdapterPosition(), target.getBindingAdapterPosition());
                 return true;
             }
@@ -202,20 +214,22 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
     }
 
     private void loadFoodsAndRevenueStats(Runnable onDone) {
-        dbService.getAdminAllFoods("id,category_id,is_available", "created_at.desc").enqueue(new Callback<List<Food>>() {
-            @Override
-            public void onResponse(Call<List<Food>> call, Response<List<Food>> response) {
-                allFoods = response.isSuccessful() && response.body() != null ? response.body() : new ArrayList<>();
-                fillFoodCounters();
-                loadRevenueLast7Days(onDone);
-            }
+        dbService.getAdminAllFoods("id,category_id,is_available", "created_at.desc")
+                .enqueue(new Callback<List<Food>>() {
+                    @Override
+                    public void onResponse(Call<List<Food>> call, Response<List<Food>> response) {
+                        allFoods = response.isSuccessful() && response.body() != null ? response.body()
+                                : new ArrayList<>();
+                        fillFoodCounters();
+                        loadRevenueLast7Days(onDone);
+                    }
 
-            @Override
-            public void onFailure(Call<List<Food>> call, Throwable t) {
-                fillFoodCounters();
-                loadRevenueLast7Days(onDone);
-            }
-        });
+                    @Override
+                    public void onFailure(Call<List<Food>> call, Throwable t) {
+                        fillFoodCounters();
+                        loadRevenueLast7Days(onDone);
+                    }
+                });
     }
 
     private void fillFoodCounters() {
@@ -274,43 +288,47 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
                 }
                 inBuilder.append(")");
 
-                dbService.getOrderItems(inBuilder.toString(), "food_id,subtotal").enqueue(new Callback<List<OrderItem>>() {
-                    @Override
-                    public void onResponse(Call<List<OrderItem>> call, Response<List<OrderItem>> response) {
-                        if (response.isSuccessful() && response.body() != null) {
-                            Map<String, String> foodToCategory = new HashMap<>();
-                            for (Food food : allFoods) {
-                                if (!TextUtils.isEmpty(food.getId()) && !TextUtils.isEmpty(food.getCategoryId())) {
-                                    foodToCategory.put(food.getId(), food.getCategoryId());
+                dbService.getOrderItems(inBuilder.toString(), "food_id,subtotal")
+                        .enqueue(new Callback<List<OrderItem>>() {
+                            @Override
+                            public void onResponse(Call<List<OrderItem>> call, Response<List<OrderItem>> response) {
+                                if (response.isSuccessful() && response.body() != null) {
+                                    Map<String, String> foodToCategory = new HashMap<>();
+                                    for (Food food : allFoods) {
+                                        if (!TextUtils.isEmpty(food.getId())
+                                                && !TextUtils.isEmpty(food.getCategoryId())) {
+                                            foodToCategory.put(food.getId(), food.getCategoryId());
+                                        }
+                                    }
+
+                                    Map<String, Double> revenueByCategory = new HashMap<>();
+                                    for (OrderItem item : response.body()) {
+                                        String categoryId = foodToCategory.get(item.getFoodId());
+                                        if (categoryId != null) {
+                                            revenueByCategory.put(categoryId,
+                                                    revenueByCategory.getOrDefault(categoryId, 0d)
+                                                            + item.getSubtotal());
+                                        }
+                                    }
+
+                                    for (Category category : allCategories) {
+                                        category.setRevenueLast7Days(
+                                                revenueByCategory.getOrDefault(category.getId(), 0d));
+                                    }
+                                }
+
+                                if (onDone != null) {
+                                    onDone.run();
                                 }
                             }
 
-                            Map<String, Double> revenueByCategory = new HashMap<>();
-                            for (OrderItem item : response.body()) {
-                                String categoryId = foodToCategory.get(item.getFoodId());
-                                if (categoryId != null) {
-                                    revenueByCategory.put(categoryId,
-                                            revenueByCategory.getOrDefault(categoryId, 0d) + item.getSubtotal());
+                            @Override
+                            public void onFailure(Call<List<OrderItem>> call, Throwable t) {
+                                if (onDone != null) {
+                                    onDone.run();
                                 }
                             }
-
-                            for (Category category : allCategories) {
-                                category.setRevenueLast7Days(revenueByCategory.getOrDefault(category.getId(), 0d));
-                            }
-                        }
-
-                        if (onDone != null) {
-                            onDone.run();
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<List<OrderItem>> call, Throwable t) {
-                        if (onDone != null) {
-                            onDone.run();
-                        }
-                    }
-                });
+                        });
             }
 
             @Override
@@ -329,7 +347,8 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
 
         List<Category> filtered = new ArrayList<>();
         for (Category category : allCategories) {
-            String displayName = removeDiacritics((category.getName() == null ? "" : category.getName()).toLowerCase(Locale.ROOT));
+            String displayName = removeDiacritics(
+                    (category.getName() == null ? "" : category.getName()).toLowerCase(Locale.ROOT));
             boolean matchesQuery = query.isEmpty() || displayName.contains(query);
             boolean matchesStatus = "Tất cả trạng thái".equals(statusFilter)
                     || ("Đang hoạt động".equals(statusFilter) && category.isActive())
@@ -491,7 +510,7 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
         for (int i = 0; i < targets.size(); i++) {
             targetNames[i] = targets.get(i).getName();
         }
-        final int[] selectedTarget = {-1};
+        final int[] selectedTarget = { -1 };
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this)
                 .setTitle("Danh mục còn " + foodCount + " món")
@@ -504,7 +523,8 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
                             if (response.isSuccessful()) {
                                 deleteCategoryWithUndo(category);
                             } else {
-                                Toast.makeText(AdminCategoryActivity.this, "Không thể xóa món", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(AdminCategoryActivity.this, "Không thể xóa món", Toast.LENGTH_SHORT)
+                                        .show();
                             }
                         }
 
@@ -530,7 +550,8 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
                         if (response.isSuccessful()) {
                             deleteCategoryWithUndo(category);
                         } else {
-                            Toast.makeText(AdminCategoryActivity.this, "Chuyển món thất bại", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(AdminCategoryActivity.this, "Chuyển món thất bại", Toast.LENGTH_SHORT)
+                                    .show();
                         }
                     }
 

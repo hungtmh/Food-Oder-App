@@ -20,6 +20,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.food_order_app.R;
 import com.example.food_order_app.config.AiConfig;
@@ -28,7 +29,8 @@ import com.example.food_order_app.model.OrderItem;
 import com.example.food_order_app.model.User;
 import com.example.food_order_app.network.RetrofitClient;
 import com.example.food_order_app.network.SupabaseDbService;
-import com.example.food_order_app.utils.AdminBottomNavHelper;
+import com.example.food_order_app.utils.AdminDrawerHelper;
+import com.google.android.material.navigation.NavigationView;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.BarData;
@@ -83,6 +85,8 @@ public class AdminRevenueActivity extends AppCompatActivity {
     private android.view.View cardRevenueReport;
     private AutoCompleteTextView atvMonthSelector;
     private AutoCompleteTextView atvYearSelector;
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
 
     private SupabaseDbService dbService;
     private final Map<String, List<CustomerRecord>> monthlyCustomerData = new LinkedHashMap<>();
@@ -115,10 +119,11 @@ public class AdminRevenueActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        AdminBottomNavHelper.setup(this, AdminBottomNavHelper.TAB_REVENUE);
     }
 
     private void initViews() {
+        drawerLayout = findViewById(R.id.adminDrawerLayout);
+        navigationView = findViewById(R.id.adminNavigationView);
         btnBack = findViewById(R.id.btnBackRevenue);
         btnDateFrom = findViewById(R.id.btnDateFrom);
         btnDateTo = findViewById(R.id.btnDateTo);
@@ -164,6 +169,9 @@ public class AdminRevenueActivity extends AppCompatActivity {
         scrollRevenue = findViewById(R.id.scrollRevenue);
         cardDashboardOverview = findViewById(R.id.cardDashboardOverview);
         cardRevenueReport = findViewById(R.id.cardRevenueReport);
+
+        btnBack.setImageResource(R.drawable.ic_menu_hamburger);
+        AdminDrawerHelper.setupDrawer(this, drawerLayout, navigationView, btnBack, R.id.navAdminRevenue);
     }
 
     private void handleSectionNavigationIntent() {
@@ -188,8 +196,6 @@ public class AdminRevenueActivity extends AppCompatActivity {
     }
 
     private void setupListeners() {
-        btnBack.setOnClickListener(v -> finish());
-
         btnDateFrom.setOnClickListener(v -> showDatePicker(true));
         btnDateTo.setOnClickListener(v -> showDatePicker(false));
 
