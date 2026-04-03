@@ -1,853 +1,1102 @@
 <!doctype html>
 <html lang="vi">
-<head>
-    <meta charset="utf-8">
+  <head>
+    <meta charset="utf-8" />
     <title>Food Application Presentation</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <!-- Reveal.js CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reset.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reset.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css" />
+
     <!-- Fonts: Chữ hỗ trợ đầy đủ Tiếng Việt -->
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet" />
 
     <!-- Theme league giống hệt file demo_slides ban đầu -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/league.min.css">
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/league.min.css" />
+
     <style>
-        .reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5, .reveal h6 {
-            font-family: 'Montserrat', sans-serif !important;
-            text-transform: none;
-        }
-        .reveal p, .reveal li, .reveal table, .reveal strong {
-            font-family: 'Roboto', sans-serif !important;
-        }
-        .reveal table {
-            font-size: 0.6em;
-            margin: auto;
-        }
-        .reveal ul {
-            font-size: 0.8em;
-            line-height: 1.5;
-        }
-        /* Style cho sơ đồ kiến trúc ở slide 4 */
-        .reveal pre {
-            font-size: 0.45em;
-            width: max-content;
-            margin: 0 auto;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 20px;
-            border-radius: 10px;
-            color: #fff;
-            box-shadow: none;
-            line-height: 1.2;
-        }
+      .reveal h1,
+      .reveal h2,
+      .reveal h3,
+      .reveal h4,
+      .reveal h5,
+      .reveal h6 {
+        font-family: "Montserrat", sans-serif !important;
+        text-transform: none;
+      }
+      .reveal p,
+      .reveal li,
+      .reveal table,
+      .reveal strong {
+        font-family: "Roboto", sans-serif !important;
+      }
+      .reveal table {
+        font-size: 0.6em;
+        margin: auto;
+      }
+      .reveal ul {
+        font-size: 0.8em;
+        line-height: 1.5;
+      }
+      /* Style cho sơ đồ kiến trúc ở slide 4 */
+      .reveal pre {
+        font-size: 0.45em;
+        width: max-content;
+        margin: 0 auto;
+        background: rgba(0, 0, 0, 0.5);
+        padding: 20px;
+        border-radius: 10px;
+        color: #fff;
+        box-shadow: none;
+        line-height: 1.2;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="reveal">
-        <div class="slides">
+      <div class="slides">
+        <!-- Slide 1: Trang bìa -->
+        <section>
+          <h2>FOOD APPLICATION</h2>
+          <h3>Ứng dụng Đặt Món Ăn Online</h3>
+          <br />
+          <p><strong>Nhóm:</strong> 06</p>
+          <p><small>Môn học: Phát triển ứng dụng di động</small></p>
+          <p><small>Giảng viên hướng dẫn: Nguyễn Lê Hoàng Dũng</small></p>
+          <p><small>Học kỳ: 2 — Năm học: 2025–2026</small></p>
+        </section>
 
-            <!-- Slide 1: Trang bìa -->
-            <section>
-                <h2>FOOD APPLICATION</h2>
-                <h3>Ứng dụng Đặt Món Ăn Online</h3>
-                <br>
-                <p><strong>Nhóm:</strong> 06</p>
-                <p><small>Môn học: Phát triển ứng dụng di động</small></p>
-                <p><small>Giảng viên hướng dẫn: Nguyễn Lê Hoàng Dũng</small></p>
-                <p><small>Học kỳ: 2 — Năm học: 2025–2026</small></p>
-            </section>
+        <!-- Slide 2: Giới thiệu nhóm -->
+        <section>
+          <h2>THÀNH VIÊN NHÓM</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>STT</th>
+                <th>MSSV</th>
+                <th>Họ và Tên</th>
+                <th>Vai trò chính</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td>23127195</td>
+                <td>Trần Mạnh Hùng</td>
+                <td>Developer — Tài khoản, Chat, Địa chỉ</td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>23127033</td>
+                <td>Bùi Dương Duy Cường</td>
+                <td>Developer — Trang chủ, UI/UX, Đánh giá</td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td>23127391</td>
+                <td>Nguyễn Anh Khoa</td>
+                <td>Developer — Giỏ hàng, Đặt hàng, Thanh toán</td>
+              </tr>
+              <tr>
+                <td>4</td>
+                <td>23127259</td>
+                <td>Nguyễn Tấn Thắng</td>
+                <td>Developer — Admin: Món ăn, Đơn hàng</td>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td>23127060</td>
+                <td>Ninh Văn Khải</td>
+                <td>Developer — Admin: Phản hồi, AI features</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
 
-            <!-- Slide 2: Giới thiệu nhóm -->
-            <section>
-                <h2>THÀNH VIÊN NHÓM</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>STT</th>
-                            <th>MSSV</th>
-                            <th>Họ và Tên</th>
-                            <th>Vai trò chính</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>1</td><td>23127195</td><td>Trần Mạnh Hùng</td><td>Developer — Tài khoản, Chat, Địa chỉ</td></tr>
-                        <tr><td>2</td><td>23127033</td><td>Bùi Dương Duy Cường</td><td>Developer — Trang chủ, UI/UX, Đánh giá</td></tr>
-                        <tr><td>3</td><td>23127391</td><td>Nguyễn Anh Khoa</td><td>Developer — Giỏ hàng, Đặt hàng, Thanh toán</td></tr>
-                        <tr><td>4</td><td>23127259</td><td>Nguyễn Tấn Thắng</td><td>Developer — Admin: Món ăn, Đơn hàng</td></tr>
-                        <tr><td>5</td><td>23127060</td><td>Ninh Văn Khải</td><td>Developer — Admin: Phản hồi, AI features</td></tr>
-                    </tbody>
-                </table>
-            </section>
+        <!-- Slide 3: Tổng quan dự án -->
+        <section>
+          <h2>TỔNG QUAN DỰ ÁN</h2>
+          <ul>
+            <li><strong>Mục tiêu:</strong> Xây dựng ứng dụng Android đặt món online hoàn chỉnh.</li>
+            <li>
+              <strong>Đối tượng:</strong>
+              <ul>
+                <li>Khách hàng: Duyệt menu, đặt món, thanh toán, đánh giá.</li>
+                <li>Admin: Quản lý món ăn, đơn hàng, doanh thu, AI.</li>
+              </ul>
+            </li>
+            <li><strong>Nền tảng:</strong> Android (Java).</li>
+            <li><strong>Backend:</strong> Supabase (PostgreSQL + REST API).</li>
+            <li><strong>Điểm nổi bật:</strong> Tích hợp AI phân tích cảm xúc & dự đoán xu hướng.</li>
+          </ul>
+        </section>
 
-            <!-- Slide 3: Tổng quan dự án -->
-            <section>
-                <h2>TỔNG QUAN DỰ ÁN</h2>
+        <!-- Slide 4: Kiến trúc hệ thống -->
+        <section>
+          <h2>KIẾN TRÚC HỆ THỐNG</h2>
+          <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto">
+            <!-- Cột trái: Ảnh sơ đồ -->
+            <div style="flex: 1.2">
+              <!-- Đặt tên ảnh bạn tải về là architecture.jpg và để cùng thư mục với HTML nhé -->
+              <img src="architecture.jpg" alt="Sơ đồ kiến trúc" style="width: 100%; border-radius: 10px; margin: 0; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3)" />
+            </div>
+            <!-- Cột phải: Nội dung text -->
+            <div style="flex: 0.8; line-height: 1.6">
+              <p><strong>Mô hình:</strong> MVC (Model – View – Controller)</p>
+              <p><strong>Kiến trúc:</strong> Thick Client – Thin Server (BaaS)</p>
+              <hr style="border-color: rgba(255, 255, 255, 0.2); margin: 15px 0" />
+              <p><strong>Xác thực:</strong></p>
+              <ul style="margin-top: 0">
+                <li>Custom Auth</li>
+                <li>SHA-256 Hashing</li>
+                <li>SharedPreferences</li>
+              </ul>
+              <p><strong>Network:</strong></p>
+              <ul style="margin-top: 0">
+                <li>OkHttp 4.12</li>
+                <li>Interceptor tự gắn API Key</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- Slide 5: Công nghệ sử dụng -->
+        <section>
+          <h2>TECHNOLOGY STACK</h2>
+          <table style="font-size: 0.45em; width: 100%">
+            <tr>
+              <th>Công nghệ</th>
+              <th>Mục đích</th>
+              <th>Công nghệ</th>
+              <th>Mục đích</th>
+            </tr>
+            <tr>
+              <td><strong>Java 11</strong></td>
+              <td>Ngôn ngữ lập trình chính</td>
+              <td><strong>Material Design</strong></td>
+              <td>UI Components chuẩn Google</td>
+            </tr>
+            <tr>
+              <td><strong>Android XML</strong></td>
+              <td>Thiết kế giao diện UI</td>
+              <td><strong>ViewPager2</strong></td>
+              <td>Slider & Card UI</td>
+            </tr>
+            <tr>
+              <td><strong>Supabase</strong></td>
+              <td>Backend & Database</td>
+              <td><strong>JavaMail</strong></td>
+              <td>Gửi email reset mật khẩu</td>
+            </tr>
+            <tr>
+              <td><strong>Retrofit+OkHttp</strong></td>
+              <td>Gọi REST API</td>
+              <td><strong>H.Face BERT</strong></td>
+              <td>AI phân tích cảm xúc</td>
+            </tr>
+            <tr>
+              <td><strong>Gson</strong></td>
+              <td>Serialize/Deserialize JSON</td>
+              <td><strong>Gemini AI</strong></td>
+              <td>Nhận xét doanh thu</td>
+            </tr>
+            <tr>
+              <td><strong>Glide</strong></td>
+              <td>Tải & cache hình ảnh</td>
+              <td><strong>Sepay</strong></td>
+              <td>Thanh toán QR Banking</td>
+            </tr>
+          </table>
+        </section>
+
+        <!-- Slide 6: Cơ sở dữ liệu -->
+        <section>
+          <h2>CƠ SỞ DỮ LIỆU</h2>
+          <div style="display: flex; gap: 15px; font-size: 0.45em; text-align: left; width: 95%; margin: 0 auto">
+            <div style="flex: 1">
+              <p style="margin-bottom: 5px; color: var(--primary)"><strong>Người Dùng & Sản Phẩm</strong></p>
+              <ul style="margin: 0; margin-bottom: 15px">
+                <li><strong>users / addresses:</strong> Tài khoản & Địa chỉ</li>
+                <li><strong>password_reset_codes:</strong> Quản lý OTP</li>
+                <li><strong>categories / foods:</strong> Menu món ăn</li>
+                <li><strong>food_images:</strong> Thư viện ảnh món</li>
+              </ul>
+              <p style="margin-bottom: 5px; color: var(--primary)"><strong>Giao Dịch & Mua Sắm</strong></p>
+              <ul style="margin: 0">
+                <li><strong>carts / cart_items:</strong> Quản lý giỏ hàng</li>
+                <li><strong>orders / order_items:</strong> Đơn đặt hàng</li>
+                <li><strong>vouchers:</strong> Mã giảm giá & KM</li>
+              </ul>
+            </div>
+            <div style="flex: 1">
+              <p style="margin-bottom: 5px; color: var(--primary)"><strong>Tương Tác & Chăm Sóc</strong></p>
+              <ul style="margin: 0; margin-bottom: 15px">
+                <li><strong>reviews / favorites:</strong> Đánh giá & Yêu thích</li>
+                <li><strong>feedbacks / chat_messages:</strong> CSKH</li>
+                <li><strong>notifications:</strong> Thông báo đẩy</li>
+              </ul>
+              <p style="margin-bottom: 5px; color: var(--primary)"><strong>AI & Thống Kê</strong></p>
+              <ul style="margin: 0">
+                <li><strong>food_trends:</strong> Phân tích xu hướng AI</li>
+                <li><strong>search_history:</strong> Lịch sử tìm kiếm</li>
+              </ul>
+            </div>
+          </div>
+          <div style="font-size: 0.4em; margin-top: 15px; padding: 10px; background: rgba(0, 0, 0, 0.2); border-radius: 5px; width: 95%; margin-left: auto; margin-right: auto; text-align: left"><strong>Hệ thống chuẩn hoá với 16 bảng.</strong> Tích hợp <strong>Views</strong> cho báo cáo thống kê, hỗ trợ <strong>RLS</strong> (Row Level Security), các ràng buộc Check chặt chẽ (rating, status...) và <strong>Triggers</strong> tự động.</div>
+        </section>
+
+        <!-- Slide 7: Luồng hoạt động -->
+        <section>
+          <h2>LUỒNG HOẠT ĐỘNG CHÍNH</h2>
+          <div style="font-size: 0.55em; display: flex; flex-direction: column; align-items: center; gap: 8px">
+            <div style="background: rgba(255, 255, 255, 0.1); padding: 8px 20px; border-radius: 8px; width: 70%">Đăng ký / Đăng nhập</div>
+            <div>↓</div>
+            <div style="background: rgba(255, 255, 255, 0.1); padding: 8px 20px; border-radius: 8px; width: 70%">Trang chủ (Slideshow, Danh mục)</div>
+            <div>↓</div>
+            <div style="background: rgba(255, 255, 255, 0.1); padding: 8px 20px; border-radius: 8px; width: 70%">Tìm kiếm ➝ Thêm vào giỏ hàng ➝ Đặt hàng</div>
+            <div>↓</div>
+            <div style="background: rgba(255, 255, 255, 0.1); padding: 8px 20px; border-radius: 8px; width: 70%">Chọn địa chỉ giao hàng hoặc ăn tại quán ➝ Thanh toán</div>
+            <div>↓</div>
+            <div style="background: rgba(255, 255, 255, 0.1); padding: 8px 20px; border-radius: 8px; width: 70%">Xác nhận đơn hàng ➝ Theo dõi đơn hàng</div>
+          </div>
+        </section>
+
+        <!-- Slide 8: Quản lý tài khoản -->
+        <section>
+          <h2>QUẢN LÝ TÀI KHOẢN</h2>
+          <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%">
+            <!-- Ảnh Screenshot -->
+            <div style="flex: 1.2; display: flex; justify-content: center; align-items: center; gap: 5px">
+              <img src="login.png" alt="login.png" style="max-height: 55vh; width: 32%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4)" />
+              <img src="register.png" alt="register.png" style="max-height: 55vh; width: 32%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4)" />
+              <img src="forgot_password.png" alt="forgot_password.png" style="max-height: 55vh; width: 32%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4)" />
+            </div>
+            <!-- Nội dung -->
+            <div style="flex: 0.8">
+              <table style="font-size: 0.8em; width: 100%; line-height: 1.4">
+                <tr>
+                  <th style="width: 30%">Tính năng</th>
+                  <th>Chi tiết</th>
+                </tr>
+                <tr>
+                  <td><strong>Đăng ký</strong></td>
+                  <td>Họ tên, Email, SĐT, Mật khẩu (SHA-256)</td>
+                </tr>
+                <tr>
+                  <td><strong>Đăng nhập</strong></td>
+                  <td>Email + Mật khẩu, Phân quyền Admin/User</td>
+                </tr>
+                <tr>
+                  <td><strong>Quên mật khẩu</strong></td>
+                  <td>Xác nhận 6 số SMTP → Xác minh → Đổi MK</td>
+                </tr>
+                <tr>
+                  <td><strong>Đổi mật khẩu</strong></td>
+                  <td>Nhập mật khẩu cũ → Đặt mật khẩu mới</td>
+                </tr>
+                <tr>
+                  <td><strong>Hồ sơ cá nhân</strong></td>
+                  <td>Xem/Sửa Tên, SĐT, Ảnh đại diện</td>
+                </tr>
+              </table>
+              <p style="font-size: 0.8em; margin-top: 15px; color: #ccc">Session thiết bị quản lý hoàn toàn bằng SharedPreferences.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Slide 9: Trang chủ -->
+        <section>
+          <h2>TRANG CHỦ HIỆN ĐẠI</h2>
+          <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%">
+            <!-- Ảnh Screenshot -->
+            <div style="flex: 0.7; display: flex; justify-content: center; align-items: center">
+              <img src="home.png" alt="home.png" style="max-height: 55vh; max-width: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4)" />
+            </div>
+            <!-- Nội dung -->
+            <div style="flex: 1.3">
+              <div style="font-size: 1em; text-align: left; width: 100%; margin: 0; line-height: 1.5">
                 <ul>
-                    <li><strong>Mục tiêu:</strong> Xây dựng ứng dụng Android đặt món online hoàn chỉnh.</li>
-                    <li><strong>Đối tượng:</strong>
-                        <ul>
-                            <li>Khách hàng: Duyệt menu, đặt món, thanh toán, đánh giá.</li>
-                            <li>Admin: Quản lý món ăn, đơn hàng, doanh thu, AI.</li>
-                        </ul>
-                    </li>
-                    <li><strong>Nền tảng:</strong> Android (Java).</li>
-                    <li><strong>Backend:</strong> Supabase (PostgreSQL + REST API).</li>
-                    <li><strong>Điểm nổi bật:</strong> Tích hợp AI phân tích cảm xúc & dự đoán xu hướng.</li>
+                  <li><strong>Header:</strong> Background wave gradient, hiển thị "Giao tới", Thông báo.</li>
+                  <li><strong>Tìm kiếm:</strong> Placeholder thu hút "Bạn đang thèm gì nào?".</li>
+                  <li><strong>Slideshow:</strong> Chuyển tự động các banner ưu đãi (ViewPager2).</li>
+                  <li><strong>Danh mục:</strong> Cuộn ngang Tất cả / Món chính / Đồ uống / Tráng miệng.</li>
+                  <li><strong>Hot Offers:</strong> Các món đang giảm giá sốc cập nhật realtime.</li>
+                  <li><strong>Cá nhân hóa:</strong> Gợi ý các món ngon dưới dạng Grid 2 cột bắt mắt.</li>
                 </ul>
-            </section>
+              </div>
+            </div>
+          </div>
+        </section>
 
-            <!-- Slide 4: Kiến trúc hệ thống -->
-            <section>
-                <h2>KIẾN TRÚC HỆ THỐNG</h2>
-                <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto;">
-                    <!-- Cột trái: Ảnh sơ đồ -->
-                    <div style="flex: 1.2;">
-                        <!-- Đặt tên ảnh bạn tải về là architecture.jpg và để cùng thư mục với HTML nhé -->
-                        <img src="architecture.jpg" alt="Sơ đồ kiến trúc" style="width: 100%; border-radius: 10px; margin: 0; box-shadow: 0 4px 8px rgba(0,0,0,0.3);">
-                    </div>
-                    <!-- Cột phải: Nội dung text -->
-                    <div style="flex: 0.8; line-height: 1.6;">
-                        <p><strong>Mô hình:</strong> MVC (Model – View – Controller)</p>
-                        <p><strong>Kiến trúc:</strong> Thick Client – Thin Server (BaaS)</p>
-                        <hr style="border-color: rgba(255,255,255,0.2); margin: 15px 0;">
-                        <p><strong>Xác thực:</strong></p>
-                        <ul style="margin-top: 0;">
-                            <li>Custom Auth</li>
-                            <li>SHA-256 Hashing</li>
-                            <li>SharedPreferences</li>
-                        </ul>
-                        <p><strong>Network:</strong></p>
-                        <ul style="margin-top: 0;">
-                            <li>OkHttp 4.12</li>
-                            <li>Interceptor tự gắn API Key</li>
-                        </ul>
-                    </div>
+        <!-- Slide 10: Tìm kiếm -->
+        <section>
+          <h2>TÌM KIẾM MÓN ĂN</h2>
+          <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%">
+            <!-- Ảnh Screenshot -->
+            <div style="flex: 0.9; display: flex; justify-content: center; align-items: center; gap: 10px">
+              <img src="search_history.png" alt="search_history.png" style="max-height: 55vh; width: 48%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4)" />
+              <img src="search_results.png" alt="search_results.png" style="max-height: 55vh; width: 48%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4)" />
+            </div>
+            <!-- Nội dung -->
+            <div style="flex: 1.1">
+              <div style="font-size: 0.9em; text-align: left; width: 100%; margin: 0; line-height: 1.7">
+                <ul>
+                  <li><strong>Realtime Search:</strong> Kết quả hiển thị ngay khi gõ bằng debounce.</li>
+                  <li><strong>Lọc mạnh mẽ:</strong> Chuyển qua lại theo danh mục cụ thể.</li>
+                  <li><strong>Lịch sử thông minh:</strong> Lưu từ khóa cũ, xóa từng cái hoặc clear toàn bộ.</li>
+                  <li><strong>Trình bày tinh gọn:</strong> Grid layout ảnh lớn rõ ràng kèm đánh giá sao.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Slide 11: Chi tiết món ăn -->
+        <section>
+          <h2>CHI TIẾT MÓN ĂN</h2>
+          <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%">
+            <!-- Ảnh Screenshot -->
+            <div style="flex: 0.7; display: flex; justify-content: center; align-items: center">
+              <img src="food_detail.png" alt="food_detail.png" style="max-height: 55vh; max-width: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4)" />
+            </div>
+            <!-- Nội dung -->
+            <div style="flex: 1.3">
+              <div style="font-size: 1em; text-align: left; width: 100%; margin: 0; line-height: 1.7">
+                <ul>
+                  <li><strong>Chất lượng cao:</strong> Hiển thị ảnh lớn bắt mắt trọn vẹn khu vực trên.</li>
+                  <li><strong>Thông tin:</strong> Mô tả, giá gốc (gạch chéo) & giá khuyến mãi hiện tại.</li>
+                  <li><strong>Review ngắn:</strong> Nhìn thấy điểm trung bình & tổng số lượt đánh giá.</li>
+                  <li><strong>Thao tác:</strong> Nút tim (Yêu thích) và "Thêm vào giỏ" nổi bật bám đáy.</li>
+                  <li><strong>Điều hướng:</strong> Chạm vùng đánh giá nảy qua màn full-reviews.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Slide 12: Đánh giá & Nhận xét -->
+        <section>
+          <h2>HỆ THỐNG ĐÁNH GIÁ</h2>
+          <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%">
+            <!-- Ảnh Screenshot -->
+            <div style="flex: 0.7; display: flex; justify-content: center; align-items: center">
+              <img src="reviews.png" alt="reviews.png" style="max-height: 55vh; max-width: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4)" />
+            </div>
+            <!-- Nội dung -->
+            <div style="flex: 1.3">
+              <div style="font-size: 1em; text-align: left; width: 100%; margin: 0; line-height: 1.6">
+                <ul>
+                  <li><strong>Thiết kế giống Hasaki:</strong> Tách hẳn trang riêng chia 2 cột thống kê.</li>
+                  <li><strong>Tổng quan:</strong> Cột trái là điểm TB, cột phải là progress bar phân bố sao.</li>
+                  <li><strong>Đăng bài:</strong> Đánh giá sao, viết nhận xét chữ, đính kèm đa phương tiện.</li>
+                  <li><strong>Đọc review:</strong> Thông tin người dùng, ảnh thật, timeline mạch lạc.</li>
+                  <li><strong>Bộ lọc:</strong> Chọn filter chỉ xem 5 sao, 1 sao tuỳ ý để cân nhắc chọn mua.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Slide 13: Giỏ hàng -->
+        <section>
+          <h2>GIỎ HÀNG</h2>
+          <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%">
+            <!-- Ảnh Screenshot -->
+            <div style="flex: 0.7; display: flex; justify-content: center; align-items: center">
+              <img src="cart.png" alt="cart.png" style="max-height: 55vh; max-width: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4)" />
+            </div>
+            <!-- Nội dung -->
+            <div style="flex: 1.3">
+              <table style="font-size: 0.85em; width: 100%; padding-top: 5px">
+                <tr>
+                  <th style="width: 30%">Thao tác</th>
+                  <th>Chi tiết chức năng</th>
+                </tr>
+                <tr>
+                  <td><strong>Thêm món</strong></td>
+                  <td>Chọn số lượng, chạy hiệu ứng animation rớt giỏ.</td>
+                </tr>
+                <tr>
+                  <td><strong>Xem & Đổi SL</strong></td>
+                  <td>Cập nhật trực tiếp số lượng +/-, tính lại tổng giá.</td>
+                </tr>
+                <tr>
+                  <td><strong>Xóa 1 món</strong></td>
+                  <td>Thao tác vuốt trái (Swipe) hiện nút xóa nhanh gọn.</td>
+                </tr>
+                <tr>
+                  <td><strong>Xóa nhiều</strong></td>
+                  <td>Nút dọn sạch kho + Snackbar hoàn tác (Undo).</td>
+                </tr>
+                <tr>
+                  <td><strong>Thanh toán</strong></td>
+                  <td>Bar tổng tiền neo dưới đáy, nhấn để bắt đầu Checkout.</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Slide 14: Checkout -->
+        <section>
+          <h2>CHECKOUT & ĐẶT HÀNG</h2>
+          <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%">
+            <!-- Ảnh Screenshot -->
+            <div style="flex: 0.7; display: flex; justify-content: center; align-items: center">
+              <img src="checkout.png" alt="checkout.png" style="max-height: 55vh; max-width: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4)" />
+            </div>
+            <!-- Nội dung -->
+            <div style="flex: 1.3">
+              <div style="font-size: 1em; text-align: left; width: 100%; margin: 0; line-height: 1.6">
+                <ol>
+                  <li><strong>Địa chỉ giao:</strong> Chọn chuẩn cấp Tỉnh ➝ Huyện ➝ Xã (có lưu mặc định). Hỗ trợ đặt "Ăn tại quán" (báo số bàn).</li>
+                  <li><strong>Liên lạc:</strong> Tự điền SĐT người nhận, có khu vực note (ghi chú) cho quán.</li>
+                  <li><strong>Khuyến mãi:</strong> Nhập mã voucher private hoặc chọn list voucher public.</li>
+                  <li><strong>Thanh toán:</strong> COD nhận hàng hoặc chuyển khoản tự động qua Sepay.</li>
+                  <li><strong>Xác nhận:</strong> Báo thành công, hiện mã đơn chốt và theo dõi trạng thái.</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Slide 15: Thanh toán Sepay -->
+        <section>
+          <h2>THANH TOÁN SEPAY</h2>
+          <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%">
+            <!-- Ảnh Screenshot -->
+            <div style="flex: 0.7; display: flex; justify-content: center; align-items: center">
+              <img src="sepay_qr.png" alt="sepay_qr.png" style="max-height: 55vh; max-width: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4)" />
+            </div>
+            <!-- Nội dung -->
+            <div style="flex: 1.3">
+              <div style="font-size: 1em; text-align: left; width: 100%; margin: 0">
+                <p><strong>Cơ chế hoạt động (QR Banking):</strong></p>
+                <ol style="margin-bottom: 20px">
+                  <li>Khách chọn "Chuyển khoản ngân hàng"</li>
+                  <li>Hệ thống sinh <strong>mã QR</strong> chứa thông tin chuyển khoản (Sepay API)</li>
+                  <li>Khách quét QR bằng app ngân hàng ➝ Chuyển tiền</li>
+                  <li>Khách bấm "Đã chuyển khoản"</li>
+                  <li>Server xác thực qua Webhook Sepay (Supabase Edge Function)</li>
+                  <li>Đơn hàng chuyển trạng thái thành "Đã thanh toán"</li>
+                </ol>
+                <div style="background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 8px; text-align: center">App ➝ Sepay API ➝ QR Code ➝ Quét & Chuyển ➝ Webhook ➝ Xác nhận đơn</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Slide 16: Lịch sử đơn hàng -->
+        <section>
+          <h2>LỊCH SỬ ĐƠN HÀNG</h2>
+          <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%">
+            <!-- Ảnh Screenshot -->
+            <div style="flex: 0.7; display: flex; justify-content: center; align-items: center">
+              <img src="order_history.png" alt="order_history.png" style="max-height: 55vh; max-width: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4)" />
+            </div>
+            <!-- Nội dung -->
+            <div style="flex: 1.3">
+              <div style="display: flex; gap: 20px; font-size: 1em; text-align: left; width: 100%; margin: 0">
+                <div style="flex: 1">
+                  <p><strong>Phân loại trạng thái:</strong></p>
+                  <ul>
+                    <li><span style="color: #ffd700">Chờ xác nhận</span> (Pending)</li>
+                    <li><span style="color: #1e90ff">Chờ chế biến</span> (Preparing)</li>
+                    <li><span style="color: #ff8c00">Đang giao</span> (Delivering)</li>
+                    <li><span style="color: #32cd32">Đã phục vụ</span> (Served)</li>
+                    <li><span style="color: #ff4500">Đã hủy</span> (Cancelled)</li>
+                  </ul>
                 </div>
-            </section>
-
-            <!-- Slide 5: Công nghệ sử dụng -->
-            <section>
-                <h2>TECHNOLOGY STACK</h2>
-                <table style="font-size: 0.45em; width: 100%;">
-                    <tr><th>Công nghệ</th><th>Mục đích</th><th>Công nghệ</th><th>Mục đích</th></tr>
-                    <tr><td><strong>Java 11</strong></td><td>Ngôn ngữ lập trình chính</td><td><strong>Material Design</strong></td><td>UI Components chuẩn Google</td></tr>
-                    <tr><td><strong>Android XML</strong></td><td>Thiết kế giao diện UI</td><td><strong>ViewPager2</strong></td><td>Slider & Card UI</td></tr>
-                    <tr><td><strong>Supabase</strong></td><td>Backend & Database</td><td><strong>JavaMail</strong></td><td>Gửi email reset mật khẩu</td></tr>
-                    <tr><td><strong>Retrofit+OkHttp</strong></td><td>Gọi REST API</td><td><strong>H.Face BERT</strong></td><td>AI phân tích cảm xúc</td></tr>
-                    <tr><td><strong>Gson</strong></td><td>Serialize/Deserialize JSON</td><td><strong>Gemini AI</strong></td><td>Nhận xét doanh thu</td></tr>
-                    <tr><td><strong>Glide</strong></td><td>Tải & cache hình ảnh</td><td><strong>Sepay</strong></td><td>Thanh toán QR Banking</td></tr>
-                </table>
-            </section>
-
-            <!-- Slide 6: Cơ sở dữ liệu -->
-            <section>
-                <h2>CƠ SỞ DỮ LIỆU</h2>
-                <div style="display: flex; gap: 15px; font-size: 0.45em; text-align: left; width: 95%; margin: 0 auto;">
-                    <div style="flex: 1;">
-                        <p style="margin-bottom: 5px; color: var(--primary);"><strong>Người Dùng & Sản Phẩm</strong></p>
-                        <ul style="margin: 0; margin-bottom: 15px;">
-                            <li><strong>users / addresses:</strong> Tài khoản & Địa chỉ</li>
-                            <li><strong>password_reset_codes:</strong> Quản lý OTP</li>
-                            <li><strong>categories / foods:</strong> Menu món ăn</li>
-                            <li><strong>food_images:</strong> Thư viện ảnh món</li>
-                        </ul>
-                        <p style="margin-bottom: 5px; color: var(--primary);"><strong>Giao Dịch & Mua Sắm</strong></p>
-                        <ul style="margin: 0;">
-                            <li><strong>carts / cart_items:</strong> Quản lý giỏ hàng</li>
-                            <li><strong>orders / order_items:</strong> Đơn đặt hàng</li>
-                            <li><strong>vouchers:</strong> Mã giảm giá & KM</li>
-                        </ul>
-                    </div>
-                    <div style="flex: 1;">
-                        <p style="margin-bottom: 5px; color: var(--primary);"><strong>Tương Tác & Chăm Sóc</strong></p>
-                        <ul style="margin: 0; margin-bottom: 15px;">
-                            <li><strong>reviews / favorites:</strong> Đánh giá & Yêu thích</li>
-                            <li><strong>feedbacks / chat_messages:</strong> CSKH</li>
-                            <li><strong>notifications:</strong> Thông báo đẩy</li>
-                        </ul>
-                        <p style="margin-bottom: 5px; color: var(--primary);"><strong>AI & Thống Kê</strong></p>
-                        <ul style="margin: 0;">
-                            <li><strong>food_trends:</strong> Phân tích xu hướng AI</li>
-                            <li><strong>search_history:</strong> Lịch sử tìm kiếm</li>
-                        </ul>
-                    </div>
+                <div style="flex: 1.2">
+                  <p><strong>Tính năng quản lý:</strong></p>
+                  <ul>
+                    <li><strong>Xem chi tiết:</strong> List mở rộng xem các món, ghi chú...</li>
+                    <li><strong>Hủy đơn:</strong> Chỉ khi "Chờ xác nhận" ➝ Yêu cầu xác nhận.</li>
+                    <li><strong>Đặt lại:</strong> Bê nguyên xi menu đơn cũ ném vào giỏ hàng.</li>
+                  </ul>
                 </div>
-                <div style="font-size: 0.4em; margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px; width: 95%; margin-left: auto; margin-right: auto; text-align: left;">
-                    <strong>Hệ thống chuẩn hoá với 16 bảng.</strong> Tích hợp <strong>Views</strong> cho báo cáo thống kê, hỗ trợ <strong>RLS</strong> (Row Level Security), các ràng buộc Check chặt chẽ (rating, status...) và <strong>Triggers</strong> tự động.
-                </div>
-            </section>
+              </div>
+            </div>
+          </div>
+        </section>
 
-            <!-- Slide 7: Luồng hoạt động -->
-            <section>
-                <h2>LUỒNG HOẠT ĐỘNG CHÍNH</h2>
-                <div style="font-size: 0.55em; display: flex; flex-direction: column; align-items: center; gap: 8px;">
-                    <div style="background: rgba(255,255,255,0.1); padding: 8px 20px; border-radius: 8px; width: 70%;">Đăng ký / Đăng nhập</div>
-                    <div>↓</div>
-                    <div style="background: rgba(255,255,255,0.1); padding: 8px 20px; border-radius: 8px; width: 70%;">Trang chủ (Slideshow, Danh mục)</div>
-                    <div>↓</div>
-                    <div style="background: rgba(255,255,255,0.1); padding: 8px 20px; border-radius: 8px; width: 70%;">Tìm kiếm ➝ Thêm vào giỏ hàng ➝ Đặt hàng</div>
-                    <div>↓</div>
-                    <div style="background: rgba(255,255,255,0.1); padding: 8px 20px; border-radius: 8px; width: 70%;">Chọn địa chỉ giao hàng hoặc ăn tại quán ➝ Thanh toán</div>
-                    <div>↓</div>
-                    <div style="background: rgba(255,255,255,0.1); padding: 8px 20px; border-radius: 8px; width: 70%;">Xác nhận đơn hàng ➝ Theo dõi đơn hàng </div>
+        <!-- Slide 17: Yêu thích & Thông báo -->
+        <section>
+          <h2>YÊU THÍCH & THÔNG BÁO</h2>
+          <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%">
+            <!-- Ảnh Screenshot -->
+            <div style="flex: 0.9; display: flex; justify-content: center; align-items: center; gap: 10px">
+              <img src="favorites.png" alt="favorites.png" style="max-height: 55vh; width: 48%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4)" />
+              <img src="notifications.png" alt="notifications.png" style="max-height: 55vh; width: 48%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4)" />
+            </div>
+            <!-- Nội dung -->
+            <div style="flex: 1.1">
+              <div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.8em; text-align: left; width: 100%; margin: 0">
+                <div style="flex: 1">
+                  <p><strong>Mục Yêu Thích:</strong></p>
+                  <ul>
+                    <li>Click icon trái tim để lưu lại món ăn.</li>
+                    <li>Danh sách riêng giúp chọn lại siêu tốc.</li>
+                    <li>Thêm thẳng vào giỏ hàng từ trang này.</li>
+                  </ul>
                 </div>
-            </section>
-
-            <!-- Slide 8: Quản lý tài khoản -->
-            <section>
-                <h2>QUẢN LÝ TÀI KHOẢN</h2>
-                <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%;">
-                    <!-- Ảnh Screenshot -->
-                    <div style="flex: 1.2; display: flex; justify-content: center; align-items: center; gap: 5px;">
-                        <img src="login.png" alt="login.png" style="max-height: 55vh; width: 32%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
-                        <img src="register.png" alt="register.png" style="max-height: 55vh; width: 32%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
-                        <img src="forgot_password.png" alt="forgot_password.png" style="max-height: 55vh; width: 32%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
-                    </div>
-                    <!-- Nội dung -->
-                    <div style="flex: 0.8;">
-<table style="font-size: 0.8em; width: 100%; line-height: 1.4;">
-                    <tr><th style="width: 30%;">Tính năng</th><th>Chi tiết</th></tr>
-                    <tr><td><strong>Đăng ký</strong></td><td>Họ tên, Email, SĐT, Mật khẩu (SHA-256)</td></tr>
-                    <tr><td><strong>Đăng nhập</strong></td><td>Email + Mật khẩu, Phân quyền Admin/User</td></tr>
-                    <tr><td><strong>Quên mật khẩu</strong></td><td>Xác nhận 6 số SMTP → Xác minh → Đổi MK</td></tr>
-                    <tr><td><strong>Đổi mật khẩu</strong></td><td>Nhập mật khẩu cũ → Đặt mật khẩu mới</td></tr>
-                    <tr><td><strong>Hồ sơ cá nhân</strong></td><td>Xem/Sửa Tên, SĐT, Ảnh đại diện</td></tr>
-                </table>
-                <p style="font-size: 0.8em; margin-top: 15px; color: #ccc;">Session thiết bị quản lý hoàn toàn bằng SharedPreferences.</p>
-                    </div>
+                <div style="flex: 1">
+                  <p><strong>Hệ Thống Thông Báo:</strong></p>
+                  <ul>
+                    <li><strong>Push Notification:</strong> Báo trạng thái đơn.</li>
+                    <li><strong>In-app Notification:</strong> Quản lý danh sách, đọc/xóa.</li>
+                    <li><strong>Khuyến mãi:</strong> Nhận tin từ Admin quán.</li>
+                  </ul>
                 </div>
-            </section>
+              </div>
+            </div>
+          </div>
+        </section>
 
-            <!-- Slide 9: Trang chủ -->
-            <section>
-                <h2>TRANG CHỦ HIỆN ĐẠI</h2>
-                <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%;">
-                    <!-- Ảnh Screenshot -->
-                    <div style="flex: 0.7; display: flex; justify-content: center; align-items: center;">
-                        <img src="home.png" alt="home.png" style="max-height: 55vh; max-width: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
-                    </div>
-                    <!-- Nội dung -->
-                    <div style="flex: 1.3;">
-<div style="font-size: 1em; text-align: left; width: 100%; margin: 0; line-height: 1.5;">
-                    <ul>
-                        <li><strong>Header:</strong> Background wave gradient, hiển thị "Giao tới", Thông báo.</li>
-                        <li><strong>Tìm kiếm:</strong> Placeholder thu hút "Bạn đang thèm gì nào?".</li>
-                        <li><strong>Slideshow:</strong> Chuyển tự động các banner ưu đãi (ViewPager2).</li>
-                        <li><strong>Danh mục:</strong> Cuộn ngang Tất cả / Món chính / Đồ uống / Tráng miệng.</li>
-                        <li><strong>Hot Offers:</strong> Các món đang giảm giá sốc cập nhật realtime.</li>
-                        <li><strong>Cá nhân hóa:</strong> Gợi ý các món ngon dưới dạng Grid 2 cột bắt mắt.</li>
+        <!-- Slide 18: Chat trực tiếp -->
+        <section>
+          <h2>CHAT TRỰC TIẾP</h2>
+          <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%">
+            <!-- Ảnh Screenshot -->
+            <div style="flex: 0.9; display: flex; justify-content: center; align-items: center; gap: 10px">
+              <img src="chat_user.png" alt="chat_user.png" style="max-height: 55vh; width: 48%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4)" />
+              <img src="chat_admin.png" alt="chat_admin.png" style="max-height: 55vh; width: 48%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4)" />
+            </div>
+            <!-- Nội dung -->
+            <div style="flex: 1.1">
+              <div style="font-size: 0.9em; text-align: left; width: 100%; margin: 0; line-height: 1.6">
+                <p><strong>Chat 2 chiều realtime:</strong></p>
+                <ul>
+                  <li><strong>Phía User:</strong> 1 khung chat duy nhất, nhắn tin trực tiếp với toàn bộ Admin quán.</li>
+                  <li><strong>Phía Admin:</strong> Quản lý danh sách chat từng khách riêng biệt (ChatList).</li>
+                  <li>
+                    <strong>Trải nghiệm:</strong>
+                    <ul style="margin-top: 5px">
+                      <li>Phân biệt tin nhắn qua Bubble chat tự động.</li>
+                      <li>Hiển thị preview tin nhắn & thời gian hệt Messenger.</li>
+                      <li>Tương tác lập tức, xử lý sự cố tức thì.</li>
                     </ul>
-                </div>
-                    </div>
-                </div>
-            </section>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
 
-            <!-- Slide 10: Tìm kiếm -->
-            <section>
-                <h2>TÌM KIẾM MÓN ĂN</h2>
-                <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%;">
-                    <!-- Ảnh Screenshot -->
-                    <div style="flex: 0.9; display: flex; justify-content: center; align-items: center; gap: 10px;">
-                        <img src="search_history.png" alt="search_history.png" style="max-height: 55vh; width: 48%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
-                        <img src="search_results.png" alt="search_results.png" style="max-height: 55vh; width: 48%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
-                    </div>
-                    <!-- Nội dung -->
-                    <div style="flex: 1.1;">
-<div style="font-size: 0.9em; text-align: left; width: 100%; margin: 0; line-height: 1.7;">
-                    <ul>
-                        <li><strong>Realtime Search:</strong> Kết quả hiển thị ngay khi gõ bằng debounce.</li>
-                        <li><strong>Lọc mạnh mẽ:</strong> Chuyển qua lại theo danh mục cụ thể.</li>
-                        <li><strong>Lịch sử thông minh:</strong> Lưu từ khóa cũ, xóa từng cái hoặc clear toàn bộ.</li>
-                        <li><strong>Trình bày tinh gọn:</strong> Grid layout ảnh lớn rõ ràng kèm đánh giá sao.</li>
+        <!-- Slide 19: Liên hệ & Thông tin -->
+        <section>
+          <h2>LIÊN HỆ VỚI QUÁN</h2>
+          <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%">
+            <!-- Ảnh Screenshot -->
+            <div style="flex: 0.7; display: flex; justify-content: center; align-items: center">
+              <img src="contact.png" alt="contact.png" style="max-height: 55vh; max-width: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4)" />
+            </div>
+            <!-- Nội dung -->
+            <div style="flex: 1.3">
+              <div style="font-size: 1em; text-align: center; width: 100%; margin: 0; line-height: 1.8">
+                <p>Đa dạng kênh kết nối để hỗ trợ khách hàng tốt nhất:</p>
+                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-top: 15px">
+                  <span style="background: rgba(0, 0, 0, 0.2); padding: 5px 15px; border-radius: 20px">Facebook</span>
+                  <span style="background: rgba(0, 0, 0, 0.2); padding: 5px 15px; border-radius: 20px">Zalo</span>
+                  <span style="background: rgba(0, 0, 0, 0.2); padding: 5px 15px; border-radius: 20px">Email / Gọi điện</span>
+                  <span style="background: rgba(0, 0, 0, 0.2); padding: 5px 15px; border-radius: 20px">YouTube / Skype</span>
+                </div>
+                <hr style="border-color: rgba(255, 255, 255, 0.1); margin: 20px 0" />
+                <p><strong>Bản đồ:</strong> Tích hợp Google Maps xác định vị trí quán & Nút điều hướng chỉ đường thẳng tới nơi.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Slide 20: Admin Món ăn -->
+        <section>
+          <h2>ADMIN: MÓN ĂN & DANH MỤC</h2>
+          <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%">
+            <!-- Ảnh Screenshot -->
+            <div style="flex: 0.9; display: flex; justify-content: center; align-items: center; gap: 10px">
+              <img src="admin_home.png" alt="admin_home.png" style="max-height: 55vh; width: 48%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4)" />
+              <img src="admin_categories.png" alt="admin_categories.png" style="max-height: 55vh; width: 48%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4)" />
+            </div>
+            <!-- Nội dung -->
+            <div style="flex: 1.1">
+              <table style="font-size: 0.75em; width: 100%; padding-top: 5px">
+                <tr>
+                  <th style="width: 30%">Hệ thống</th>
+                  <th>Chi tiết tính năng</th>
+                </tr>
+                <tr>
+                  <td><strong>Quản lý Danh mục</strong></td>
+                  <td>Thêm sửa xóa (CRUD). Đặt icon đại diện, sắp xếp thứ tự hiển thị ưu tiên. Nút gạt Ẩn/Hiện danh mục.</td>
+                </tr>
+                <tr>
+                  <td><strong>Quản lý Món ăn</strong></td>
+                  <td>
+                    <ul style="margin: 0">
+                      <li><strong>Thêm/Sửa:</strong> Load ảnh tự động, chỉnh tên, giá, mô tả.</li>
+                      <li><strong>Tagging:</strong> Đánh dấu "Phổ biến" hoặc "Gợi ý".</li>
+                      <li><strong>Kiểm soát kho:</strong> Đặt trạng thái Còn hàng / Hết hàng.</li>
+                      <li><strong>Tìm kiếm:</strong> Lọc tìm nhanh bằng tên món ăn.</li>
                     </ul>
-                </div>
-                    </div>
-                </div>
-            </section>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </section>
 
-            <!-- Slide 11: Chi tiết món ăn -->
-            <section>
-                <h2>CHI TIẾT MÓN ĂN</h2>
-                <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%;">
-                    <!-- Ảnh Screenshot -->
-                    <div style="flex: 0.7; display: flex; justify-content: center; align-items: center;">
-                        <img src="food_detail.png" alt="food_detail.png" style="max-height: 55vh; max-width: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
-                    </div>
-                    <!-- Nội dung -->
-                    <div style="flex: 1.3;">
-<div style="font-size: 1em; text-align: left; width: 100%; margin: 0; line-height: 1.7;">
-                    <ul>
-                        <li><strong>Chất lượng cao:</strong> Hiển thị ảnh lớn bắt mắt trọn vẹn khu vực trên.</li>
-                        <li><strong>Thông tin:</strong> Mô tả, giá gốc (gạch chéo) & giá khuyến mãi hiện tại.</li>
-                        <li><strong>Review ngắn:</strong> Nhìn thấy điểm trung bình & tổng số lượt đánh giá.</li>
-                        <li><strong>Thao tác:</strong> Nút tim (Yêu thích) và "Thêm vào giỏ" nổi bật bám đáy.</li>
-                        <li><strong>Điều hướng:</strong> Chạm vùng đánh giá nảy qua màn full-reviews.</li>
+        <!-- Slide 21: Admin Đơn hàng -->
+        <section>
+          <h2>ADMIN: QUẢN LÝ ĐƠN HÀNG</h2>
+          <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%">
+            <!-- Ảnh Screenshot -->
+            <div style="flex: 0.7; display: flex; justify-content: center; align-items: center">
+              <img src="admin_orders.png" alt="admin_orders.png" style="max-height: 55vh; max-width: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4)" />
+            </div>
+            <!-- Nội dung -->
+            <div style="flex: 1.3">
+              <div style="font-size: 1em; text-align: left; width: 100%; margin: 0; line-height: 1.6">
+                <ul>
+                  <li><strong>Giám sát tổng thể:</strong> List đơn hiển thị tên khách, mã số, tổng tiền, thẻ trạng thái.</li>
+                  <li><strong>Bộ lọc:</strong> Phân loại đơn nhanh theo trạng thái hoặc gõ mã cần tìm.</li>
+                  <li><strong>Xử lý luồng đơn:</strong> Chờ xác nhận ➝ Đang xử lý ➝ Đang giao ➝ Hoàn thành. (Hoặc Đã hủy).</li>
+                  <li><strong>Thống kê & Nhắc lịch:</strong> Tổng hợp nhanh lượng đơn và chủ động gửi Notification đẩy (Push) lúc đổi trạng thái.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Slide 22: Dashboard Doanh thu -->
+        <section>
+          <h2>DASHBOARD DOANH THU & AI</h2>
+          <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%">
+            <!-- Ảnh Screenshot -->
+            <div style="flex: 0.9; display: flex; justify-content: center; align-items: center; gap: 10px">
+              <img src="revenue_dashboard.png" alt="revenue_dashboard.png" style="max-height: 55vh; width: 48%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4)" />
+              <img src="admin_ai_dashboard.png" alt="admin_ai_dashboard.png" style="max-height: 55vh; width: 48%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4)" />
+            </div>
+            <!-- Nội dung -->
+            <div style="flex: 1.1">
+              <div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.8em; text-align: left; width: 100%; margin: 0">
+                <div style="flex: 1; background: rgba(0, 0, 0, 0.15); padding: 15px; border-radius: 8px">
+                  <p style="color: var(--primary); text-align: center"><strong>BÁO CÁO DOANH THU</strong></p>
+                  <ul style="margin-top: 5px">
+                    <li>Lọc linh hoạt: Ngày, Tháng, Tùy chỉnh.</li>
+                    <li>Biểu đồ Bar Chart so sánh trực quan.</li>
+                    <li>Top 10 món mang mỏ vàng lớn nhất.</li>
+                    <li><strong>Nhận xét tự động:</strong> AI QWen xử lý Data trả báo cáo.</li>
+                  </ul>
+                </div>
+                <div style="flex: 1; background: rgba(0, 0, 0, 0.15); padding: 15px; border-radius: 8px">
+                  <p style="color: var(--accent); text-align: center"><strong>AI SENTIMENT DASHBOARD</strong></p>
+                  <ul style="margin-top: 5px">
+                    <li>Phân bổ cảm xúc Tích cực / Tiêu cực.</li>
+                    <li>Top 5 món cần vinh danh.</li>
+                    <li>Top 5 món có nguy cơ tẩy chay.</li>
+                    <li>Nút Trigger quét lại vạn dòng Review.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Slide 23: Thống kê đơn hàng nâng cao -->
+        <section>
+          <h2>ADMIN: THỐNG KÊ ĐƠN HÀNG</h2>
+          <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%">
+            <div style="flex: 0.7; display: flex; justify-content: center; align-items: center">
+              <img src="order_statistics.png" alt="Screenshot" style="max-height: 55vh; max-width: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4)" />
+            </div>
+            <div style="flex: 1.3">
+              <ul style="font-size: 0.9em; line-height: 1.6; margin-bottom: 10px">
+                <li><strong>Biểu đồ tròn (PieChart):</strong> Phân bố tỷ lệ đơn theo trạng thái hiển thị phần trăm và số lượng.</li>
+                <li><strong>Biểu đồ cột (BarChart):</strong> Timeline số đơn hàng theo từng ngày.</li>
+                <li><strong>Bộ lọc nhanh:</strong> 7 ngày / 30 ngày / Tháng này / Tùy chọn khoảng ngày.</li>
+                <li><strong>Thẻ tổng quan:</strong> Tổng đơn, Tổng doanh thu, Số đơn theo từng trạng thái.</li>
+              </ul>
+              <p style="font-size: 0.8em; color: #ccc">Sử dụng MPAndroidChart kết hợp animation mượt mà.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Slide 24: Báo cáo & Xuất dữ liệu -->
+        <section>
+          <h2>BÁO CÁO & XUẤT DỮ LIỆU</h2>
+          <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%">
+            <div style="flex: 0.7; display: flex; justify-content: center; align-items: center">
+              <img src="report_statistics.png" alt="Screenshot" style="max-height: 55vh; max-width: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4)" />
+            </div>
+            <div style="flex: 1.3">
+              <table style="font-size: 0.75em; width: 100%; padding-top: 5px; line-height: 1.4">
+                <tr>
+                  <th style="width: 35%">Chức năng</th>
+                  <th>Mô tả</th>
+                </tr>
+                <tr>
+                  <td><strong>Dashboard Overview</strong></td>
+                  <td>Doanh thu, Đơn hàng, Top 5 món, Biểu đồ.</td>
+                </tr>
+                <tr>
+                  <td><strong>Revenue Report</strong></td>
+                  <td>Doanh thu theo khoảng ngày tùy chọn.</td>
+                </tr>
+                <tr>
+                  <td><strong>Customer Stats</strong></td>
+                  <td>Khách mới, Khách mua nhiều nhất, Tần suất.</td>
+                </tr>
+                <tr>
+                  <td><strong>Xuất PDF/CSV</strong></td>
+                  <td>Tạo file báo cáo lưu vào máy (Downloads).</td>
+                </tr>
+                <tr>
+                  <td><strong>Gửi Email</strong></td>
+                  <td>Đính kèm PDF tự động mở app Email đối tác.</td>
+                </tr>
+              </table>
+              <p style="font-size: 0.75em; color: #ccc; margin-top: 10px">Kỹ thuật: PdfDocument API, MediaStore & Intent.ACTION_SEND</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Slide 25: Thống kê khách hàng -->
+        <section>
+          <h2>THỐNG KÊ KHÁCH HÀNG</h2>
+          <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%">
+            <div style="flex: 0.7; display: flex; justify-content: center; align-items: center">
+              <img src="customer_stats.png" alt="Screenshot" style="max-height: 55vh; max-width: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4)" />
+            </div>
+            <div style="flex: 1.3">
+              <ul style="font-size: 0.9em; line-height: 1.7; margin-bottom: 5px">
+                <li><strong>Tổng số khách hàng:</strong> Thống kê user đăng ký hệ thống.</li>
+                <li><strong>Khách mới:</strong> Lọc trong khoảng thời gian (so sánh ngày đăng ký).</li>
+                <li><strong>Khách mua Top:</strong> Bảng vàng Top Buyer với tên & số đơn.</li>
+                <li><strong>Tần suất mua:</strong> Trung bình số đơn/khách để đánh giá quay lại.</li>
+              </ul>
+              <p style="font-size: 0.8em; color: #ccc; margin-top: 5px">Data pipeline liên kết bảng Users và Orders, có Reload realtime.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Slide 26: Gửi thông báo hàng loạt -->
+        <section>
+          <h2>GỬI THÔNG BÁO HÀNG LOẠT</h2>
+          <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%">
+            <div style="flex: 0.7; display: flex; justify-content: center; align-items: center">
+              <img src="send_notification.png" alt="Screenshot" style="max-height: 55vh; max-width: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4)" />
+            </div>
+            <div style="flex: 1.3">
+              <ol style="font-size: 0.9em; line-height: 1.6">
+                <li>Nhập <strong>Tiêu đề</strong> chiến dịch.</li>
+                <li>Nhập <strong>Nội dung</strong> (tối đa 500 ký tự có countdown).</li>
+                <li>Xác nhận gửi thông báo hàng loạt.</li>
+                <li>Hệ thống gọi Supabase Edge Function tạo broadcast.</li>
+                <li>Báo cáo kết quả "Gửi thành công đến N khách".</li>
+              </ol>
+              <p style="font-size: 0.8em; color: #ccc; margin-top: 10px">Lưu ý: Hỗ trợ chống spam & Xóa form nhanh.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Slide 27: AI: Sentiment & Trends -->
+        <section>
+          <h2>AI: SENTIMENT & TRENDS</h2>
+          <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%">
+            <div style="flex: 0.9; display: flex; justify-content: center; align-items: center; gap: 10px">
+              <img src="ai_sentiment.png" alt="ai_sentiment.png" style="max-height: 55vh; width: 48%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4)" />
+              <img src="ai_prediction.png" alt="ai_prediction.png" style="max-height: 55vh; width: 48%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4)" />
+            </div>
+            <div style="flex: 1.1">
+              <table style="font-size: 0.65em; width: 100%; padding-top: 5px; border-collapse: separate; border-spacing: 0 10px">
+                <tr>
+                  <th style="width: 50%">Phân tích Cảm Xúc (NLP)</th>
+                  <th style="width: 50%">Dự đoán Xu hướng</th>
+                </tr>
+                <tr>
+                  <td style="vertical-align: top">
+                    <ul style="margin: 0; padding-left: 15px">
+                      <li><strong>Lõi:</strong> HF BERT qua Edge Functions.</li>
+                      <li><strong>Phân loại:</strong> Tích cực, Trung tính, Tiêu cực.</li>
+                      <li>Hỗ trợ xử lý song ngữ (Việt, Anh).</li>
+                      <li><strong>Tốc độ:</strong> ~5ms cho mỗi thao tác quét.</li>
                     </ul>
-                </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Slide 12: Đánh giá & Nhận xét -->
-            <section>
-                <h2>HỆ THỐNG ĐÁNH GIÁ</h2>
-                <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%;">
-                    <!-- Ảnh Screenshot -->
-                    <div style="flex: 0.7; display: flex; justify-content: center; align-items: center;">
-                        <img src="reviews.png" alt="reviews.png" style="max-height: 55vh; max-width: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
-                    </div>
-                    <!-- Nội dung -->
-                    <div style="flex: 1.3;">
-<div style="font-size: 1em; text-align: left; width: 100%; margin: 0; line-height: 1.6;">
-                    <ul>
-                        <li><strong>Thiết kế giống Hasaki:</strong> Tách hẳn trang riêng chia 2 cột thống kê.</li>
-                        <li><strong>Tổng quan:</strong> Cột trái là điểm TB, cột phải là progress bar phân bố sao.</li>
-                        <li><strong>Đăng bài:</strong> Đánh giá sao, viết nhận xét chữ, đính kèm đa phương tiện.</li>
-                        <li><strong>Đọc review:</strong> Thông tin người dùng, ảnh thật, timeline mạch lạc.</li>
-                        <li><strong>Bộ lọc:</strong> Chọn filter chỉ xem 5 sao, 1 sao tuỳ ý để cân nhắc chọn mua.</li>
+                  </td>
+                  <td style="vertical-align: top">
+                    <ul style="margin: 0; padding-left: 15px">
+                      <li><strong>Phương pháp:</strong> Score-based Decision Tree.</li>
+                      <li>Dựa trên lượng bán 30 ngày + Sentiment.</li>
+                      <li>
+                        <strong>Nhãn 4 mùa:</strong> <br />
+                        - Hot Seller (Bán chạy, được khen)<br />
+                        - At Risk (Ế khách, bị phàn nàn)<br />
+                        - Declining (Rớt hạng) | Stable (An toàn)
+                      </li>
                     </ul>
-                </div>
-                    </div>
-                </div>
-            </section>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </section>
 
-            <!-- Slide 13: Giỏ hàng -->
-            <section>
-                <h2>GIỎ HÀNG</h2>
-                <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%;">
-                    <!-- Ảnh Screenshot -->
-                    <div style="flex: 0.7; display: flex; justify-content: center; align-items: center;">
-                        <img src="cart.png" alt="cart.png" style="max-height: 55vh; max-width: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
-                    </div>
-                    <!-- Nội dung -->
-                    <div style="flex: 1.3;">
-<table style="font-size: 0.85em; width: 100%; padding-top: 5px;">
-                    <tr><th style="width: 30%;">Thao tác</th><th>Chi tiết chức năng</th></tr>
-                    <tr><td><strong>Thêm món</strong></td><td>Chọn số lượng, chạy hiệu ứng animation rớt giỏ.</td></tr>
-                    <tr><td><strong>Xem & Đổi SL</strong></td><td>Cập nhật trực tiếp số lượng +/-, tính lại tổng giá.</td></tr>
-                    <tr><td><strong>Xóa 1 món</strong></td><td>Thao tác vuốt trái (Swipe) hiện nút xóa nhanh gọn.</td></tr>
-                    <tr><td><strong>Xóa nhiều</strong></td><td>Nút dọn sạch kho + Snackbar hoàn tác (Undo).</td></tr>
-                    <tr><td><strong>Thanh toán</strong></td><td>Bar tổng tiền neo dưới đáy, nhấn để bắt đầu Checkout.</td></tr>
-                </table>
-                    </div>
-                </div>
-            </section>
+        <!-- Slide 28: Tiến độ công việc - Thành viên 1 -->
+        <section>
+          <h2>TIẾN ĐỘ: THÀNH VIÊN 1 (Hùng - hungtmh)</h2>
+          <div style="font-size: 0.55em; width: 95%; margin: 0 auto">
+            <table style="width: 100%; border-collapse: collapse; line-height: 1.4; text-align: left">
+              <tr>
+                <th style="width: 5%; border-bottom: 2px solid white; padding-bottom: 5px">STT</th>
+                <th style="width: 20%; border-bottom: 2px solid white; padding-bottom: 5px">Tính năng</th>
+                <th style="border-bottom: 2px solid white; padding-bottom: 5px">Mô tả chi tiết công việc</th>
+                <th style="width: 15%; border-bottom: 2px solid white; padding-bottom: 5px">Tiến độ</th>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #555">1</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #555"><strong>Core & Auth</strong></td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #555">Khởi tạo dự án, thiết lập Supabase liên kết db, fix lỗi đổi mật khẩu.</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #555; color: #4caf50">100%</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #555">2</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #555"><strong>Quản lý đơn hàng</strong></td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #555">Thiết lập logic luồng đặt hàng hoàn chỉnh từ User tới Admin (Chờ duyệt, Chờ chế biến, Đang giao, Đã phục vụ).</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #555; color: #4caf50">100%</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #555">3</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #555"><strong>UI/UX Món Ăn</strong></td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #555">Giao diện đánh giá chi tiết (Star rating), tải tính năng thêm ảnh review, yêu thích sản phẩm.</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #555; color: #4caf50">100%</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #555">4</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #555"><strong>Thanh toán & Địa chỉ</strong></td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #555">Tách quản lý địa chỉ khỏi Profile, áp dụng Tỉnh/Huyện/Xã bằng Spinner trực tiếp lúc Checkout. Thêm chế độ Ăn Tại Quán.</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #555; color: #4caf50">100%</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0">5</td>
+                <td style="padding: 8px 0"><strong>Giao tiếp Realtime</strong></td>
+                <td style="padding: 8px 0">Thiết lập chat trực tiếp User &harr; Admin để phản hồi, giục món. Fix giao diện navbar ghim cố định đáy màn hình.</td>
+                <td style="padding: 8px 0; color: #4caf50">100%</td>
+              </tr>
+            </table>
+          </div>
+        </section>
 
-            <!-- Slide 14: Checkout -->
-            <section>
-                <h2>CHECKOUT & ĐẶT HÀNG</h2>
-                <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%;">
-                    <!-- Ảnh Screenshot -->
-                    <div style="flex: 0.7; display: flex; justify-content: center; align-items: center;">
-                        <img src="checkout.png" alt="checkout.png" style="max-height: 55vh; max-width: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
-                    </div>
-                    <!-- Nội dung -->
-                    <div style="flex: 1.3;">
-<div style="font-size: 1em; text-align: left; width: 100%; margin: 0; line-height: 1.6;">
-                    <ol>
-                        <li><strong>Địa chỉ giao:</strong> Chọn chuẩn cấp Tỉnh ➝ Huyện ➝ Xã (có lưu mặc định). Hỗ trợ đặt "Ăn tại quán" (báo số bàn).</li>
-                        <li><strong>Liên lạc:</strong> Tự điền SĐT người nhận, có khu vực note (ghi chú) cho quán.</li>
-                        <li><strong>Khuyến mãi:</strong> Nhập mã voucher private hoặc chọn list voucher public.</li>
-                        <li><strong>Thanh toán:</strong> COD nhận hàng hoặc chuyển khoản tự động qua Sepay.</li>
-                        <li><strong>Xác nhận:</strong> Báo thành công, hiện mã đơn chốt và theo dõi trạng thái.</li>
-                    </ol>
-                </div>
-                    </div>
-                </div>
-            </section>
+        <!-- Slide 29: Tiến độ công việc - Thành viên 2 -->
+        <section>
+          <h2>TIẾN ĐỘ: THÀNH VIÊN 2 (Thắng - thangak18)</h2>
+          <div style="font-size: 0.55em; width: 95%; margin: 0 auto">
+            <table style="width: 100%; border-collapse: collapse; line-height: 1.4; text-align: left">
+              <tr>
+                <th style="width: 5%; border-bottom: 2px solid white; padding-bottom: 5px">STT</th>
+                <th style="width: 20%; border-bottom: 2px solid white; padding-bottom: 5px">Tính năng</th>
+                <th style="border-bottom: 2px solid white; padding-bottom: 5px">Mô tả chi tiết công việc</th>
+                <th style="width: 15%; border-bottom: 2px solid white; padding-bottom: 5px">Tiến độ</th>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #555">1</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #555"><strong>Admin Thống Kê</strong></td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #555">Thiết kế Dashboard Báo Cáo. Tích hợp thư viện MPAndroidChart vẽ biểu đồ Doanh Thu & Đơn Hàng (Bar/PieChart).</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #555; color: #4caf50">100%</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #555">2</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #555"><strong>Phân tích AI Gemini</strong></td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #555">Nâng cấp AI model lên gemini-3-flash-preview chuyên phân tích doanh số và Monthly Trend thông minh.</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #555; color: #4caf50">100%</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #555">3</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #555"><strong>Admin Category</strong></td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #555">Thiết lập Quản lý danh mục chuyên sâu (Lọc theo Doanh Thu, Tìm kiếm, Kéo thả đổi vị trí).</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #555; color: #4caf50">100%</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #555">4</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #555"><strong>Xuất báo cáo</strong></td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #555">Tích hợp tính năng tự động tạo bản PDF & Excel báo cáo gửi thẳng vào Cổng Email chia sẻ từ App.</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #555; color: #4caf50">100%</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0">5</td>
+                <td style="padding: 8px 0"><strong>System Utils</strong></td>
+                <td style="padding: 8px 0">Viết custom layout cấu trúc chia 8-TAB cho Custom Bottom Nav Admin, quản lý ẩn Config an toàn.</td>
+                <td style="padding: 8px 0; color: #4caf50">100%</td>
+              </tr>
+            </table>
+          </div>
+        </section>
 
-            <!-- Slide 15: Thanh toán Sepay -->
-            <section>
-                <h2>THANH TOÁN SEPAY</h2>
-                <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%;">
-                    <!-- Ảnh Screenshot -->
-                    <div style="flex: 0.7; display: flex; justify-content: center; align-items: center;">
-                        <img src="sepay_qr.png" alt="sepay_qr.png" style="max-height: 55vh; max-width: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
-                    </div>
-                    <!-- Nội dung -->
-                    <div style="flex: 1.3;">
-<div style="font-size: 1em; text-align: left; width: 100%; margin: 0;">
-                    <p><strong>Cơ chế hoạt động (QR Banking):</strong></p>
-                    <ol style="margin-bottom: 20px;">
-                        <li>Khách chọn "Chuyển khoản ngân hàng"</li>
-                        <li>Hệ thống sinh <strong>mã QR</strong> chứa thông tin chuyển khoản (Sepay API)</li>
-                        <li>Khách quét QR bằng app ngân hàng ➝ Chuyển tiền</li>
-                        <li>Khách bấm "Đã chuyển khoản"</li>
-                        <li>Server xác thực qua Webhook Sepay (Supabase Edge Function)</li>
-                        <li>Đơn hàng chuyển trạng thái thành "Đã thanh toán"</li>
-                    </ol>
-                    <div style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; text-align: center;">
-                        App ➝ Sepay API ➝ QR Code ➝ Quét & Chuyển ➝ Webhook ➝ Xác nhận đơn
-                    </div>
-                </div>
-                    </div>
-                </div>
-            </section>
+        <!-- Slide 30: Tiến độ công việc - Thành viên 3 -->
+        <section>
+          <h2>TIẾN ĐỘ: THÀNH VIÊN 3 (Khải - nvkhai238)</h2>
+          <div style="font-size: 0.55em; width: 95%; margin: 0 auto">
+            <table style="width: 100%; border-collapse: collapse; line-height: 1.4; text-align: left">
+              <tr>
+                <th style="width: 5%; border-bottom: 2px solid white; padding-bottom: 5px">STT</th>
+                <th style="width: 20%; border-bottom: 2px solid white; padding-bottom: 5px">Tính năng</th>
+                <th style="border-bottom: 2px solid white; padding-bottom: 5px">Mô tả chi tiết công việc</th>
+                <th style="width: 15%; border-bottom: 2px solid white; padding-bottom: 5px">Tiến độ</th>
+              </tr>
+              <tr>
+                <td style="padding: 12px 0; border-bottom: 1px solid #555">1</td>
+                <td style="padding: 12px 0; border-bottom: 1px solid #555"><strong>Sentiment AI</strong></td>
+                <td style="padding: 12px 0; border-bottom: 1px solid #555">Tích hợp công nghệ dự đoán trí tuệ nhân tạo (Hugging Face) xử lý Data Cảm Xúc & Phân tích qua API Call.</td>
+                <td style="padding: 12px 0; border-bottom: 1px solid #555; color: #4caf50">100%</td>
+              </tr>
+              <tr>
+                <td style="padding: 12px 0; border-bottom: 1px solid #555">2</td>
+                <td style="padding: 12px 0; border-bottom: 1px solid #555"><strong>Admin Notification</strong></td>
+                <td style="padding: 12px 0; border-bottom: 1px solid #555">Thực thi luồng Push Broadcast Notification hàng loạt từ Admin đến tất cả User (quảng bá khuyến mãi).</td>
+                <td style="padding: 12px 0; border-bottom: 1px solid #555; color: #4caf50">100%</td>
+              </tr>
+              <tr>
+                <td style="padding: 12px 0">3</td>
+                <td style="padding: 12px 0"><strong>System Config</strong></td>
+                <td style="padding: 12px 0">Dọn dẹp môi trường Environment (.env), rà soát bảo mật lỗi cấp quyền. Resolve Git Conflicts.</td>
+                <td style="padding: 12px 0; color: #4caf50">100%</td>
+              </tr>
+            </table>
+          </div>
+        </section>
 
-            <!-- Slide 16: Lịch sử đơn hàng -->
-            <section>
-                <h2>LỊCH SỬ ĐƠN HÀNG</h2>
-                <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%;">
-                    <!-- Ảnh Screenshot -->
-                    <div style="flex: 0.7; display: flex; justify-content: center; align-items: center;">
-                        <img src="order_history.png" alt="order_history.png" style="max-height: 55vh; max-width: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
-                    </div>
-                    <!-- Nội dung -->
-                    <div style="flex: 1.3;">
-<div style="display: flex; gap: 20px; font-size: 1em; text-align: left; width: 100%; margin: 0;">
-                    <div style="flex: 1;">
-                        <p><strong>Phân loại trạng thái:</strong></p>
-                        <ul>
-                            <li><span style="color: #FFD700;">Chờ xác nhận</span> (Pending)</li>
-                            <li><span style="color: #1E90FF;">Chờ chế biến</span> (Preparing)</li>
-                            <li><span style="color: #FF8C00;">Đang giao</span> (Delivering)</li>
-                            <li><span style="color: #32CD32;">Đã phục vụ</span> (Served)</li>
-                            <li><span style="color: #FF4500;">Đã hủy</span> (Cancelled)</li>
+        <!-- Slide 31: Tiến độ công việc - Thành viên 4 -->
+        <section>
+          <h2>TIẾN ĐỘ: THÀNH VIÊN 4 (Cường - Dicun)</h2>
+          <div style="font-size: 0.55em; width: 95%; margin: 0 auto">
+            <table style="width: 100%; border-collapse: collapse; line-height: 1.4; text-align: left">
+              <tr>
+                <th style="width: 5%; border-bottom: 2px solid white; padding-bottom: 5px">STT</th>
+                <th style="width: 20%; border-bottom: 2px solid white; padding-bottom: 5px">Tính năng</th>
+                <th style="border-bottom: 2px solid white; padding-bottom: 5px">Mô tả chi tiết công việc</th>
+                <th style="width: 15%; border-bottom: 2px solid white; padding-bottom: 5px">Tiến độ</th>
+              </tr>
+              <tr>
+                <td style="padding: 12px 0; border-bottom: 1px solid #555">1</td>
+                <td style="padding: 12px 0; border-bottom: 1px solid #555"><strong>UI Khuyến mãi</strong></td>
+                <td style="padding: 12px 0; border-bottom: 1px solid #555">Thêm tính năng Giao diện Hot Offers, cấu hình hệ thống Adaptor xử lý dạng thanh trượt Slider cho các Banner Quảng Cáo.</td>
+                <td style="padding: 12px 0; border-bottom: 1px solid #555; color: #4caf50">100%</td>
+              </tr>
+              <tr>
+                <td style="padding: 12px 0; border-bottom: 1px solid #555">2</td>
+                <td style="padding: 12px 0; border-bottom: 1px solid #555"><strong>Gợi ý món ăn</strong></td>
+                <td style="padding: 12px 0; border-bottom: 1px solid #555">Thiết lập Personalized Recommendations, hiển thị đề xuất món ăn được cá nhân hóa tự động theo sở thích trên trang chủ.</td>
+                <td style="padding: 12px 0; border-bottom: 1px solid #555; color: #4caf50">100%</td>
+              </tr>
+              <tr>
+                <td style="padding: 12px 0">3</td>
+                <td style="padding: 12px 0"><strong>Tối ưu HMI/UX</strong></td>
+                <td style="padding: 12px 0">Đồng bộ hóa lại layout chính xác chuẩn User Experience trên trang Client Main View.</td>
+                <td style="padding: 12px 0; color: #4caf50">100%</td>
+              </tr>
+            </table>
+          </div>
+        </section>
 
-                        </ul>
-                    </div>
-                    <div style="flex: 1.2;">
-                        <p><strong>Tính năng quản lý:</strong></p>
-                        <ul>
-                            <li><strong>Xem chi tiết:</strong> List mở rộng xem các món, ghi chú...</li>
-                            <li><strong>Hủy đơn:</strong> Chỉ khi "Chờ xác nhận" ➝ Yêu cầu xác nhận.</li>
-                            <li><strong>Đặt lại:</strong> Bê nguyên xi menu đơn cũ ném vào giỏ hàng.</li>
-                        </ul>
-                    </div>
-                </div>
-                    </div>
-                </div>
-            </section>
+        <!-- Slide 32: Tiến độ công việc - Thành viên 5 -->
+        <section>
+          <h2>TIẾN ĐỘ: THÀNH VIÊN 5 (Khoa - wokovn)</h2>
+          <div style="font-size: 0.55em; width: 95%; margin: 0 auto">
+            <table style="width: 100%; border-collapse: collapse; line-height: 1.4; text-align: left">
+              <tr>
+                <th style="width: 5%; border-bottom: 2px solid white; padding-bottom: 5px">STT</th>
+                <th style="width: 20%; border-bottom: 2px solid white; padding-bottom: 5px">Tính năng</th>
+                <th style="border-bottom: 2px solid white; padding-bottom: 5px">Mô tả chi tiết công việc</th>
+                <th style="width: 15%; border-bottom: 2px solid white; padding-bottom: 5px">Tiến độ</th>
+              </tr>
+              <tr>
+                <td style="padding: 12px 0; border-bottom: 1px solid #555">1</td>
+                <td style="padding: 12px 0; border-bottom: 1px solid #555"><strong>Thanh Toán SEPay QR</strong></td>
+                <td style="padding: 12px 0; border-bottom: 1px solid #555">Code hệ thống Webhook liên kết trực tiếp ngân hàng API SEPay quét mã QR nhận diện nội dung đóng tiền chính xác.</td>
+                <td style="padding: 12px 0; border-bottom: 1px solid #555; color: #4caf50">100%</td>
+              </tr>
+              <tr>
+                <td style="padding: 12px 0; border-bottom: 1px solid #555">2</td>
+                <td style="padding: 12px 0; border-bottom: 1px solid #555"><strong>Hỗ trợ Voucher</strong></td>
+                <td style="padding: 12px 0; border-bottom: 1px solid #555">Thiết kế luồng Áp dụng Voucher mua sắm tích hợp trực tiếp lúc đặt hàng Checkout Giỏ Hàng.</td>
+                <td style="padding: 12px 0; border-bottom: 1px solid #555; color: #4caf50">100%</td>
+              </tr>
+              <tr>
+                <td style="padding: 12px 0">3</td>
+                <td style="padding: 12px 0"><strong>Quản lý Reorder</strong></td>
+                <td style="padding: 12px 0">Setup hoàn chỉnh Address Management liên kết Giỏ hàng Undo và Tái Đặt hàng (Reorder) 1 click từ lịch sử.</td>
+                <td style="padding: 12px 0; color: #4caf50">100%</td>
+              </tr>
+            </table>
+          </div>
+        </section>
 
-            <!-- Slide 17: Yêu thích & Thông báo -->
-            <section>
-                <h2>YÊU THÍCH & THÔNG BÁO</h2>
-                <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%;">
-                    <!-- Ảnh Screenshot -->
-                    <div style="flex: 0.9; display: flex; justify-content: center; align-items: center; gap: 10px;">
-                        <img src="favorites.png" alt="favorites.png" style="max-height: 55vh; width: 48%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
-                        <img src="notifications.png" alt="notifications.png" style="max-height: 55vh; width: 48%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
-                    </div>
-                    <!-- Nội dung -->
-                    <div style="flex: 1.1;">
-<div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.8em; text-align: left; width: 100%; margin: 0;">
-                    <div style="flex: 1;">
-                        <p><strong>Mục Yêu Thích:</strong></p>
-                        <ul>
-                            <li>Click icon trái tim để lưu lại món ăn.</li>
-                            <li>Danh sách riêng giúp chọn lại siêu tốc.</li>
-                            <li>Thêm thẳng vào giỏ hàng từ trang này.</li>
-                        </ul>
-                    </div>
-                    <div style="flex: 1;">
-                        <p><strong>Hệ Thống Thông Báo:</strong></p>
-                        <ul>
-                            <li><strong>Push Notification:</strong> Báo trạng thái đơn.</li>
-                            <li><strong>In-app Notification:</strong> Quản lý danh sách, đọc/xóa.</li>
-                            <li><strong>Khuyến mãi:</strong> Nhận tin từ Admin quán.</li>
-                        </ul>
-                    </div>
-                </div>
-                    </div>
-                </div>
-            </section>
+        <!-- Slide 33: Demo ứng dụng -->
+        <section>
+          <h2>DEMO ỨNG DỤNG THỰC TẾ</h2>
+          <div style="font-size: 0.6em; text-align: left; width: 85%; margin: 0 auto; line-height: 1.6">
+            <p><strong>1. Quy trình của User (Khách hàng):</strong></p>
+            <p style="background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 5px">Đăng nhập &rarr; Trang chủ &rarr; Tìm kiếm "Phở bò" &rarr; Xem chi tiết &rarr; Đọc đánh giá &rarr; Thêm vào giỏ &rarr; Mở giỏ hàng &rarr; Checkout &rarr; Chọn địa chỉ &rarr; Thanh toán COD/QR SEPay &rarr; Xem lịch sử đơn &rarr; Chat với Admin &rarr; Viết đánh giá (5 sao + ảnh).</p>
 
-            <!-- Slide 18: Chat trực tiếp -->
-            <section>
-                <h2>CHAT TRỰC TIẾP</h2>
-                <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%;">
-                    <!-- Ảnh Screenshot -->
-                    <div style="flex: 0.9; display: flex; justify-content: center; align-items: center; gap: 10px;">
-                        <img src="chat_user.png" alt="chat_user.png" style="max-height: 55vh; width: 48%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
-                        <img src="chat_admin.png" alt="chat_admin.png" style="max-height: 55vh; width: 48%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
-                    </div>
-                    <!-- Nội dung -->
-                    <div style="flex: 1.1;">
-<div style="font-size: 0.9em; text-align: left; width: 100%; margin: 0; line-height: 1.6;">
-                    <p><strong>Chat 2 chiều realtime:</strong></p>
-                    <ul>
-                        <li><strong>Phía User:</strong> 1 khung chat duy nhất, nhắn tin trực tiếp với toàn bộ Admin quán.</li>
-                        <li><strong>Phía Admin:</strong> Quản lý danh sách chat từng khách riêng biệt (ChatList).</li>
-                        <li><strong>Trải nghiệm:</strong> 
-                            <ul style="margin-top: 5px;">
-                                <li>Phân biệt tin nhắn qua Bubble chat tự động.</li>
-                                <li>Hiển thị preview tin nhắn & thời gian hệt Messenger.</li>
-                                <li>Tương tác lập tức, xử lý sự cố tức thì.</li>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
-                    </div>
-                </div>
-            </section>
+            <p style="margin-top: 15px"><strong>2. Quy trình Admin (Quản trị):</strong></p>
+            <p style="background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 5px">Đăng nhập Admin &rarr; Xem đơn hàng mới &rarr; Xác nhận đơn (Đang nấu &rarr; Đang giao) &rarr; Xem Dashboard doanh thu &rarr; AI nhận xét &rarr; Vào AI Dashboard (Phân tích cảm xúc &rarr; Dự đoán xu hướng) &rarr; Xuất báo cáo PDF &rarr; Gửi email &rarr; Gửi thông báo khuyến mãi cho tất cả khách &rarr; Trả lời chat.</p>
 
-            <!-- Slide 19: Liên hệ & Thông tin -->
-            <section>
-                <h2>LIÊN HỆ VỚI QUÁN</h2>
-                <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%;">
-                    <!-- Ảnh Screenshot -->
-                    <div style="flex: 0.7; display: flex; justify-content: center; align-items: center;">
-                        <img src="contact.png" alt="contact.png" style="max-height: 55vh; max-width: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
-                    </div>
-                    <!-- Nội dung -->
-                    <div style="flex: 1.3;">
-<div style="font-size: 1em; text-align: center; width: 100%; margin: 0; line-height: 1.8;">
-                    <p>Đa dạng kênh kết nối để hỗ trợ khách hàng tốt nhất:</p>
-                    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-top: 15px;">
-                        <span style="background: rgba(0,0,0,0.2); padding: 5px 15px; border-radius: 20px;">Facebook</span>
-                        <span style="background: rgba(0,0,0,0.2); padding: 5px 15px; border-radius: 20px;">Zalo</span>
-                        <span style="background: rgba(0,0,0,0.2); padding: 5px 15px; border-radius: 20px;">Email / Gọi điện</span>
-                        <span style="background: rgba(0,0,0,0.2); padding: 5px 15px; border-radius: 20px;">YouTube / Skype</span>
-                    </div>
-                    <hr style="border-color: rgba(255,255,255,0.1); margin: 20px 0;">
-                    <p><strong>Bản đồ:</strong> Tích hợp Google Maps xác định vị trí quán & Nút điều hướng chỉ đường thẳng tới nơi.</p>
-                </div>
-                    </div>
-                </div>
-            </section>
+            <div style="text-align: center; margin-top: 25px; padding: 15px; border: 1px dashed var(--accent); border-radius: 10px; color: var(--accent)">
+              <em>[Chạy demo trực tiếp trên thiết bị / emulator]</em>
+            </div>
+          </div>
+        </section>
 
-            <!-- Slide 20: Admin Món ăn -->
-            <section>
-                <h2>ADMIN: MÓN ĂN & DANH MỤC</h2>
-                <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%;">
-                    <!-- Ảnh Screenshot -->
-                    <div style="flex: 0.9; display: flex; justify-content: center; align-items: center; gap: 10px;">
-                        <img src="admin_home.png" alt="admin_home.png" style="max-height: 55vh; width: 48%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
-                        <img src="admin_categories.png" alt="admin_categories.png" style="max-height: 55vh; width: 48%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
-                    </div>
-                    <!-- Nội dung -->
-                    <div style="flex: 1.1;">
-<table style="font-size: 0.75em; width: 100%; padding-top: 5px;">
-                    <tr><th style="width: 30%;">Hệ thống</th><th>Chi tiết tính năng</th></tr>
-                    <tr>
-                        <td><strong>Quản lý Danh mục</strong></td>
-                        <td>Thêm sửa xóa (CRUD). Đặt icon đại diện, sắp xếp thứ tự hiển thị ưu tiên. Nút gạt Ẩn/Hiện danh mục.</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Quản lý Món ăn</strong></td>
-                        <td>
-                            <ul style="margin: 0;">
-                                <li><strong>Thêm/Sửa:</strong> Load ảnh tự động, chỉnh tên, giá, mô tả.</li>
-                                <li><strong>Tagging:</strong> Đánh dấu "Phổ biến" hoặc "Gợi ý".</li>
-                                <li><strong>Kiểm soát kho:</strong> Đặt trạng thái Còn hàng / Hết hàng.</li>
-                                <li><strong>Tìm kiếm:</strong> Lọc tìm nhanh bằng tên món ăn.</li>
-                            </ul>
-                        </td>
-                    </tr>
-                </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Slide 21: Admin Đơn hàng -->
-            <section>
-                <h2>ADMIN: QUẢN LÝ ĐƠN HÀNG</h2>
-                <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%;">
-                    <!-- Ảnh Screenshot -->
-                    <div style="flex: 0.7; display: flex; justify-content: center; align-items: center;">
-                        <img src="admin_orders.png" alt="admin_orders.png" style="max-height: 55vh; max-width: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
-                    </div>
-                    <!-- Nội dung -->
-                    <div style="flex: 1.3;">
-<div style="font-size: 1em; text-align: left; width: 100%; margin: 0; line-height: 1.6;">
-                    <ul>
-                        <li><strong>Giám sát tổng thể:</strong> List đơn hiển thị tên khách, mã số, tổng tiền, thẻ trạng thái.</li>
-                        <li><strong>Bộ lọc:</strong> Phân loại đơn nhanh theo trạng thái hoặc gõ mã cần tìm.</li>
-                        <li><strong>Xử lý luồng đơn:</strong> Chờ xác nhận ➝ Đang xử lý ➝ Đang giao ➝ Hoàn thành. (Hoặc Đã hủy).</li>
-                        <li><strong>Thống kê & Nhắc lịch:</strong> Tổng hợp nhanh lượng đơn và chủ động gửi Notification đẩy (Push) lúc đổi trạng thái.</li>
-                    </ul>
-                </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Slide 22: Dashboard Doanh thu -->
-            <section>
-                <h2>DASHBOARD DOANH THU & AI</h2>
-                <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%;">
-                    <!-- Ảnh Screenshot -->
-                    <div style="flex: 0.9; display: flex; justify-content: center; align-items: center; gap: 10px;">
-                        <img src="revenue_dashboard.png" alt="revenue_dashboard.png" style="max-height: 55vh; width: 48%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
-                        <img src="admin_ai_dashboard.png" alt="admin_ai_dashboard.png" style="max-height: 55vh; width: 48%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
-                    </div>
-                    <!-- Nội dung -->
-                    <div style="flex: 1.1;">
-<div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.8em; text-align: left; width: 100%; margin: 0;">
-                    <div style="flex: 1; background: rgba(0,0,0,0.15); padding: 15px; border-radius: 8px;">
-                        <p style="color: var(--primary); text-align: center;"><strong>BÁO CÁO DOANH THU</strong></p>
-                        <ul style="margin-top: 5px;">
-                            <li>Lọc linh hoạt: Ngày, Tháng, Tùy chỉnh.</li>
-                            <li>Biểu đồ Bar Chart so sánh trực quan.</li>
-                            <li>Top 10 món mang mỏ vàng lớn nhất.</li>
-                            <li><strong>Nhận xét tự động:</strong> AI Gemini xử lý Data trả báo cáo.</li>
-                        </ul>
-                    </div>
-                    <div style="flex: 1; background: rgba(0,0,0,0.15); padding: 15px; border-radius: 8px;">
-                        <p style="color: var(--accent); text-align: center;"><strong>AI SENTIMENT DASHBOARD</strong></p>
-                        <ul style="margin-top: 5px;">
-                            <li>Phân bổ cảm xúc Tích cực / Tiêu cực.</li>
-                            <li>Top 5 món cần vinh danh.</li>
-                            <li>Top 5 món có nguy cơ tẩy chay.</li>
-                            <li>Nút Trigger quét lại vạn dòng Review.</li>
-                        </ul>
-                    </div>
-                </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Slide 23: Thống kê đơn hàng nâng cao -->
-            <section>
-                <h2>ADMIN: THỐNG KÊ ĐƠN HÀNG</h2>
-                <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%;">
-                    <div style="flex: 0.7; display: flex; justify-content: center; align-items: center;">
-                        <img src="order_statistics.png" alt="Screenshot" style="max-height: 55vh; max-width: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
-                    </div>
-                    <div style="flex: 1.3;">
-                        <ul style="font-size: 0.9em; line-height: 1.6; margin-bottom: 10px;">
-                            <li><strong>Biểu đồ tròn (PieChart):</strong> Phân bố tỷ lệ đơn theo trạng thái hiển thị phần trăm và số lượng.</li>
-                            <li><strong>Biểu đồ cột (BarChart):</strong> Timeline số đơn hàng theo từng ngày.</li>
-                            <li><strong>Bộ lọc nhanh:</strong> 7 ngày / 30 ngày / Tháng này / Tùy chọn khoảng ngày.</li>
-                            <li><strong>Thẻ tổng quan:</strong> Tổng đơn, Tổng doanh thu, Số đơn theo từng trạng thái.</li>
-                        </ul>
-                        <p style="font-size: 0.8em; color: #ccc;">Sử dụng MPAndroidChart kết hợp animation mượt mà.</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Slide 24: Báo cáo & Xuất dữ liệu -->
-            <section>
-                <h2>BÁO CÁO & XUẤT DỮ LIỆU</h2>
-                <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%;">
-                    <div style="flex: 0.7; display: flex; justify-content: center; align-items: center;">
-                        <img src="report_statistics.png" alt="Screenshot" style="max-height: 55vh; max-width: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
-                    </div>
-                    <div style="flex: 1.3;">
-                        <table style="font-size: 0.75em; width: 100%; padding-top: 5px; line-height: 1.4;">
-                            <tr><th style="width: 35%;">Chức năng</th><th>Mô tả</th></tr>
-                            <tr><td><strong>Dashboard Overview</strong></td><td>Doanh thu, Đơn hàng, Top 5 món, Biểu đồ.</td></tr>
-                            <tr><td><strong>Revenue Report</strong></td><td>Doanh thu theo khoảng ngày tùy chọn.</td></tr>
-                            <tr><td><strong>Customer Stats</strong></td><td>Khách mới, Khách mua nhiều nhất, Tần suất.</td></tr>
-                            <tr><td><strong>Xuất PDF/CSV</strong></td><td>Tạo file báo cáo lưu vào máy (Downloads).</td></tr>
-                            <tr><td><strong>Gửi Email</strong></td><td>Đính kèm PDF tự động mở app Email đối tác.</td></tr>
-                        </table>
-                        <p style="font-size: 0.75em; color: #ccc; margin-top: 10px;">Kỹ thuật: PdfDocument API, MediaStore & Intent.ACTION_SEND</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Slide 25: Thống kê khách hàng -->
-            <section>
-                <h2>THỐNG KÊ KHÁCH HÀNG</h2>
-                <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%;">
-                    <div style="flex: 0.7; display: flex; justify-content: center; align-items: center;">
-                        <img src="customer_stats.png" alt="Screenshot" style="max-height: 55vh; max-width: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
-                    </div>
-                    <div style="flex: 1.3;">
-                        <ul style="font-size: 0.9em; line-height: 1.7; margin-bottom: 5px;">
-                            <li><strong>Tổng số khách hàng:</strong> Thống kê user đăng ký hệ thống.</li>
-                            <li><strong>Khách mới:</strong> Lọc trong khoảng thời gian (so sánh ngày đăng ký).</li>
-                            <li><strong>Khách mua Top:</strong> Bảng vàng Top Buyer với tên & số đơn.</li>
-                            <li><strong>Tần suất mua:</strong> Trung bình số đơn/khách để đánh giá quay lại.</li>
-                        </ul>
-                        <p style="font-size: 0.8em; color: #ccc; margin-top: 5px;">Data pipeline liên kết bảng Users và Orders, có Reload realtime.</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Slide 26: Gửi thông báo hàng loạt -->
-            <section>
-                <h2>GỬI THÔNG BÁO HÀNG LOẠT</h2>
-                <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%;">
-                    <div style="flex: 0.7; display: flex; justify-content: center; align-items: center;">
-                        <img src="send_notification.png" alt="Screenshot" style="max-height: 55vh; max-width: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
-                    </div>
-                    <div style="flex: 1.3;">
-                        <ol style="font-size: 0.9em; line-height: 1.6;">
-                            <li>Nhập <strong>Tiêu đề</strong> chiến dịch.</li>
-                            <li>Nhập <strong>Nội dung</strong> (tối đa 500 ký tự có countdown).</li>
-                            <li>Xác nhận gửi thông báo hàng loạt.</li>
-                            <li>Hệ thống gọi Supabase Edge Function tạo broadcast.</li>
-                            <li>Báo cáo kết quả "Gửi thành công đến N khách".</li>
-                        </ol>
-                        <p style="font-size: 0.8em; color: #ccc; margin-top: 10px;">Lưu ý: Hỗ trợ chống spam & Xóa form nhanh.</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Slide 27: AI: Sentiment & Trends -->
-            <section>
-                <h2>AI: SENTIMENT & TRENDS</h2>
-                <div style="display: flex; align-items: center; gap: 20px; font-size: 0.6em; text-align: left; width: 95%; margin: 0 auto; height: 100%;">      
-                    <div style="flex: 0.9; display: flex; justify-content: center; align-items: center; gap: 10px;">
-                        <img src="ai_sentiment.png" alt="ai_sentiment.png" style="max-height: 55vh; width: 48%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
-                        <img src="ai_prediction.png" alt="ai_prediction.png" style="max-height: 55vh; width: 48%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
-                    </div>
-                    <div style="flex: 1.1;">
-                        <table style="font-size: 0.65em; width: 100%; padding-top: 5px; border-collapse: separate; border-spacing: 0 10px;">
-                            <tr><th style="width: 50%;">Phân tích Cảm Xúc (NLP)</th><th style="width: 50%;">Dự đoán Xu hướng</th></tr>
-                            <tr>
-                                <td style="vertical-align: top;">
-                                    <ul style="margin: 0; padding-left: 15px;">
-                                        <li><strong>Lõi:</strong> HF BERT qua Edge Functions.</li>
-                                        <li><strong>Phân loại:</strong> Tích cực, Trung tính, Tiêu cực.</li>
-                                        <li>Hỗ trợ xử lý song ngữ (Việt, Anh).</li>
-                                        <li><strong>Tốc độ:</strong> ~5ms cho mỗi thao tác quét.</li>
-                                    </ul>
-                                </td>
-                                <td style="vertical-align: top;">
-                                    <ul style="margin: 0; padding-left: 15px;">
-                                        <li><strong>Phương pháp:</strong> Score-based Decision Tree.</li>
-                                        <li>Dựa trên lượng bán 30 ngày + Sentiment.</li>
-                                        <li>
-                                            <strong>Nhãn 4 mùa:</strong> <br>
-                                            - Hot Seller (Bán chạy, được khen)<br>      
-                                            - At Risk (Ế khách, bị phàn nàn)<br>
-                                            - Declining (Rớt hạng) | Stable (An toàn)
-                                        </li>
-                                    </ul>
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-                        <!-- Slide 28: Tiến độ công việc - Thành viên 1 -->
-            <section>
-                <h2>TIẾN ĐỘ: THÀNH VIÊN 1 (Hùng - hungtmh)</h2>
-                <div style="font-size: 0.55em; width: 95%; margin: 0 auto;">
-                    <table style="width: 100%; border-collapse: collapse; line-height: 1.4; text-align: left;">
-                        <tr><th style="width: 5%; border-bottom: 2px solid white; padding-bottom: 5px;">STT</th><th style="width: 20%; border-bottom: 2px solid white; padding-bottom: 5px;">Tính năng</th><th style="border-bottom: 2px solid white; padding-bottom: 5px;">Mô tả chi tiết công việc</th><th style="width: 15%; border-bottom: 2px solid white; padding-bottom: 5px;">Tiến độ</th></tr>
-                        <tr><td style="padding: 8px 0; border-bottom: 1px solid #555;">1</td><td style="padding: 8px 0; border-bottom: 1px solid #555;"><strong>Core & Auth</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #555;">Khởi tạo dự án, thiết lập Supabase liên kết db, fix lỗi đổi mật khẩu.</td><td style="padding: 8px 0; border-bottom: 1px solid #555; color: #4CAF50;">100%</td></tr>
-                        <tr><td style="padding: 8px 0; border-bottom: 1px solid #555;">2</td><td style="padding: 8px 0; border-bottom: 1px solid #555;"><strong>Quản lý đơn hàng</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #555;">Thiết lập logic luồng đặt hàng hoàn chỉnh từ User tới Admin (Chờ duyệt, Chờ chế biến, Đang giao, Đã phục vụ).</td><td style="padding: 8px 0; border-bottom: 1px solid #555; color: #4CAF50;">100%</td></tr>
-                        <tr><td style="padding: 8px 0; border-bottom: 1px solid #555;">3</td><td style="padding: 8px 0; border-bottom: 1px solid #555;"><strong>UI/UX Món Ăn</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #555;">Giao diện đánh giá chi tiết (Star rating), tải tính năng thêm ảnh review, yêu thích sản phẩm.</td><td style="padding: 8px 0; border-bottom: 1px solid #555; color: #4CAF50;">100%</td></tr>
-                        <tr><td style="padding: 8px 0; border-bottom: 1px solid #555;">4</td><td style="padding: 8px 0; border-bottom: 1px solid #555;"><strong>Thanh toán & Địa chỉ</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #555;">Tách quản lý địa chỉ khỏi Profile, áp dụng Tỉnh/Huyện/Xã bằng Spinner trực tiếp lúc Checkout. Thêm chế độ Ăn Tại Quán.</td><td style="padding: 8px 0; border-bottom: 1px solid #555; color: #4CAF50;">100%</td></tr>
-                        <tr><td style="padding: 8px 0;">5</td><td style="padding: 8px 0;"><strong>Giao tiếp Realtime</strong></td><td style="padding: 8px 0;">Thiết lập chat trực tiếp User &harr; Admin để phản hồi, giục món. Fix giao diện navbar ghim cố định đáy màn hình.</td><td style="padding: 8px 0; color: #4CAF50;">100%</td></tr>
-                    </table>
-                </div>
-            </section>
-
-            <!-- Slide 29: Tiến độ công việc - Thành viên 2 -->
-            <section>
-                <h2>TIẾN ĐỘ: THÀNH VIÊN 2 (Thắng - thangak18)</h2>
-                <div style="font-size: 0.55em; width: 95%; margin: 0 auto;">
-                    <table style="width: 100%; border-collapse: collapse; line-height: 1.4; text-align: left;">
-                        <tr><th style="width: 5%; border-bottom: 2px solid white; padding-bottom: 5px;">STT</th><th style="width: 20%; border-bottom: 2px solid white; padding-bottom: 5px;">Tính năng</th><th style="border-bottom: 2px solid white; padding-bottom: 5px;">Mô tả chi tiết công việc</th><th style="width: 15%; border-bottom: 2px solid white; padding-bottom: 5px;">Tiến độ</th></tr>
-                        <tr><td style="padding: 8px 0; border-bottom: 1px solid #555;">1</td><td style="padding: 8px 0; border-bottom: 1px solid #555;"><strong>Admin Thống Kê</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #555;">Thiết kế Dashboard Báo Cáo. Tích hợp thư viện MPAndroidChart vẽ biểu đồ Doanh Thu & Đơn Hàng (Bar/PieChart).</td><td style="padding: 8px 0; border-bottom: 1px solid #555; color: #4CAF50;">100%</td></tr>
-                        <tr><td style="padding: 8px 0; border-bottom: 1px solid #555;">2</td><td style="padding: 8px 0; border-bottom: 1px solid #555;"><strong>Phân tích AI Gemini</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #555;">Nâng cấp AI model lên gemini-3-flash-preview chuyên phân tích doanh số và Monthly Trend thông minh.</td><td style="padding: 8px 0; border-bottom: 1px solid #555; color: #4CAF50;">100%</td></tr>
-                        <tr><td style="padding: 8px 0; border-bottom: 1px solid #555;">3</td><td style="padding: 8px 0; border-bottom: 1px solid #555;"><strong>Admin Category</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #555;">Thiết lập Quản lý danh mục chuyên sâu (Lọc theo Doanh Thu, Tìm kiếm, Kéo thả đổi vị trí).</td><td style="padding: 8px 0; border-bottom: 1px solid #555; color: #4CAF50;">100%</td></tr>
-                        <tr><td style="padding: 8px 0; border-bottom: 1px solid #555;">4</td><td style="padding: 8px 0; border-bottom: 1px solid #555;"><strong>Xuất báo cáo</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #555;">Tích hợp tính năng tự động tạo bản PDF & Excel báo cáo gửi thẳng vào Cổng Email chia sẻ từ App.</td><td style="padding: 8px 0; border-bottom: 1px solid #555; color: #4CAF50;">100%</td></tr>
-                        <tr><td style="padding: 8px 0;">5</td><td style="padding: 8px 0;"><strong>System Utils</strong></td><td style="padding: 8px 0;">Viết custom layout cấu trúc chia 8-TAB cho Custom Bottom Nav Admin, quản lý ẩn Config an toàn.</td><td style="padding: 8px 0; color: #4CAF50;">100%</td></tr>
-                    </table>
-                </div>
-            </section>
-
-            <!-- Slide 30: Tiến độ công việc - Thành viên 3 -->
-            <section>
-                <h2>TIẾN ĐỘ: THÀNH VIÊN 3 (Khải - nvkhai238)</h2>
-                <div style="font-size: 0.55em; width: 95%; margin: 0 auto;">
-                    <table style="width: 100%; border-collapse: collapse; line-height: 1.4; text-align: left;">
-                        <tr><th style="width: 5%; border-bottom: 2px solid white; padding-bottom: 5px;">STT</th><th style="width: 20%; border-bottom: 2px solid white; padding-bottom: 5px;">Tính năng</th><th style="border-bottom: 2px solid white; padding-bottom: 5px;">Mô tả chi tiết công việc</th><th style="width: 15%; border-bottom: 2px solid white; padding-bottom: 5px;">Tiến độ</th></tr>
-                        <tr><td style="padding: 12px 0; border-bottom: 1px solid #555;">1</td><td style="padding: 12px 0; border-bottom: 1px solid #555;"><strong>Sentiment AI</strong></td><td style="padding: 12px 0; border-bottom: 1px solid #555;">Tích hợp công nghệ dự đoán trí tuệ nhân tạo (Hugging Face) xử lý Data Cảm Xúc & Phân tích qua API Call.</td><td style="padding: 12px 0; border-bottom: 1px solid #555; color: #4CAF50;">100%</td></tr>
-                        <tr><td style="padding: 12px 0; border-bottom: 1px solid #555;">2</td><td style="padding: 12px 0; border-bottom: 1px solid #555;"><strong>Admin Notification</strong></td><td style="padding: 12px 0; border-bottom: 1px solid #555;">Thực thi luồng Push Broadcast Notification hàng loạt từ Admin đến tất cả User (quảng bá khuyến mãi).</td><td style="padding: 12px 0; border-bottom: 1px solid #555; color: #4CAF50;">100%</td></tr>
-                        <tr><td style="padding: 12px 0;">3</td><td style="padding: 12px 0;"><strong>System Config</strong></td><td style="padding: 12px 0;">Dọn dẹp môi trường Environment (.env), rà soát bảo mật lỗi cấp quyền. Resolve Git Conflicts.</td><td style="padding: 12px 0; color: #4CAF50;">100%</td></tr>
-                    </table>
-                </div>
-            </section>
-
-            <!-- Slide 31: Tiến độ công việc - Thành viên 4 -->
-            <section>
-                <h2>TIẾN ĐỘ: THÀNH VIÊN 4 (Cường - Dicun)</h2>
-                <div style="font-size: 0.55em; width: 95%; margin: 0 auto;">
-                    <table style="width: 100%; border-collapse: collapse; line-height: 1.4; text-align: left;">
-                        <tr><th style="width: 5%; border-bottom: 2px solid white; padding-bottom: 5px;">STT</th><th style="width: 20%; border-bottom: 2px solid white; padding-bottom: 5px;">Tính năng</th><th style="border-bottom: 2px solid white; padding-bottom: 5px;">Mô tả chi tiết công việc</th><th style="width: 15%; border-bottom: 2px solid white; padding-bottom: 5px;">Tiến độ</th></tr>
-                        <tr><td style="padding: 12px 0; border-bottom: 1px solid #555;">1</td><td style="padding: 12px 0; border-bottom: 1px solid #555;"><strong>UI Khuyến mãi</strong></td><td style="padding: 12px 0; border-bottom: 1px solid #555;">Thêm tính năng Giao diện Hot Offers, cấu hình hệ thống Adaptor xử lý dạng thanh trượt Slider cho các Banner Quảng Cáo.</td><td style="padding: 12px 0; border-bottom: 1px solid #555; color: #4CAF50;">100%</td></tr>
-                        <tr><td style="padding: 12px 0; border-bottom: 1px solid #555;">2</td><td style="padding: 12px 0; border-bottom: 1px solid #555;"><strong>Gợi ý món ăn</strong></td><td style="padding: 12px 0; border-bottom: 1px solid #555;">Thiết lập Personalized Recommendations, hiển thị đề xuất món ăn được cá nhân hóa tự động theo sở thích trên trang chủ.</td><td style="padding: 12px 0; border-bottom: 1px solid #555; color: #4CAF50;">100%</td></tr>
-                        <tr><td style="padding: 12px 0;">3</td><td style="padding: 12px 0;"><strong>Tối ưu HMI/UX</strong></td><td style="padding: 12px 0;">Đồng bộ hóa lại layout chính xác chuẩn User Experience trên trang Client Main View.</td><td style="padding: 12px 0; color: #4CAF50;">100%</td></tr>
-                    </table>
-                </div>
-            </section>
-
-            <!-- Slide 32: Tiến độ công việc - Thành viên 5 -->
-            <section>
-                <h2>TIẾN ĐỘ: THÀNH VIÊN 5 (Khoa - wokovn)</h2>
-                <div style="font-size: 0.55em; width: 95%; margin: 0 auto;">
-                    <table style="width: 100%; border-collapse: collapse; line-height: 1.4; text-align: left;">
-                        <tr><th style="width: 5%; border-bottom: 2px solid white; padding-bottom: 5px;">STT</th><th style="width: 20%; border-bottom: 2px solid white; padding-bottom: 5px;">Tính năng</th><th style="border-bottom: 2px solid white; padding-bottom: 5px;">Mô tả chi tiết công việc</th><th style="width: 15%; border-bottom: 2px solid white; padding-bottom: 5px;">Tiến độ</th></tr>
-                        <tr><td style="padding: 12px 0; border-bottom: 1px solid #555;">1</td><td style="padding: 12px 0; border-bottom: 1px solid #555;"><strong>Thanh Toán SEPay QR</strong></td><td style="padding: 12px 0; border-bottom: 1px solid #555;">Code hệ thống Webhook liên kết trực tiếp ngân hàng API SEPay quét mã QR nhận diện nội dung đóng tiền chính xác.</td><td style="padding: 12px 0; border-bottom: 1px solid #555; color: #4CAF50;">100%</td></tr>
-                        <tr><td style="padding: 12px 0; border-bottom: 1px solid #555;">2</td><td style="padding: 12px 0; border-bottom: 1px solid #555;"><strong>Hỗ trợ Voucher</strong></td><td style="padding: 12px 0; border-bottom: 1px solid #555;">Thiết kế luồng Áp dụng Voucher mua sắm tích hợp trực tiếp lúc đặt hàng Checkout Giỏ Hàng.</td><td style="padding: 12px 0; border-bottom: 1px solid #555; color: #4CAF50;">100%</td></tr>
-                        <tr><td style="padding: 12px 0;">3</td><td style="padding: 12px 0;"><strong>Quản lý Reorder</strong></td><td style="padding: 12px 0;">Setup hoàn chỉnh Address Management liên kết Giỏ hàng Undo và Tái Đặt hàng (Reorder) 1 click từ lịch sử.</td><td style="padding: 12px 0; color: #4CAF50;">100%</td></tr>
-                    </table>
-                </div>
-            </section>
-
-            <!-- Slide 33: Demo ứng dụng -->
-            <section>
-                <h2>DEMO ỨNG DỤNG THỰC TẾ</h2>
-                <div style="font-size: 0.6em; text-align: left; width: 85%; margin: 0 auto; line-height: 1.6;">
-                    <p><strong>1. Quy trình của User (Khách hàng):</strong></p>
-                    <p style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 5px;">
-                        Đăng nhập &rarr; Trang chủ &rarr; Tìm kiếm "Phở bò" &rarr; Xem chi tiết &rarr; Đọc đánh giá &rarr; Thêm vào giỏ &rarr; Mở giỏ hàng &rarr; Checkout &rarr; Chọn địa chỉ &rarr; Thanh toán COD/QR SEPay &rarr; Xem lịch sử đơn &rarr; Chat với Admin &rarr; Viết đánh giá (5 sao + ảnh).
-                    </p>
-                    
-                    <p style="margin-top: 15px;"><strong>2. Quy trình Admin (Quản trị):</strong></p>
-                    <p style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 5px;">
-                        Đăng nhập Admin &rarr; Xem đơn hàng mới &rarr; Xác nhận đơn (Đang nấu &rarr; Đang giao) &rarr; Xem Dashboard doanh thu &rarr; AI nhận xét &rarr; Vào AI Dashboard (Phân tích cảm xúc &rarr; Dự đoán xu hướng) &rarr; Xuất báo cáo PDF &rarr; Gửi email &rarr; Gửi thông báo khuyến mãi cho tất cả khách &rarr; Trả lời chat.
-                    </p>
-                    
-                    <div style="text-align: center; margin-top: 25px; padding: 15px; border: 1px dashed var(--accent); border-radius: 10px; color: var(--accent);">
-                        <em>[Chạy demo trực tiếp trên thiết bị / emulator]</em>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Slide 34: Tổng kết & Hướng phát triển -->
-            <section>
-                <h2>TỔNG KẾT & HƯỚNG MỞ</h2>
-                <div style="display: flex; gap: 20px; font-size: 0.55em; text-align: left; width: 95%; margin: 0 auto;">
-                    <div style="flex: 1;">
-                        <p style="color: var(--primary); font-size: 1.1em; border-bottom: 1px solid #555; padding-bottom: 5px;"><strong>Đã hoàn thành</strong></p>
-                        <ul style="line-height: 1.4; padding-left: 20px;">
-                            <li>Hệ thống đặt món ăn hoàn chỉnh từ User &rarr; Admin.</li>
-                            <li>Tích hợp AI Sentiment Analysis & Trend Prediction.</li>
-                            <li>Thanh toán QR Banking qua Sepay & Hỗ trợ Voucher.</li>
-                            <li>Chat realtime User &harr; Admin, Push Notification.</li>
-                            <li>Dashboard doanh thu với Gemini AI, Chart Phân tích.</li>
-                            <li>Xác thực địa chỉ cấu trúc Tỉnh/Huyện/Xã chuẩn.</li>
-                            <li>Xuất báo cáo PDF/CSV & gửi Email tự động.</li>
-                            <li>Quản lý danh mục nâng cao Drag-Drop.</li>
-                        </ul>
-                    </div>
-                    <div style="flex: 1;">
-                        <p style="color: var(--accent); font-size: 1.1em; border-bottom: 1px solid #555; padding-bottom: 5px;"><strong>Hướng phát triển tới</strong></p>
-                        <table style="width: 100%; border-collapse: collapse; line-height: 1.3;">
-                            <tr><th style="width: 30%; border-bottom: 1px dotted #555; padding: 5px 0;">Hạng mục</th><th style="border-bottom: 1px dotted #555; padding: 5px 0;">Chi tiết</th></tr>
-                            <tr><td style="padding: 5px 0; border-bottom: 1px solid #444;"><strong>Hoàn thiện AI</strong></td><td style="padding: 5px 0; border-bottom: 1px solid #444;">Huấn luyện mô hình AI và áp dụng hợp lý</td></tr>
-                            <tr><td style="padding: 5px 0; border-bottom: 1px solid #444;"><strong>Thông báo out-app</strong></td><td style="padding: 5px 0; border-bottom: 1px solid #444;">Cài đặt hệ thống thông báo ngoài ứng dụng để người dùng nhận được cập nhật tức thì.</td></tr>
-                            <tr><td style="padding: 5px 0; border-bottom: 1px solid #444;"><strong>Tăng độ UI/UX</strong></td><td style="padding: 5px 0; border-bottom: 1px solid #444;">Cải thiện trải nghiệm người dùng thông qua thiết kế giao diện hiện đại và dễ sử dụng.</td></tr>
-                           
-                        </table>
-                    </div>
-                </div>
-                <div style="font-size: 0.7em; text-align: center; margin-top: 25px; color: var(--primary); font-weight: bold; text-transform: uppercase; letter-spacing: 2px;">
-                    Cám ơn Thầy/Cô và các bạn đã chú ý lắng nghe!
-                </div>
-            </section>
-        </div>
+        <!-- Slide 34: Tổng kết & Hướng phát triển -->
+        <section>
+          <h2>TỔNG KẾT & HƯỚNG MỞ</h2>
+          <div style="display: flex; gap: 20px; font-size: 0.55em; text-align: left; width: 95%; margin: 0 auto">
+            <div style="flex: 1">
+              <p style="color: var(--primary); font-size: 1.1em; border-bottom: 1px solid #555; padding-bottom: 5px"><strong>Đã hoàn thành</strong></p>
+              <ul style="line-height: 1.4; padding-left: 20px">
+                <li>Hệ thống đặt món ăn hoàn chỉnh từ User &rarr; Admin.</li>
+                <li>Tích hợp AI Sentiment Analysis & Trend Prediction.</li>
+                <li>Thanh toán QR Banking qua Sepay & Hỗ trợ Voucher.</li>
+                <li>Chat realtime User &harr; Admin, Push Notification.</li>
+                <li>Dashboard doanh thu với Gemini AI, Chart Phân tích.</li>
+                <li>Xác thực địa chỉ cấu trúc Tỉnh/Huyện/Xã chuẩn.</li>
+                <li>Xuất báo cáo PDF/CSV & gửi Email tự động.</li>
+                <li>Quản lý danh mục nâng cao Drag-Drop.</li>
+              </ul>
+            </div>
+            <div style="flex: 1">
+              <p style="color: var(--accent); font-size: 1.1em; border-bottom: 1px solid #555; padding-bottom: 5px"><strong>Hướng phát triển tới</strong></p>
+              <table style="width: 100%; border-collapse: collapse; line-height: 1.3">
+                <tr>
+                  <th style="width: 30%; border-bottom: 1px dotted #555; padding: 5px 0">Hạng mục</th>
+                  <th style="border-bottom: 1px dotted #555; padding: 5px 0">Chi tiết</th>
+                </tr>
+                <tr>
+                  <td style="padding: 5px 0; border-bottom: 1px solid #444"><strong>Hoàn thiện AI</strong></td>
+                  <td style="padding: 5px 0; border-bottom: 1px solid #444">Huấn luyện mô hình AI và áp dụng hợp lý</td>
+                </tr>
+                <tr>
+                  <td style="padding: 5px 0; border-bottom: 1px solid #444"><strong>Thông báo out-app</strong></td>
+                  <td style="padding: 5px 0; border-bottom: 1px solid #444">Cài đặt hệ thống thông báo ngoài ứng dụng để người dùng nhận được cập nhật tức thì.</td>
+                </tr>
+                <tr>
+                  <td style="padding: 5px 0; border-bottom: 1px solid #444"><strong>Tăng độ UI/UX</strong></td>
+                  <td style="padding: 5px 0; border-bottom: 1px solid #444">Cải thiện trải nghiệm người dùng thông qua thiết kế giao diện hiện đại và dễ sử dụng.</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+          <div style="font-size: 0.7em; text-align: center; margin-top: 25px; color: var(--primary); font-weight: bold; text-transform: uppercase; letter-spacing: 2px">Cám ơn Thầy/Cô và các bạn đã chú ý lắng nghe!</div>
+        </section>
+      </div>
     </div>
 
     <!-- Reveal.js Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.js"></script>
     <script>
-        Reveal.initialize({
-            hash: true,
-            slideNumber: true,
-            transition: 'slide'
-        });
+      Reveal.initialize({
+        hash: true,
+        slideNumber: true,
+        transition: "slide",
+      });
     </script>
-</body>
+  </body>
 </html>
