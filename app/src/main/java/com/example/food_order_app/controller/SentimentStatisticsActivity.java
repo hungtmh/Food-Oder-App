@@ -15,7 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.food_order_app.R;
 import com.example.food_order_app.adapter.SentimentStatsAdapter;
-import com.example.food_order_app.config.GeminiAiConfig;
+import com.example.food_order_app.config.AiConfig;
 import com.example.food_order_app.model.FoodSentimentStats;
 import com.example.food_order_app.network.RetrofitClient;
 import com.example.food_order_app.network.SupabaseDbService;
@@ -295,7 +295,7 @@ public class SentimentStatisticsActivity extends AppCompatActivity {
             return;
         }
 
-        String hfToken = GeminiAiConfig.HF_TOKEN;
+        String hfToken = AiConfig.HF_TOKEN;
         if (hfToken == null || hfToken.trim().isEmpty()) {
             for (FoodSentimentStats stat : pending) {
                 insightCache.put(stat.getFoodId(), buildFallbackInsight(stat));
