@@ -3,10 +3,12 @@ package com.example.food_order_app.controller;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -17,8 +19,8 @@ import com.example.food_order_app.model.ChatMessage;
 import com.example.food_order_app.model.User;
 import com.example.food_order_app.network.RetrofitClient;
 import com.example.food_order_app.network.SupabaseDbService;
-import com.example.food_order_app.utils.AdminBottomNavHelper;
-import com.google.android.material.appbar.MaterialToolbar;
+import com.example.food_order_app.utils.AdminDrawerHelper;
+import com.google.android.material.navigation.NavigationView;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -37,7 +39,9 @@ import retrofit2.Response;
 
 public class AdminChatListActivity extends AppCompatActivity {
 
-    private MaterialToolbar toolbar;
+    private ImageView btnMenuDrawer;
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
     private RecyclerView rvChatList;
     private TextView tvEmpty;
 
@@ -55,9 +59,13 @@ public class AdminChatListActivity extends AppCompatActivity {
 
         dbService = RetrofitClient.getDbService();
 
-        toolbar = findViewById(R.id.toolbarAdminChatList);
+        drawerLayout = findViewById(R.id.adminDrawerLayout);
+        navigationView = findViewById(R.id.adminNavigationView);
+        btnMenuDrawer = findViewById(R.id.btnMenuDrawerChat);
         rvChatList = findViewById(R.id.rvAdminChatList);
         tvEmpty = findViewById(R.id.tvEmptyChat);
+
+        AdminDrawerHelper.setupDrawer(this, drawerLayout, navigationView, btnMenuDrawer, R.id.navAdminChat);
 
         adapter = new AdminChatListAdapter(this, previewItems, roomUserId -> {
             Intent intent = new Intent(AdminChatListActivity.this, ChatRoomActivity.class);
@@ -74,7 +82,6 @@ public class AdminChatListActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        AdminBottomNavHelper.setup(this, AdminBottomNavHelper.TAB_CHAT);
         // Refresh messages when returning
         if (!userNamesMap.isEmpty()) {
             loadMessages();
@@ -121,7 +128,8 @@ public class AdminChatListActivity extends AppCompatActivity {
     }
 
     private void processMessages(List<ChatMessage> allMessages) {
-        // Group by roomUserId, keep first occurance (which is the latest due to DESC order)
+        // Group by roomUserId, keep first occurance (which is the latest due to DESC
+        // order)
         Map<String, ChatMessage> latestMsgs = new LinkedHashMap<>();
         for (ChatMessage msg : allMessages) {
             if (!latestMsgs.containsKey(msg.getRoomUserId())) {
@@ -169,12 +177,13 @@ public class AdminChatListActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
 
-            if (date == null) continue;
+            if (date == null)
+                continue;
 
-            String userName = userNamesMap.containsKey(msg.getRoomUserId()) ?
-                    userNamesMap.get(msg.getRoomUserId()) : "Khách (" + msg.getRoomUserId().substring(0, 4) + ")";
-            String previewText = msg.getSenderId().equals(msg.getRoomUserId()) ?
-                    userName + ": " + msg.getMessage() : "Bạn: " + msg.getMessage();
+            String userName = userNamesMap.containsKey(msg.getRoomUserId()) ? userNamesMap.get(msg.getRoomUserId())
+                    : "Khách (" + msg.getRoomUserId().substring(0, 4) + ")";
+            String previewText = msg.getSenderId().equals(msg.getRoomUserId()) ? userName + ": " + msg.getMessage()
+                    : "Bạn: " + msg.getMessage();
 
             AdminChatPreview item = new AdminChatPreview(msg.getRoomUserId(), userName, previewText, date);
             long msgTime = date.getTime();

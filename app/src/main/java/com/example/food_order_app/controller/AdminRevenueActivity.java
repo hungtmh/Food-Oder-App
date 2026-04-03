@@ -2,7 +2,6 @@ package com.example.food_order_app.controller;
 
 import android.app.DatePickerDialog;
 import android.content.ContentValues;
-import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.pdf.PdfDocument;
@@ -16,24 +15,22 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Button;
 import android.widget.ScrollView;
-import android.widget.SearchView;
 import android.widget.AutoCompleteTextView;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.food_order_app.R;
-import com.example.food_order_app.config.GeminiAiConfig;
+import com.example.food_order_app.config.AiConfig;
 import com.example.food_order_app.model.Order;
 import com.example.food_order_app.model.OrderItem;
 import com.example.food_order_app.model.User;
 import com.example.food_order_app.network.RetrofitClient;
 import com.example.food_order_app.network.SupabaseDbService;
-import com.example.food_order_app.utils.AdminBottomNavHelper;
+import com.example.food_order_app.utils.AdminDrawerHelper;
+import com.google.android.material.navigation.NavigationView;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.BarData;
@@ -88,6 +85,8 @@ public class AdminRevenueActivity extends AppCompatActivity {
     private android.view.View cardRevenueReport;
     private AutoCompleteTextView atvMonthSelector;
     private AutoCompleteTextView atvYearSelector;
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
 
     private SupabaseDbService dbService;
     private final Map<String, List<CustomerRecord>> monthlyCustomerData = new LinkedHashMap<>();
@@ -120,10 +119,11 @@ public class AdminRevenueActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        AdminBottomNavHelper.setup(this, AdminBottomNavHelper.TAB_REVENUE);
     }
 
     private void initViews() {
+        drawerLayout = findViewById(R.id.adminDrawerLayout);
+        navigationView = findViewById(R.id.adminNavigationView);
         btnBack = findViewById(R.id.btnBackRevenue);
         btnDateFrom = findViewById(R.id.btnDateFrom);
         btnDateTo = findViewById(R.id.btnDateTo);
@@ -169,6 +169,9 @@ public class AdminRevenueActivity extends AppCompatActivity {
         scrollRevenue = findViewById(R.id.scrollRevenue);
         cardDashboardOverview = findViewById(R.id.cardDashboardOverview);
         cardRevenueReport = findViewById(R.id.cardRevenueReport);
+
+        btnBack.setImageResource(R.drawable.ic_menu_hamburger);
+        AdminDrawerHelper.setupDrawer(this, drawerLayout, navigationView, btnBack, R.id.navAdminRevenue);
     }
 
     private void handleSectionNavigationIntent() {
@@ -193,8 +196,6 @@ public class AdminRevenueActivity extends AppCompatActivity {
     }
 
     private void setupListeners() {
-        btnBack.setOnClickListener(v -> finish());
-
         btnDateFrom.setOnClickListener(v -> showDatePicker(true));
         btnDateTo.setOnClickListener(v -> showDatePicker(false));
 
@@ -795,7 +796,7 @@ public class AdminRevenueActivity extends AppCompatActivity {
 
         String prompt = "Bạn là chuyên gia phân tích kinh doanh nhà hàng. Dựa vào dữ liệu biến động doanh thu và đơn hàng theo từng tháng dưới đây, hãy đưa ra nhận xét ngắn gọn (3-5 câu) bằng tiếng Việt. Tập trung vào xu hướng tăng/giảm, tháng nào tốt nhất/kém nhất, và đề xuất 1 hành động cải thiện.\n\nDữ liệu:\n"
                 + dataSummary;
-        String hfToken = GeminiAiConfig.HF_TOKEN;
+        String hfToken = AiConfig.HF_TOKEN;
         if (hfToken == null || hfToken.trim().isEmpty()) {
             tvMonthlyTrendComment.setText("Thiếu cấu hình HF_TOKEN. Vui lòng kiểm tra file môi trường.");
             return;

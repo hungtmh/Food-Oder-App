@@ -10,6 +10,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -21,7 +22,9 @@ import com.example.food_order_app.model.Review;
 import com.example.food_order_app.network.RetrofitClient;
 import com.example.food_order_app.network.SupabaseDbService;
 import com.example.food_order_app.network.SupabaseFunctionsService;
+import com.example.food_order_app.utils.AdminDrawerHelper;
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.navigation.NavigationView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +36,8 @@ import retrofit2.Response;
 
 public class AIDashboardActivity extends AppCompatActivity {
 
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
     private TextView tvTotalReviews, tvPositivePercent, tvPositiveCount;
     private TextView tvNeutralPercent, tvNeutralCount, tvNegativePercent, tvNegativeCount;
     private Button btnAnalyzeAllReviews;
@@ -59,6 +64,8 @@ public class AIDashboardActivity extends AppCompatActivity {
     }
 
     private void initViews() {
+        drawerLayout = findViewById(R.id.adminDrawerLayout);
+        navigationView = findViewById(R.id.adminNavigationView);
         btnBack = findViewById(R.id.btnBack);
         tvTotalReviews = findViewById(R.id.tvTotalReviews);
         tvPositivePercent = findViewById(R.id.tvPositivePercent);
@@ -88,11 +95,11 @@ public class AIDashboardActivity extends AppCompatActivity {
         });
         rvTopNegative.setLayoutManager(new LinearLayoutManager(this));
         rvTopNegative.setAdapter(topNegativeAdapter);
+
+        AdminDrawerHelper.setupDrawer(this, drawerLayout, navigationView, btnBack, R.id.navAiInsights);
     }
 
     private void setupListeners() {
-        btnBack.setOnClickListener(v -> finish());
-
         btnAnalyzeAllReviews.setOnClickListener(v -> analyzeAllReviews());
 
         cardViewSentiment.setOnClickListener(v -> {

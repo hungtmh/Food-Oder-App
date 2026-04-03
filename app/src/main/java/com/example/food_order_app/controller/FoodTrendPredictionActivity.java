@@ -37,6 +37,10 @@ import retrofit2.Response;
 
 public class FoodTrendPredictionActivity extends AppCompatActivity {
 
+    // Minimum data thresholds to avoid unreliable predictions.
+    private static final int MIN_REVIEWS = 5;
+    private static final int MIN_ORDERS = 10;
+
     private ImageView btnBack;
     private Button btnGeneratePredictions;
     private Button btnFilterAll, btnFilterHotSeller, btnFilterDeclining, btnFilterAtRisk, btnFilterStable;
@@ -48,6 +52,14 @@ public class FoodTrendPredictionActivity extends AppCompatActivity {
     private FoodTrendAdapter adapter;
     private List<FoodTrend> allTrends = new ArrayList<>();
     private String currentFilter = "all";
+
+    private interface SentimentStatsCallback {
+        void onResult(FoodSentimentStats stats);
+    }
+
+    private interface IntCallback {
+        void onResult(int value);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -247,70 +259,67 @@ public class FoodTrendPredictionActivity extends AppCompatActivity {
     }
 
     private void predictFoodTrend(Food food, Runnable onComplete) {
-        // Get last 30 days orders for this food
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DAY_OF_MONTH, -30);
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        String dateFrom = sdf.format(cal.getTime());
+        Calendar now = Calendar.getInstance();
 
-        // Get sentiment stats
-        dbService.getFoodSentimentStatsByFood("eq." + food.getId()).enqueue(new Callback<List<FoodSentimentStats>>() {
-            @Override
-            public void onResponse(Call<List<FoodSentimentStats>> call, Response<List<FoodSentimentStats>> response) {
-                FoodSentimentStats sentimentStats = null;
-                if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
-                    sentimentStats = response.body().get(0);
-                }
+        Calendar currentFrom = (Calendar) now.clone();
+        currentFrom.add(Calendar.DAY_OF_MONTH, -29);
+        Calendar currentTo = (Calendar) now.clone();
 
-                // Calculate trend based on sentiment and sales (simplified AI logic)
-                String trendType;
-                double confidenceScore;
-                double salesTrend = 0; // This should be calculated from order history
-                double sentimentTrend = 0;
+        Calendar prevFrom = (Calendar) now.clone();
+        prevFrom.add(Calendar.DAY_OF_MONTH, -59);
+        Calendar prevTo = (Calendar) now.clone();
+        prevTo.add(Calendar.DAY_OF_MONTH, -30);
 
-                if (sentimentStats != null && sentimentStats.getTotalReviews() > 0) {
-                    sentimentTrend = sentimentStats.getAvgSentimentScore();
+        fetchSentimentStats(food.getId(),
+                sentimentStats -> getOrderCountByFoodInRange(food.getId(), currentFrom, currentTo,
+                        currentSales -> getOrderCountByFoodInRange(food.getId(), prevFrom, prevTo, prevSales -> {
+                            double actualSalesTrend = calculateSalesTrendPercent(currentSales, prevSales);
 
-                    if (sentimentStats.getPositivePercent() > 70 && food.isPopular()) {
-                        trendType = "hot_seller";
-                        confidenceScore = 0.85;
-                        salesTrend = 25.0;
-                    } else if (sentimentStats.getNegativePercent() > 50) {
-                        trendType = "at_risk";
-                        confidenceScore = 0.75;
-                        salesTrend = -15.0;
-                    } else if (sentimentStats.getNegativePercent() > 30) {
-                        trendType = "declining";
-                        confidenceScore = 0.70;
-                        salesTrend = -8.0;
-                    } else {
-                        trendType = "stable";
-                        confidenceScore = 0.65;
-                        salesTrend = 2.0;
-                    }
-                } else {
-                    // No data, assume stable
-                    trendType = "stable";
-                    confidenceScore = 0.50;
-                    salesTrend = 0;
-                    sentimentTrend = 0.5;
-                }
+                            int totalReviews = sentimentStats != null ? sentimentStats.getTotalReviews() : 0;
+                            double positivePercent = sentimentStats != null ? sentimentStats.getPositivePercent() : 0.0;
+                            double negativePercent = sentimentStats != null ? sentimentStats.getNegativePercent() : 0.0;
+                            double avgSentimentScore = sentimentStats != null ? sentimentStats.getAvgSentimentScore()
+                                    : 0.5;
 
-                // Save trend to database
-                saveFoodTrend(food.getId(), trendType, confidenceScore, salesTrend, sentimentTrend, onComplete);
-            }
+                            String trendType;
+                            double confidenceScore;
+                            String reason = "Rule based result";
 
-            @Override
-            public void onFailure(Call<List<FoodSentimentStats>> call, Throwable t) {
-                // Skip this food
-                if (onComplete != null)
-                    onComplete.run();
-            }
-        });
+                            if (totalReviews < MIN_REVIEWS && currentSales < MIN_ORDERS) {
+                                trendType = "stable";
+                                confidenceScore = 0.40;
+                                reason = "Not enough data to predict";
+                            } else if (negativePercent >= 50.0 || actualSalesTrend <= -30.0) {
+                                trendType = "at_risk";
+                                confidenceScore = totalReviews > 20 ? 0.90 : 0.75;
+                                reason = "High negative sentiment or severe sales drop";
+                            } else if (positivePercent >= 70.0 && actualSalesTrend >= 5.0 && currentSales >= 20) {
+                                trendType = "hot_seller";
+                                confidenceScore = 0.85;
+                                reason = "Strong positive sentiment and growing sales";
+                            } else if (negativePercent >= 30.0 || actualSalesTrend <= -10.0) {
+                                trendType = "declining";
+                                confidenceScore = 0.70;
+                                reason = "Moderate risk from sentiment or sales decline";
+                            } else {
+                                trendType = "stable";
+                                confidenceScore = 0.80;
+                                reason = "Stable within current rule thresholds";
+                            }
+
+                            saveFoodTrend(
+                                    food.getId(),
+                                    trendType,
+                                    confidenceScore,
+                                    actualSalesTrend,
+                                    avgSentimentScore,
+                                    reason,
+                                    onComplete);
+                        })));
     }
 
     private void saveFoodTrend(String foodId, String trendType, double confidenceScore,
-            double salesTrend, double sentimentTrend, Runnable onComplete) {
+            double salesTrend, double sentimentTrend, String notes, Runnable onComplete) {
         // First, delete existing trend for this food
         dbService.deleteFoodTrend("eq." + foodId).enqueue(new Callback<Void>() {
             @Override
@@ -323,6 +332,7 @@ public class FoodTrendPredictionActivity extends AppCompatActivity {
                 trendData.put("prediction_period", "30_days");
                 trendData.put("sales_trend", salesTrend);
                 trendData.put("sentiment_trend", sentimentTrend);
+                trendData.put("notes", notes);
 
                 dbService.createFoodTrend(trendData).enqueue(new Callback<List<FoodTrend>>() {
                     @Override
@@ -346,5 +356,113 @@ public class FoodTrendPredictionActivity extends AppCompatActivity {
                     onComplete.run();
             }
         });
+    }
+
+    private void fetchSentimentStats(String foodId, SentimentStatsCallback callback) {
+        dbService.getFoodSentimentStatsByFood("eq." + foodId).enqueue(new Callback<List<FoodSentimentStats>>() {
+            @Override
+            public void onResponse(Call<List<FoodSentimentStats>> call, Response<List<FoodSentimentStats>> response) {
+                FoodSentimentStats sentimentStats = null;
+                if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                    sentimentStats = response.body().get(0);
+                }
+                callback.onResult(sentimentStats);
+            }
+
+            @Override
+            public void onFailure(Call<List<FoodSentimentStats>> call, Throwable t) {
+                callback.onResult(null);
+            }
+        });
+    }
+
+    private void getOrderCountByFoodInRange(String foodId, Calendar from, Calendar to, IntCallback callback) {
+        String fromStr = formatDateTime(from, true);
+        String toStr = formatDateTime(to, false);
+
+        Map<String, String> filters = new HashMap<>();
+        filters.put("and", "(created_at.gte." + fromStr + ",created_at.lte." + toStr + ")");
+        filters.put("status", "eq.served");
+
+        dbService.getOrdersByDateRange(filters, "id,created_at,status").enqueue(new Callback<List<Order>>() {
+            @Override
+            public void onResponse(Call<List<Order>> call, Response<List<Order>> response) {
+                if (!response.isSuccessful() || response.body() == null || response.body().isEmpty()) {
+                    callback.onResult(0);
+                    return;
+                }
+
+                List<String> orderIds = new ArrayList<>();
+                for (Order order : response.body()) {
+                    if (order.getId() == null || order.getCreatedAt() == null) {
+                        continue;
+                    }
+
+                    // Keep a local safety check for API time filtering.
+                    if (order.getCreatedAt().compareTo(fromStr) >= 0 && order.getCreatedAt().compareTo(toStr) <= 0
+                            && "served".equals(order.getStatus())) {
+                        orderIds.add(order.getId());
+                    }
+                }
+
+                if (orderIds.isEmpty()) {
+                    callback.onResult(0);
+                    return;
+                }
+
+                dbService.getOrderItems(buildInFilter(orderIds), "food_id,quantity")
+                        .enqueue(new Callback<List<OrderItem>>() {
+                            @Override
+                            public void onResponse(Call<List<OrderItem>> call, Response<List<OrderItem>> response) {
+                                if (!response.isSuccessful() || response.body() == null || response.body().isEmpty()) {
+                                    callback.onResult(0);
+                                    return;
+                                }
+
+                                int totalQuantity = 0;
+                                for (OrderItem item : response.body()) {
+                                    if (foodId.equals(item.getFoodId())) {
+                                        totalQuantity += item.getQuantity();
+                                    }
+                                }
+                                callback.onResult(totalQuantity);
+                            }
+
+                            @Override
+                            public void onFailure(Call<List<OrderItem>> call, Throwable t) {
+                                callback.onResult(0);
+                            }
+                        });
+            }
+
+            @Override
+            public void onFailure(Call<List<Order>> call, Throwable t) {
+                callback.onResult(0);
+            }
+        });
+    }
+
+    private double calculateSalesTrendPercent(int currentSales, int previousSales) {
+        if (previousSales == 0) {
+            return currentSales > 0 ? 100.0 : 0.0;
+        }
+        return ((double) (currentSales - previousSales) / previousSales) * 100.0;
+    }
+
+    private String formatDateTime(Calendar calendar, boolean startOfDay) {
+        SimpleDateFormat isoDateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        return isoDateFormat.format(calendar.getTime()) + (startOfDay ? "T00:00:00" : "T23:59:59");
+    }
+
+    private String buildInFilter(List<String> ids) {
+        StringBuilder sb = new StringBuilder("in.(");
+        for (int i = 0; i < ids.size(); i++) {
+            if (i > 0) {
+                sb.append(",");
+            }
+            sb.append(ids.get(i));
+        }
+        sb.append(")");
+        return sb.toString();
     }
 }

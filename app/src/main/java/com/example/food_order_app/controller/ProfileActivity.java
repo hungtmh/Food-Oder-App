@@ -20,8 +20,10 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationView;
 
 import com.bumptech.glide.Glide;
 import com.example.food_order_app.R;
@@ -31,6 +33,7 @@ import com.example.food_order_app.network.RetrofitClient;
 import com.example.food_order_app.network.SupabaseAuthService;
 import com.example.food_order_app.network.SupabaseDbService;
 import com.example.food_order_app.network.SupabaseStorageService;
+import com.example.food_order_app.utils.AdminDrawerHelper;
 import com.example.food_order_app.utils.SessionManager;
 import com.example.food_order_app.utils.ValidationUtils;
 
@@ -61,6 +64,9 @@ public class ProfileActivity extends AppCompatActivity {
     private CircleImageView imgAvatar;
     private TextView tvProfileName;
     private BottomNavigationView bottomNav;
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
+    private ImageView btnMenuDrawerProfile;
 
     // Personal info section
     private LinearLayout sectionPersonalHeader, sectionPersonalContent;
@@ -114,6 +120,9 @@ public class ProfileActivity extends AppCompatActivity {
         btnChangeAvatar = findViewById(R.id.btnChangeAvatar);
         imgAvatar = findViewById(R.id.imgAvatar);
         tvProfileName = findViewById(R.id.tvProfileName);
+        btnMenuDrawerProfile = findViewById(R.id.btnMenuDrawerProfile);
+        drawerLayout = findViewById(R.id.adminDrawerLayout);
+        navigationView = findViewById(R.id.adminNavigationView);
 
         // Personal info section
         sectionPersonalHeader = findViewById(R.id.sectionPersonalHeader);
@@ -142,19 +151,20 @@ public class ProfileActivity extends AppCompatActivity {
         updateSectionVisibility(sectionPersonalContent, ivExpandPersonal, isPersonalExpanded);
 
         bottomNav = findViewById(R.id.bottomNav);
-        View adminBottomNav = findViewById(R.id.adminBottomNav);
+        View bottomNavContainer = findViewById(R.id.bottomNavContainer);
 
         // Admin checks
         if (sessionManager.isAdmin()) {
             sectionOrdersHeader.setVisibility(View.GONE);
             sectionFavoritesHeader.setVisibility(View.GONE);
-            
-            bottomNav.setVisibility(View.GONE);
-            adminBottomNav.setVisibility(View.VISIBLE);
-            com.example.food_order_app.utils.AdminBottomNavHelper.setup(this, com.example.food_order_app.utils.AdminBottomNavHelper.TAB_PROFILE);
+
+            bottomNavContainer.setVisibility(View.GONE);
+            btnMenuDrawerProfile.setVisibility(View.VISIBLE);
+            AdminDrawerHelper.setupDrawer(this, drawerLayout, navigationView, btnMenuDrawerProfile,
+                    R.id.navAdminProfile);
         } else {
-            bottomNav.setVisibility(View.VISIBLE);
-            adminBottomNav.setVisibility(View.GONE);
+            bottomNavContainer.setVisibility(View.VISIBLE);
+            btnMenuDrawerProfile.setVisibility(View.GONE);
             setupBottomNav();
         }
     }
@@ -187,8 +197,7 @@ public class ProfileActivity extends AppCompatActivity {
                             uploadAvatarToStorage(imageUri);
                         }
                     }
-                }
-        );
+                });
     }
 
     private void setupListeners() {
@@ -208,7 +217,6 @@ public class ProfileActivity extends AppCompatActivity {
         sectionOrdersHeader.setOnClickListener(v -> {
             startActivity(new Intent(ProfileActivity.this, OrderHistoryActivity.class));
         });
-
 
         // Favorites: navigate to FavoritesActivity
         sectionFavoritesHeader.setOnClickListener(v -> {
@@ -334,7 +342,8 @@ public class ProfileActivity extends AppCompatActivity {
                                     // ignore
                                 }
                                 Log.e(TAG, "Upload failed: " + response.code() + " " + errorMsg);
-                                Toast.makeText(ProfileActivity.this, "Upload ảnh thất bại. Mã lỗi: " + response.code(), Toast.LENGTH_LONG).show();
+                                Toast.makeText(ProfileActivity.this, "Upload ảnh thất bại. Mã lỗi: " + response.code(),
+                                        Toast.LENGTH_LONG).show();
                             }
                         }
 
@@ -342,7 +351,8 @@ public class ProfileActivity extends AppCompatActivity {
                         public void onFailure(Call<ResponseBody> call, Throwable t) {
                             progressDialog.dismiss();
                             Log.e(TAG, "Upload error: " + t.getMessage());
-                            Toast.makeText(ProfileActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(ProfileActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT)
+                                    .show();
                         }
                     });
 
@@ -401,7 +411,8 @@ public class ProfileActivity extends AppCompatActivity {
                                 sessionManager.updateProfile(sessionManager.getFullName(),
                                         sessionManager.getPhone(), sessionManager.getAddress(), newUrl);
                                 loadUserData();
-                                Toast.makeText(ProfileActivity.this, "Đã cập nhật ảnh đại diện!", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(ProfileActivity.this, "Đã cập nhật ảnh đại diện!", Toast.LENGTH_SHORT)
+                                        .show();
                             } else {
                                 Toast.makeText(ProfileActivity.this, "Cập nhật thất bại", Toast.LENGTH_SHORT).show();
                             }
@@ -410,7 +421,8 @@ public class ProfileActivity extends AppCompatActivity {
                         @Override
                         public void onFailure(Call<List<User>> call, Throwable t) {
                             progressDialog.dismiss();
-                            Toast.makeText(ProfileActivity.this, getString(R.string.error_network), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(ProfileActivity.this, getString(R.string.error_network), Toast.LENGTH_SHORT)
+                                    .show();
                         }
                     });
                 } else {
@@ -435,9 +447,7 @@ public class ProfileActivity extends AppCompatActivity {
             content.setAlpha(0f);
             content.animate().alpha(1f).setDuration(200).start();
         } else {
-            content.animate().alpha(0f).setDuration(200).withEndAction(() ->
-                    content.setVisibility(View.GONE)
-            ).start();
+            content.animate().alpha(0f).setDuration(200).withEndAction(() -> content.setVisibility(View.GONE)).start();
         }
 
         float fromDeg = expanded ? 0f : 180f;
@@ -485,7 +495,8 @@ public class ProfileActivity extends AppCompatActivity {
             public void onResponse(Call<List<User>> call, Response<List<User>> response) {
                 progressDialog.dismiss();
                 if (response.isSuccessful()) {
-                    sessionManager.updateProfile(fullName, phone, sessionManager.getAddress(), sessionManager.getAvatarUrl());
+                    sessionManager.updateProfile(fullName, phone, sessionManager.getAddress(),
+                            sessionManager.getAvatarUrl());
                     tvProfileName.setText(fullName.isEmpty() ? "Người dùng" : fullName);
                     Toast.makeText(ProfileActivity.this,
                             getString(R.string.success_update_profile),
@@ -507,7 +518,7 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void updateByEmail(Map<String, Object> updates,
-                               String fullName, String phone) {
+            String fullName, String phone) {
         String email = sessionManager.getEmail();
         dbService.getUserByEmail("eq." + email, "*")
                 .enqueue(new Callback<List<User>>() {
@@ -521,15 +532,15 @@ public class ProfileActivity extends AppCompatActivity {
                             sessionManager.saveUserInfo(
                                     id, sessionManager.getAuthId(),
                                     email, fullName, phone, sessionManager.getAddress(),
-                                    user.getAvatarUrl(), user.getRole()
-                            );
+                                    user.getAvatarUrl(), user.getRole());
 
                             dbService.updateUser("eq." + id, updates).enqueue(new Callback<List<User>>() {
                                 @Override
                                 public void onResponse(Call<List<User>> call, Response<List<User>> response) {
                                     progressDialog.dismiss();
                                     if (response.isSuccessful()) {
-                                        sessionManager.updateProfile(fullName, phone, sessionManager.getAddress(), sessionManager.getAvatarUrl());
+                                        sessionManager.updateProfile(fullName, phone, sessionManager.getAddress(),
+                                                sessionManager.getAvatarUrl());
                                         tvProfileName.setText(fullName.isEmpty() ? "Người dùng" : fullName);
                                         Toast.makeText(ProfileActivity.this,
                                                 getString(R.string.success_update_profile),

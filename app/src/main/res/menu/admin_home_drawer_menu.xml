@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/navAdminFood"
+        android:icon="@drawable/ic_home"
+        android:title="Đồ ăn" />
+
+    <item
+        android:id="@+id/navAdminCategory"
+        android:icon="@drawable/ic_feedback"
+        android:title="Danh mục" />
+
+    <item
+        android:id="@+id/navAdminRevenue"
+        android:icon="@drawable/ic_chart"
+        android:title="Doanh thu" />
+
+    <item
+        android:id="@+id/navAdminChat"
+        android:icon="@drawable/ic_feedback"
+        android:title="Chat" />
+
+    <item
+        android:id="@+id/navAdminOrders"
+        android:icon="@drawable/ic_cart"
+        android:title="Đơn hàng" />
+
+    <item
+        android:id="@+id/navAdminProfile"
+        android:icon="@drawable/ic_person"
+        android:title="Hồ sơ" />
+
+    <item
+        android:id="@+id/navAiInsights"
+        android:icon="@drawable/ic_ai"
+        android:title="AI Insights" />
+
+    <item
+        android:id="@+id/navSendNotification"
+        android:icon="@drawable/ic_notification"
+        android:title="Gửi thông báo" />
+</menu>
