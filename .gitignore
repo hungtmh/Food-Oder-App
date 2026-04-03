@@ -18,3 +18,4 @@ node_modules/
 # API Configuration (Private)
 # Bỏ chặn thư mục config để file SupabaseConfig.java (đã an toàn) có thể được git push lên mạng
 # app/src/main/java/com/example/food_order_app/config/
+SLIDE_MOBILE/KHAI_AI_PUSH_PRESENTATION_SCRIPT.md
