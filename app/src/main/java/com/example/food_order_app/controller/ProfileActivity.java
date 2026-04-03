@@ -104,7 +104,7 @@ public class ProfileActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (bottomNav != null) {
+        if (bottomNav != null && !sessionManager.isAdmin()) {
             bottomNav.setSelectedItemId(R.id.nav_account);
         }
     }
@@ -142,12 +142,20 @@ public class ProfileActivity extends AppCompatActivity {
         updateSectionVisibility(sectionPersonalContent, ivExpandPersonal, isPersonalExpanded);
 
         bottomNav = findViewById(R.id.bottomNav);
-        setupBottomNav();
+        View adminBottomNav = findViewById(R.id.adminBottomNav);
 
         // Admin checks
         if (sessionManager.isAdmin()) {
             sectionOrdersHeader.setVisibility(View.GONE);
             sectionFavoritesHeader.setVisibility(View.GONE);
+            
+            bottomNav.setVisibility(View.GONE);
+            adminBottomNav.setVisibility(View.VISIBLE);
+            com.example.food_order_app.utils.AdminBottomNavHelper.setup(this, com.example.food_order_app.utils.AdminBottomNavHelper.TAB_PROFILE);
+        } else {
+            bottomNav.setVisibility(View.VISIBLE);
+            adminBottomNav.setVisibility(View.GONE);
+            setupBottomNav();
         }
     }
 
