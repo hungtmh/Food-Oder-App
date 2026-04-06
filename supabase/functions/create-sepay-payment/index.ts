@@ -6,7 +6,8 @@ type RequestBody = {
   user_id: string;
   order_code: string;
   subtotal: number;
-  payment_mode?: "BANK_QR" | "SEPAY_CHECKOUT";
+  payment_mode?: "BANK_QR" | "SEPAY_CHECKOUT" | "COD";
+  payment_method?: "cod" | "bank_transfer" | "momo" | "zalopay";
   receiver_name?: string;
   phone?: string;
   address?: string;
@@ -61,7 +62,10 @@ function getRequiredEnv(name: string): string {
 
 function buildPaymentContent(orderCode: string): string {
   // Sepay/Bank transfer content should be simple, uppercase and stable.
-  return `FOODAPP ${orderCode}`.replace(/[^A-Z0-9\s-]/gi, "").trim().toUpperCase();
+  return `FOODAPP ${orderCode}`
+    .replace(/[^A-Z0-9\s-]/gi, "")
+    .trim()
+    .toUpperCase();
 }
 
 function calculateDiscount(voucher: VoucherRow, subtotal: number): number {
@@ -125,19 +129,13 @@ Deno.serve(async (req: Request) => {
     return badRequest("subtotal must be greater than 0");
   }
 
-  let voucherId: string | null = null;
-  let appliedVoucherCode: string | null = null;
-  let discountAmount = 0;
+  let voucherCodeToApply: string | null = null;
+  let totalAmount = body.subtotal;
 
   if (body.voucher_code && body.voucher_code.trim().length > 0) {
     const voucherCode = normalizeCode(body.voucher_code);
 
-    const { data: voucher, error: voucherError } = await sb
-      .from("vouchers")
-      .select("id,code,discount_type,discount_value,max_discount_amount,min_order_value,is_active,is_public,start_date,end_date,usage_limit,used_count")
-      .eq("code", voucherCode)
-      .eq("is_active", true)
-      .single<VoucherRow>();
+    const { data: voucher, error: voucherError } = await sb.from("vouchers").select("id,code,discount_type,discount_value,max_discount_amount,min_order_value,is_active,is_public,start_date,end_date,usage_limit,used_count").eq("code", voucherCode).eq("is_active", true).single<VoucherRow>();
 
     if (voucherError || !voucher) {
       return badRequest("Voucher is invalid or inactive");
@@ -166,23 +164,25 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    discountAmount = calculateDiscount(voucher, body.subtotal);
-    voucherId = voucher.id;
-    appliedVoucherCode = voucher.code;
+    voucherCodeToApply = voucher.code;
+    totalAmount = Math.max(0, body.subtotal - calculateDiscount(voucher, body.subtotal));
   }
 
-  const totalAmount = Math.max(0, body.subtotal - discountAmount);
   const receiverName = (body.receiver_name ?? "").trim();
   const phone = (body.phone ?? "").trim();
   const address = (body.address ?? "").trim();
   const paymentMode = body.payment_mode ?? "BANK_QR";
+  const paymentMethod = body.payment_method ?? (paymentMode === "COD" ? "cod" : "bank_transfer");
 
-  const paymentContent = buildPaymentContent(body.order_code);
-
-  const qrUrl = `https://img.vietqr.io/image/${bankCode}-${accountNo}-compact2.png?amount=${Math.round(totalAmount)}&addInfo=${encodeURIComponent(paymentContent)}&accountName=${encodeURIComponent(accountName)}`;
+  const paymentContent = paymentMode === "COD" ? null : buildPaymentContent(body.order_code);
+  let qrUrl: string | null = null;
 
   let checkoutUrl: string | null = null;
   let checkoutFormFields: Record<string, string> | null = null;
+
+  if (paymentMode === "BANK_QR" || paymentMode === "SEPAY_CHECKOUT") {
+    qrUrl = `https://img.vietqr.io/image/${bankCode}-${accountNo}-compact2.png?amount=${Math.round(totalAmount)}&addInfo=${encodeURIComponent(paymentContent ?? "")}&accountName=${encodeURIComponent(accountName)}`;
+  }
 
   if (paymentMode === "SEPAY_CHECKOUT") {
     if (!body.success_url || !body.error_url || !body.cancel_url) {
@@ -221,51 +221,46 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  const { data: insertedOrder, error: orderError } = await sb
-    .from("orders")
-    .insert({
-      user_id: body.user_id,
-      order_code: body.order_code,
-      receiver_name: receiverName,
-      phone,
-      address,
-      payment_method: "bank_transfer",
-      note: body.note ?? "QR Sepay",
-      subtotal: body.subtotal,
-      discount_amount: discountAmount,
-      total_amount: totalAmount,
-      status: "pending",
-      voucher_id: voucherId,
-      applied_voucher_code: appliedVoucherCode,
-      payment_status: "pending",
-      payment_reference: paymentContent,
-      payment_qr_url: paymentMode === "BANK_QR" ? qrUrl : null,
-    })
-    .select("id,order_code,total_amount,payment_status,payment_qr_url,payment_reference")
-    .single();
+  const { data: insertedOrder, error: orderError } = await sb.rpc("create_order_with_voucher_tx", {
+    p_user_id: body.user_id,
+    p_order_code: body.order_code,
+    p_receiver_name: receiverName,
+    p_phone: phone,
+    p_address: address,
+    p_payment_method: paymentMethod,
+    p_note: body.note ?? (paymentMode === "COD" ? "COD" : "QR Sepay"),
+    p_subtotal: body.subtotal,
+    p_order_type: body.order_type ?? "delivery",
+    p_payment_status: "pending",
+    p_payment_reference: paymentContent,
+    p_payment_qr_url: paymentMode === "BANK_QR" ? qrUrl : null,
+    p_voucher_code: voucherCodeToApply,
+  });
 
   if (orderError) {
-    return internalError(orderError.message);
+    return badRequest(orderError.message);
   }
 
-  if (voucherId) {
-    const { error: incError } = await sb.rpc("increment_voucher_usage", {
-      p_voucher_id: voucherId,
-    });
+  if (!insertedOrder || typeof insertedOrder !== "object") {
+    return internalError("Cannot create order");
+  }
 
-    if (incError) {
-      return internalError(incError.message);
-    }
+  const orderData = insertedOrder as Record<string, unknown>;
+  const parsedTotal = Number(orderData.total_amount ?? body.subtotal);
+  totalAmount = Number.isFinite(parsedTotal) ? parsedTotal : body.subtotal;
+
+  if (paymentMode === "BANK_QR") {
+    qrUrl = `https://img.vietqr.io/image/${bankCode}-${accountNo}-compact2.png?amount=${Math.round(totalAmount)}&addInfo=${encodeURIComponent(paymentContent ?? "")}&accountName=${encodeURIComponent(accountName)}`;
   }
 
   return new Response(
     JSON.stringify({
       success: true,
-      order: insertedOrder,
+      order: orderData,
       payment: {
         provider: "sepay",
         mode: paymentMode,
-        qr_url: qrUrl,
+        qr_url: paymentMode === "BANK_QR" ? qrUrl : null,
         checkout_url: checkoutUrl,
         checkout_form_fields: checkoutFormFields,
         transfer_content: paymentContent,

@@ -24,6 +24,30 @@ public class Voucher {
     @SerializedName("min_order_value")
     private double minOrderValue;
 
+    @SerializedName("description")
+    private String description;
+
+    @SerializedName("usage_limit")
+    private Integer usageLimit;
+
+    @SerializedName("used_count")
+    private int usedCount;
+
+    @SerializedName("limit_per_user")
+    private Integer limitPerUser;
+
+    @SerializedName("start_date")
+    private String startDate;
+
+    @SerializedName("end_date")
+    private String endDate;
+
+    @SerializedName("is_active")
+    private boolean isActive;
+
+    @SerializedName("is_public")
+    private Boolean isPublic;
+
     public String getId() { return id; }
     public String getCode() { return code; }
     public String getTitle() { return title; }
@@ -31,4 +55,12 @@ public class Voucher {
     public double getDiscountValue() { return discountValue; }
     public Double getMaxDiscountAmount() { return maxDiscountAmount; }
     public double getMinOrderValue() { return minOrderValue; }
+    public String getDescription() { return description; }
+    public Integer getUsageLimit() { return usageLimit; }
+    public int getUsedCount() { return usedCount; }
+    public Integer getLimitPerUser() { return limitPerUser; }
+    public String getStartDate() { return startDate; }
+    public String getEndDate() { return endDate; }
+    public boolean isActive() { return isActive; }
+    public Boolean getIsPublic() { return isPublic; }
 }
