@@ -1,5 +1,6 @@
 package com.example.food_order_app.controller;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -19,6 +20,7 @@ import com.example.food_order_app.config.AiConfig;
 import com.example.food_order_app.model.FoodSentimentStats;
 import com.example.food_order_app.network.RetrofitClient;
 import com.example.food_order_app.network.SupabaseDbService;
+import com.example.food_order_app.utils.InsightCacheManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,6 +55,7 @@ public class SentimentStatisticsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_sentiment_statistics);
 
         dbService = RetrofitClient.getDbService();
+        insightCache.putAll(InsightCacheManager.loadInsights(this));
         initViews();
         setupListeners();
         loadSentimentStats();
@@ -68,14 +71,7 @@ public class SentimentStatisticsActivity extends AppCompatActivity {
         tvEmpty = findViewById(R.id.tvEmpty);
         progressBar = findViewById(R.id.progressBar);
 
-        adapter = new SentimentStatsAdapter(this, stat -> {
-            // Show details
-            Toast.makeText(this, stat.getFoodName() + "\n" +
-                    "Tích cực: " + String.format("%.0f%%", stat.getPositivePercent()) + "\n" +
-                    "Tiêu cực: " + String.format("%.0f%%", stat.getNegativePercent()) + "\n" +
-                    "Trung tính: " + String.format("%.0f%%", stat.getNeutralPercent()),
-                    Toast.LENGTH_LONG).show();
-        });
+        adapter = new SentimentStatsAdapter(this, this::openFoodInsightDetail);
         rvSentimentStats.setLayoutManager(new LinearLayoutManager(this));
         rvSentimentStats.setAdapter(adapter);
 
@@ -279,6 +275,18 @@ public class SentimentStatisticsActivity extends AppCompatActivity {
         }
     }
 
+    private void openFoodInsightDetail(FoodSentimentStats stat) {
+        Intent detailIntent = new Intent(this, FoodInsightDetailActivity.class);
+        detailIntent.putExtra(FoodInsightDetailActivity.EXTRA_FOOD_NAME, stat.getFoodName());
+        detailIntent.putExtra(FoodInsightDetailActivity.EXTRA_TOTAL_REVIEWS, stat.getTotalReviews());
+        detailIntent.putExtra(FoodInsightDetailActivity.EXTRA_AVG_RATING, stat.getAvgRating());
+        detailIntent.putExtra(FoodInsightDetailActivity.EXTRA_POSITIVE_PERCENT, stat.getPositivePercent());
+        detailIntent.putExtra(FoodInsightDetailActivity.EXTRA_NEUTRAL_PERCENT, stat.getNeutralPercent());
+        detailIntent.putExtra(FoodInsightDetailActivity.EXTRA_NEGATIVE_PERCENT, stat.getNegativePercent());
+        detailIntent.putExtra(FoodInsightDetailActivity.EXTRA_AVG_SENTIMENT_SCORE, stat.getAvgSentimentScore());
+        startActivity(detailIntent);
+    }
+
     private void fetchAiInsightsForVisibleStats(List<FoodSentimentStats> visibleStats) {
         insightRequestVersion++;
         final int requestVersion = insightRequestVersion;
@@ -299,6 +307,7 @@ public class SentimentStatisticsActivity extends AppCompatActivity {
         if (hfToken == null || hfToken.trim().isEmpty()) {
             for (FoodSentimentStats stat : pending) {
                 insightCache.put(stat.getFoodId(), buildFallbackInsight(stat));
+                InsightCacheManager.saveInsight(this, stat.getFoodId(), insightCache.get(stat.getFoodId()));
             }
             adapter.setInsights(insightCache);
             return;
@@ -326,6 +335,7 @@ public class SentimentStatisticsActivity extends AppCompatActivity {
 
             if (stat.getFoodId() != null && !stat.getFoodId().isEmpty()) {
                 insightCache.put(stat.getFoodId(), insight);
+                InsightCacheManager.saveInsight(SentimentStatisticsActivity.this, stat.getFoodId(), insight);
             }
             adapter.setInsights(insightCache);
             fetchInsightSequentially(pending, index + 1, hfToken, requestVersion);

@@ -16,6 +16,7 @@ import com.example.food_order_app.controller.AdminHomeActivity;
 import com.example.food_order_app.controller.AdminOrdersActivity;
 import com.example.food_order_app.controller.AdminRevenueActivity;
 import com.example.food_order_app.controller.AdminSendNotificationActivity;
+import com.example.food_order_app.controller.AdminVoucherActivity;
 import com.example.food_order_app.controller.ProfileActivity;
 import com.google.android.material.navigation.NavigationView;
 
@@ -73,6 +74,9 @@ public final class AdminDrawerHelper {
         }
         if (itemId == R.id.navAdminOrders) {
             return AdminOrdersActivity.class;
+        }
+        if (itemId == R.id.navAdminVoucher) {
+            return AdminVoucherActivity.class;
         }
         if (itemId == R.id.navAdminProfile) {
             return ProfileActivity.class;

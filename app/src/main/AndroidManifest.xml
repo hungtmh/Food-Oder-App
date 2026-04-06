@@ -140,6 +140,7 @@
         <activity android:name=".controller.AdminOrderStatisticsActivity" android:exported="false" />
         <activity android:name=".controller.AdminReportStatisticsActivity" android:exported="false" />
         <activity android:name=".controller.AdminCategoryActivity" android:exported="false" />
+        <activity android:name=".controller.AdminVoucherActivity" android:exported="false" />
         <activity android:name=".controller.AIDashboardActivity" android:exported="false" />
         <activity android:name=".controller.ContactActivity" android:exported="false" />
         <activity android:name=".controller.FavoritesActivity" android:exported="false" />
@@ -181,6 +182,16 @@
         <!-- Dự đoán xu hướng -->
         <activity
             android:name=".controller.FoodTrendPredictionActivity"
+            android:exported="false" />
+
+        <!-- Chi tiết insight món ăn -->
+        <activity
+            android:name=".controller.FoodInsightDetailActivity"
+            android:exported="false" />
+
+        <!-- Chi tiết prediction theo món -->
+        <activity
+            android:name=".controller.TrendInsightDetailActivity"
             android:exported="false" />
 
     </application>
