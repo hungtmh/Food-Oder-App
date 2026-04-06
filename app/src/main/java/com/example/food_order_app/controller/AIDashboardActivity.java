@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,12 +22,16 @@ import com.example.food_order_app.network.RetrofitClient;
 import com.example.food_order_app.network.SupabaseDbService;
 import com.example.food_order_app.network.SupabaseFunctionsService;
 import com.example.food_order_app.utils.AdminDrawerHelper;
+import com.example.food_order_app.utils.InsightCacheManager;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -49,6 +52,7 @@ public class AIDashboardActivity extends AppCompatActivity {
     private SupabaseDbService dbService;
     private SupabaseFunctionsService functionsService;
     private SentimentStatsAdapter topPositiveAdapter, topNegativeAdapter;
+    private final Map<String, String> insightCache = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +65,12 @@ public class AIDashboardActivity extends AppCompatActivity {
         setupListeners();
         loadOverallSentimentStats();
         loadTopFoods();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        applyCachedInsights();
     }
 
     private void initViews() {
@@ -83,20 +93,24 @@ public class AIDashboardActivity extends AppCompatActivity {
         tvTopNegativeEmpty = findViewById(R.id.tvTopNegativeEmpty);
 
         // Setup RecyclerViews
-        topPositiveAdapter = new SentimentStatsAdapter(this, stat -> {
-            // Navigate to food detail or sentiment detail
-            Toast.makeText(this, "Xem chi tiết: " + stat.getFoodName(), Toast.LENGTH_SHORT).show();
-        });
+        topPositiveAdapter = new SentimentStatsAdapter(this, this::openFoodInsightDetail);
         rvTopPositive.setLayoutManager(new LinearLayoutManager(this));
         rvTopPositive.setAdapter(topPositiveAdapter);
 
-        topNegativeAdapter = new SentimentStatsAdapter(this, stat -> {
-            Toast.makeText(this, "Xem chi tiết: " + stat.getFoodName(), Toast.LENGTH_SHORT).show();
-        });
+        topNegativeAdapter = new SentimentStatsAdapter(this, this::openFoodInsightDetail);
         rvTopNegative.setLayoutManager(new LinearLayoutManager(this));
         rvTopNegative.setAdapter(topNegativeAdapter);
 
+        applyCachedInsights();
+
         AdminDrawerHelper.setupDrawer(this, drawerLayout, navigationView, btnBack, R.id.navAiInsights);
+    }
+
+    private void applyCachedInsights() {
+        insightCache.clear();
+        insightCache.putAll(InsightCacheManager.loadInsights(this));
+        topPositiveAdapter.setInsights(insightCache);
+        topNegativeAdapter.setInsights(insightCache);
     }
 
     private void setupListeners() {
@@ -109,6 +123,18 @@ public class AIDashboardActivity extends AppCompatActivity {
         cardPredictTrends.setOnClickListener(v -> {
             startActivity(new Intent(this, FoodTrendPredictionActivity.class));
         });
+    }
+
+    private void openFoodInsightDetail(FoodSentimentStats stat) {
+        Intent detailIntent = new Intent(this, FoodInsightDetailActivity.class);
+        detailIntent.putExtra(FoodInsightDetailActivity.EXTRA_FOOD_NAME, stat.getFoodName());
+        detailIntent.putExtra(FoodInsightDetailActivity.EXTRA_TOTAL_REVIEWS, stat.getTotalReviews());
+        detailIntent.putExtra(FoodInsightDetailActivity.EXTRA_AVG_RATING, stat.getAvgRating());
+        detailIntent.putExtra(FoodInsightDetailActivity.EXTRA_POSITIVE_PERCENT, stat.getPositivePercent());
+        detailIntent.putExtra(FoodInsightDetailActivity.EXTRA_NEUTRAL_PERCENT, stat.getNeutralPercent());
+        detailIntent.putExtra(FoodInsightDetailActivity.EXTRA_NEGATIVE_PERCENT, stat.getNegativePercent());
+        detailIntent.putExtra(FoodInsightDetailActivity.EXTRA_AVG_SENTIMENT_SCORE, stat.getAvgSentimentScore());
+        startActivity(detailIntent);
     }
 
     private void loadOverallSentimentStats() {
@@ -161,7 +187,7 @@ public class AIDashboardActivity extends AppCompatActivity {
     }
 
     private void loadTopFoods() {
-        // Load top 5 foods with highest positive sentiment
+        // Top 5 mon yeu thich: rating >= 4.0
         String orderPositive = "positive_percent.desc";
         dbService.getFoodSentimentStats(orderPositive).enqueue(new Callback<List<FoodSentimentStats>>() {
             @Override
@@ -170,11 +196,15 @@ public class AIDashboardActivity extends AppCompatActivity {
                     List<FoodSentimentStats> allStats = response.body();
                     List<FoodSentimentStats> topPositive = new ArrayList<>();
 
-                    // Get top 5 with reviews
                     for (FoodSentimentStats stat : allStats) {
-                        if (stat.getTotalReviews() > 0 && topPositive.size() < 5) {
+                        if (stat.getTotalReviews() > 0 && stat.getAvgRating() >= 4.0) {
                             topPositive.add(stat);
                         }
+                    }
+
+                    topPositive.sort(Comparator.comparingDouble(FoodSentimentStats::getAvgRating).reversed());
+                    if (topPositive.size() > 5) {
+                        topPositive = new ArrayList<>(topPositive.subList(0, 5));
                     }
 
                     if (topPositive.isEmpty()) {
@@ -184,6 +214,7 @@ public class AIDashboardActivity extends AppCompatActivity {
                         tvTopPositiveEmpty.setVisibility(View.GONE);
                         rvTopPositive.setVisibility(View.VISIBLE);
                         topPositiveAdapter.setStats(topPositive);
+                        topPositiveAdapter.setInsights(insightCache);
                     }
                 }
             }
@@ -195,7 +226,7 @@ public class AIDashboardActivity extends AppCompatActivity {
             }
         });
 
-        // Load top 5 foods with highest negative sentiment
+        // Top 5 mon tieu cuc: rating < 2.0
         String orderNegative = "negative_percent.desc";
         dbService.getFoodSentimentStats(orderNegative).enqueue(new Callback<List<FoodSentimentStats>>() {
             @Override
@@ -204,11 +235,15 @@ public class AIDashboardActivity extends AppCompatActivity {
                     List<FoodSentimentStats> allStats = response.body();
                     List<FoodSentimentStats> topNegative = new ArrayList<>();
 
-                    // Get top 5 with reviews and negative sentiment
                     for (FoodSentimentStats stat : allStats) {
-                        if (stat.getTotalReviews() > 0 && stat.getNegativePercent() > 0 && topNegative.size() < 5) {
+                        if (stat.getTotalReviews() > 0 && stat.getAvgRating() < 2.0) {
                             topNegative.add(stat);
                         }
+                    }
+
+                    topNegative.sort(Comparator.comparingDouble(FoodSentimentStats::getAvgRating));
+                    if (topNegative.size() > 5) {
+                        topNegative = new ArrayList<>(topNegative.subList(0, 5));
                     }
 
                     if (topNegative.isEmpty()) {
@@ -218,6 +253,7 @@ public class AIDashboardActivity extends AppCompatActivity {
                         tvTopNegativeEmpty.setVisibility(View.GONE);
                         rvTopNegative.setVisibility(View.VISIBLE);
                         topNegativeAdapter.setStats(topNegative);
+                        topNegativeAdapter.setInsights(insightCache);
                     }
                 }
             }

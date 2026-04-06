@@ -1,5 +1,6 @@
 package com.example.food_order_app.controller;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -84,17 +85,28 @@ public class FoodTrendPredictionActivity extends AppCompatActivity {
         tvEmpty = findViewById(R.id.tvEmpty);
         progressBar = findViewById(R.id.progressBar);
 
-        adapter = new FoodTrendAdapter(this, trend -> {
-            // Show trend details
-            if (trend.getFood() != null) {
-                Toast.makeText(this, "Chi tiết xu hướng: " + trend.getFood().getName(),
-                        Toast.LENGTH_SHORT).show();
-            }
-        });
+        adapter = new FoodTrendAdapter(this, this::openTrendInsightDetail);
         rvTrends.setLayoutManager(new LinearLayoutManager(this));
         rvTrends.setAdapter(adapter);
 
         updateFilterButtonUI();
+    }
+
+    private void openTrendInsightDetail(FoodTrend trend) {
+        Intent detailIntent = new Intent(this, TrendInsightDetailActivity.class);
+
+        if (trend.getFood() != null) {
+            detailIntent.putExtra(TrendInsightDetailActivity.EXTRA_FOOD_NAME, trend.getFood().getName());
+            detailIntent.putExtra(TrendInsightDetailActivity.EXTRA_IMAGE_URL, trend.getFood().getImageUrl());
+        }
+
+        detailIntent.putExtra(TrendInsightDetailActivity.EXTRA_TREND_TYPE, trend.getTrendType());
+        detailIntent.putExtra(TrendInsightDetailActivity.EXTRA_CONFIDENCE_SCORE, trend.getConfidenceScore());
+        detailIntent.putExtra(TrendInsightDetailActivity.EXTRA_SALES_TREND, trend.getSalesTrend());
+        detailIntent.putExtra(TrendInsightDetailActivity.EXTRA_SENTIMENT_TREND, trend.getSentimentTrend());
+        detailIntent.putExtra(TrendInsightDetailActivity.EXTRA_PREDICTION_PERIOD, trend.getPredictionPeriod());
+        detailIntent.putExtra(TrendInsightDetailActivity.EXTRA_NOTES, trend.getNotes());
+        startActivity(detailIntent);
     }
 
     private void setupListeners() {
