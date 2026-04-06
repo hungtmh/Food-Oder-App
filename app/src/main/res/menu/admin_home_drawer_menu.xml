@@ -26,6 +26,11 @@
         android:title="Đơn hàng" />
 
     <item
+        android:id="@+id/navAdminVoucher"
+        android:icon="@drawable/ic_coupon"
+        android:title="Mã giảm giá" />
+
+    <item
         android:id="@+id/navAdminProfile"
         android:icon="@drawable/ic_person"
         android:title="Hồ sơ" />

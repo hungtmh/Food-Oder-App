@@ -205,11 +205,11 @@
 
 #### Nhóm 18: Quản lý mã giảm giá (Admin)
 
-| Tính năng           | Mô tả                                        | Trạng thái  |
-| ------------------- | -------------------------------------------- | ----------- |
-| Tạo mã giảm giá     | Phần trăm/số tiền giảm, điều kiện, thời gian | ⬜ Chưa làm |
-| Xem số lượt sử dụng | Thống kê lượt dùng mã                        | ⬜ Chưa làm |
-| Vô hiệu hóa mã      | Tắt mã không còn sử dụng                     | ⬜ Chưa làm |
+| Tính năng           | Mô tả                                        | Trạng thái    |
+| ------------------- | -------------------------------------------- | ------------- |
+| Tạo mã giảm giá     | Phần trăm/số tiền giảm, điều kiện, thời gian | ✅ Hoàn thành |
+| Xem số lượt sử dụng | Thống kê lượt dùng mã                        | ✅ Hoàn thành |
+| Vô hiệu hóa mã      | Tắt mã không còn sử dụng                     | ✅ Hoàn thành |
 
 #### Nhóm 16: Thông báo (Admin)
 
@@ -229,8 +229,8 @@
 | **Cường**  | 9              | 4             | 5           | 44%     |
 | **Khoa**   | 14             | 11            | 3           | 57%     |
 | **Thắng**  | 16             | 9             | 7           | 56%     |
-| **Khải**   | 10             | 7             | 3           | 70%     |
-| **Tổng**   | **63**         | **29**        | **34**      | **46%** |
+| **Khải**   | 10             | 10            | 0           | 100%    |
+| **Tổng**   | **63**         | **32**        | **31**      | **51%** |
 
 ### Theo nhóm tính năng
 
@@ -253,7 +253,7 @@
 | 15   | Tính năng AI               | Khải            | ✅ Hoàn thành            |
 | 16   | Thông báo                  | Cường + Khải    | ✅ Hoàn thành            |
 | 17   | Yêu thích                  | Hùng            | ⬜ Chưa làm              |
-| 18   | Khuyến mãi & Mã giảm giá   | Khoa + Khải     | ⬜ Chưa làm              |
+| 18   | Khuyến mãi & Mã giảm giá   | Khoa + Khải     | ✅ Hoàn thành (Admin)    |
 | 19   | Báo cáo & Thống kê (Admin) | Thắng           | ⬜ Chưa làm              |
 | 20   | Thanh toán                 | Khoa            | ⬜ Chưa làm (chỉ có COD) |
 
