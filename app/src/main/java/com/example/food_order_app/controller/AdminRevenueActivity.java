@@ -15,6 +15,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Button;
 import android.widget.ScrollView;
+import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.TextView;
 import android.widget.Toast;
