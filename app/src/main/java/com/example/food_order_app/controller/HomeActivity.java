@@ -1,8 +1,11 @@
 package com.example.food_order_app.controller;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -15,10 +18,13 @@ import android.widget.ScrollView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DecodeFormat;
@@ -34,6 +40,8 @@ import com.example.food_order_app.model.Food;
 import com.example.food_order_app.model.SearchHistory;
 import com.example.food_order_app.network.RetrofitClient;
 import com.example.food_order_app.network.SupabaseDbService;
+import com.example.food_order_app.utils.NotificationHelper;
+import com.example.food_order_app.utils.PushRegistrationManager;
 import com.example.food_order_app.utils.SessionManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -87,6 +95,7 @@ public class HomeActivity extends AppCompatActivity {
     private List<Category> categories = new ArrayList<>();
     private List<Food> recommendedFoodsCache = new ArrayList<>();
     private String selectedCategoryId = null;
+    private ActivityResultLauncher<String> notificationPermissionLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,11 +104,39 @@ public class HomeActivity extends AppCompatActivity {
 
         dbService = RetrofitClient.getDbService();
         sessionManager = new SessionManager(this);
+        setupNotificationPermissionLauncher();
 
         initViews();
         setupAdapters();
+        NotificationHelper.createNotificationChannel(this);
+        requestNotificationPermissionIfNeeded();
+        PushRegistrationManager.requestCurrentTokenAndSync(this);
         loadDeliveryAddress();
         loadData();
+    }
+
+    private void setupNotificationPermissionLauncher() {
+        notificationPermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestPermission(),
+                isGranted -> {
+                    if (!isGranted) {
+                        Toast.makeText(this, "Thong bao he thong da bi tu choi", Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
+    }
+
+    private void requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            return;
+        }
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                == PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
     }
 
     private void initViews() {

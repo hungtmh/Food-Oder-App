@@ -17,6 +17,7 @@ import com.example.food_order_app.model.User;
 import com.example.food_order_app.network.RetrofitClient;
 import com.example.food_order_app.network.SupabaseDbService;
 import com.example.food_order_app.utils.PasswordUtils;
+import com.example.food_order_app.utils.PushRegistrationManager;
 import com.example.food_order_app.utils.SessionManager;
 import com.example.food_order_app.utils.ValidationUtils;
 
@@ -166,6 +167,8 @@ public class LoginActivity extends AppCompatActivity {
                             Toast.makeText(LoginActivity.this,
                                     "Đăng nhập thành công!",
                                     Toast.LENGTH_SHORT).show();
+
+                                PushRegistrationManager.requestCurrentTokenAndSync(LoginActivity.this);
 
                             navigateToMain();
                         } else {

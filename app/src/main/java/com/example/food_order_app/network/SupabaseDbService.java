@@ -299,6 +299,13 @@ public interface SupabaseDbService {
             @Query("is_read") String isReadFilter,
             @Query("select") String select);
 
+    // ==================== DEVICE TOKENS (PUSH) ====================
+    @POST("device_tokens")
+    Call<List<Map<String, Object>>> upsertDeviceToken(
+            @Header("Prefer") String prefer,
+            @Query("on_conflict") String onConflict,
+            @Body Map<String, Object> tokenData);
+
     // ==================== ADMIN: REVENUE & STATISTICS ====================
     @GET("orders")
     Call<List<Order>> getOrdersByDateRange(
