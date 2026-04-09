@@ -23,6 +23,8 @@ public class Food {
     private boolean isRecommended;
     @SerializedName("is_available")
     private boolean isAvailable;
+    @SerializedName("stock_quantity")
+    private Integer stockQuantity;
     @SerializedName("avg_rating")
     private double avgRating;
     @SerializedName("total_reviews")
@@ -52,6 +54,8 @@ public class Food {
     public void setRecommended(boolean recommended) { isRecommended = recommended; }
     public boolean isAvailable() { return isAvailable; }
     public void setAvailable(boolean available) { isAvailable = available; }
+    public Integer getStockQuantity() { return stockQuantity; }
+    public void setStockQuantity(Integer stockQuantity) { this.stockQuantity = stockQuantity; }
     public double getAvgRating() { return avgRating; }
     public int getTotalReviews() { return totalReviews; }
     public String getCreatedAt() { return createdAt; }

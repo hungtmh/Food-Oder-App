@@ -67,6 +67,11 @@ public interface SupabaseDbService {
             @Query("is_active") String isActive,
             @Query("order") String order);
 
+    @GET("categories")
+    Call<List<Category>> getAdminCategories(
+            @Query("is_deleted") String isDeleted,
+            @Query("order") String order);
+
     @Headers("Prefer: return=representation")
     @POST("categories")
     Call<List<Category>> createCategory(@Body Category category);
