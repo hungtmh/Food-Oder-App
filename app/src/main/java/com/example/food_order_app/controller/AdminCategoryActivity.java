@@ -1,11 +1,15 @@
 package com.example.food_order_app.controller;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
 import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -41,6 +45,7 @@ import com.google.android.material.textfield.TextInputEditText;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
@@ -50,6 +55,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 import java.text.Normalizer;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 import retrofit2.Call;
@@ -66,9 +72,16 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
     private EditText edtSearch;
     private ImageView btnSearch, btnMenuDrawer;
     private android.widget.TextView tvEmpty;
+    private LinearLayout layoutEmpty;
     private FloatingActionButton fabAdd;
+    private Button btnAddNow;
     private Spinner spFilterStatus;
     private Spinner spSortMode;
+    private LinearLayout layoutBulkActions;
+    private TextView tvBulkSelectionCount;
+    private Button btnSelectAllCategories;
+    private Button btnBulkToggleActive;
+    private Button btnBulkSoftDelete;
 
     private AdminCategoryAdapter adapter;
     private SupabaseDbService dbService;
@@ -78,10 +91,12 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
     private List<Category> allCategories = new ArrayList<>();
     private List<Food> allFoods = new ArrayList<>();
     private boolean canManage;
+    private int currentPage = 0;
+    private static final int PAGE_SIZE = 12;
+    private List<Category> currentFiltered = new ArrayList<>();
 
-    private static final String[] STATUS_OPTIONS = { "Tất cả trạng thái", "Đang hoạt động", "Đang ẩn" };
-    private static final String[] SORT_OPTIONS = { "Thứ tự tăng", "Thứ tự giảm", "Tên A-Z", "Tên Z-A",
-            "Doanh thu 7 ngày giảm" };
+    private static final String[] STATUS_OPTIONS = {"Tất cả trạng thái", "Đang hoạt động", "Đang ẩn"};
+    private static final String[] SORT_OPTIONS = {"Thứ tự tăng", "Thứ tự giảm", "Tên A-Z", "Tên Z-A"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,11 +129,17 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
         btnSearch = findViewById(R.id.btnCategorySearch);
         btnMenuDrawer = findViewById(R.id.btnMenuDrawerCategory);
         tvEmpty = findViewById(R.id.tvCategoryEmpty);
+        layoutEmpty = findViewById(R.id.layoutCategoryEmpty);
         fabAdd = findViewById(R.id.fabAddCategory);
+        btnAddNow = findViewById(R.id.btnAddCategoryNow);
         spFilterStatus = findViewById(R.id.spFilterStatus);
         spSortMode = findViewById(R.id.spSortMode);
-
         AdminDrawerHelper.setupDrawer(this, drawerLayout, navigationView, btnMenuDrawer, R.id.navAdminCategory);
+        layoutBulkActions = findViewById(R.id.layoutBulkActions);
+        tvBulkSelectionCount = findViewById(R.id.tvBulkSelectionCount);
+        btnSelectAllCategories = findViewById(R.id.btnSelectAllCategories);
+        btnBulkToggleActive = findViewById(R.id.btnBulkToggleActive);
+        btnBulkSoftDelete = findViewById(R.id.btnBulkSoftDelete);
     }
 
     private void setupRecycler() {
@@ -126,6 +147,24 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
         adapter = new AdminCategoryAdapter(this, this);
         adapter.setAllowEdit(canManage);
         rvCategories.setAdapter(adapter);
+        rvCategories.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if (dy <= 0) {
+                    return;
+                }
+                LinearLayoutManager lm = (LinearLayoutManager) recyclerView.getLayoutManager();
+                if (lm == null) {
+                    return;
+                }
+                int lastVisible = lm.findLastVisibleItemPosition();
+                int total = adapter.getItemCount();
+                if (total > 0 && lastVisible >= total - 2) {
+                    appendNextPage();
+                }
+            }
+        });
     }
 
     private void setupSpinners() {
@@ -136,6 +175,7 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
 
     private void setupListeners() {
         fabAdd.setOnClickListener(v -> showAddEditDialog(null));
+        btnAddNow.setOnClickListener(v -> showAddEditDialog(null));
         btnSearch.setOnClickListener(v -> performSearch());
 
         edtSearch.setOnEditorActionListener((v, actionId, event) -> {
@@ -149,6 +189,16 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
         edtSearch.addTextChangedListener(new SimpleTextWatcher(this::performSearch));
         spFilterStatus.setOnItemSelectedListener(new SimpleItemSelectedListener(this::performSearch));
         spSortMode.setOnItemSelectedListener(new SimpleItemSelectedListener(this::performSearch));
+
+        btnSelectAllCategories.setOnClickListener(v -> {
+            if (adapter.getSelectedCount() > 0) {
+                adapter.clearSelection();
+            } else {
+                adapter.toggleSelectAll(true);
+            }
+        });
+        btnBulkToggleActive.setOnClickListener(v -> showBulkToggleDialog());
+        btnBulkSoftDelete.setOnClickListener(v -> confirmBulkSoftDelete());
     }
 
     private void setupDragDrop() {
@@ -184,6 +234,10 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
     private void applyRolePermissions() {
         if (!canManage) {
             fabAdd.setVisibility(View.GONE);
+            btnAddNow.setVisibility(View.GONE);
+            btnSelectAllCategories.setEnabled(false);
+            btnBulkToggleActive.setEnabled(false);
+            btnBulkSoftDelete.setEnabled(false);
             Toast.makeText(this, "Bạn chỉ có quyền xem danh mục", Toast.LENGTH_SHORT).show();
         }
     }
@@ -193,6 +247,27 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
     }
 
     private void loadCategories(Runnable onLoaded) {
+        dbService.getAdminCategories("eq.false", "sort_order.asc").enqueue(new Callback<List<Category>>() {
+            @Override
+            public void onResponse(Call<List<Category>> call, Response<List<Category>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    allCategories = response.body();
+                    if (onLoaded != null) {
+                        onLoaded.run();
+                    }
+                } else {
+                    fallbackLoadCategories(onLoaded);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Category>> call, Throwable t) {
+                fallbackLoadCategories(onLoaded);
+            }
+        });
+    }
+
+    private void fallbackLoadCategories(Runnable onLoaded) {
         dbService.getCategories(null, "sort_order.asc").enqueue(new Callback<List<Category>>() {
             @Override
             public void onResponse(Call<List<Category>> call, Response<List<Category>> response) {
@@ -360,26 +435,82 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
         }
 
         applySort(filtered, sortMode);
-        adapter.setCategories(filtered);
-        tvEmpty.setVisibility(filtered.isEmpty() ? View.VISIBLE : View.GONE);
+        currentFiltered = filtered;
+        currentPage = 0;
+
+        List<Category> firstPage = new ArrayList<>();
+        int limit = Math.min(PAGE_SIZE, currentFiltered.size());
+        for (int i = 0; i < limit; i++) {
+            firstPage.add(currentFiltered.get(i));
+        }
+        adapter.setCategories(firstPage);
+        updateEmptyState(query);
+    }
+
+    private void appendNextPage() {
+        int loaded = adapter.getItemCount();
+        if (loaded >= currentFiltered.size()) {
+            return;
+        }
+
+        currentPage++;
+        int nextLimit = Math.min((currentPage + 1) * PAGE_SIZE, currentFiltered.size());
+        List<Category> nextData = new ArrayList<>();
+        for (int i = 0; i < nextLimit; i++) {
+            nextData.add(currentFiltered.get(i));
+        }
+        adapter.setCategories(nextData);
+    }
+
+    private void updateEmptyState(String query) {
+        boolean isEmpty = currentFiltered.isEmpty();
+        layoutEmpty.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+        if (!isEmpty) {
+            return;
+        }
+        if (TextUtils.isEmpty(query)) {
+            tvEmpty.setText("Chưa có danh mục nào");
+        } else {
+            tvEmpty.setText("Không tìm thấy danh mục phù hợp");
+        }
     }
 
     private void applySort(List<Category> list, String sortMode) {
         if ("Thứ tự giảm".equals(sortMode)) {
             list.sort((a, b) -> Integer.compare(b.getSortOrder(), a.getSortOrder()));
         } else if ("Tên A-Z".equals(sortMode)) {
-            list.sort(Comparator.comparing(a -> a.getName() == null ? "" : a.getName(), String.CASE_INSENSITIVE_ORDER));
+            list.sort((a, b) -> {
+                String an = sortNameKey(a.getName());
+                String bn = sortNameKey(b.getName());
+                int normalizedCompare = an.compareTo(bn);
+                if (normalizedCompare != 0) {
+                    return normalizedCompare;
+                }
+                String aRaw = a.getName() == null ? "" : a.getName();
+                String bRaw = b.getName() == null ? "" : b.getName();
+                return aRaw.compareToIgnoreCase(bRaw);
+            });
         } else if ("Tên Z-A".equals(sortMode)) {
             list.sort((a, b) -> {
-                String bn = b.getName() == null ? "" : b.getName();
-                String an = a.getName() == null ? "" : a.getName();
-                return bn.compareToIgnoreCase(an);
+                String an = sortNameKey(a.getName());
+                String bn = sortNameKey(b.getName());
+                int normalizedCompare = bn.compareTo(an);
+                if (normalizedCompare != 0) {
+                    return normalizedCompare;
+                }
+                String aRaw = a.getName() == null ? "" : a.getName();
+                String bRaw = b.getName() == null ? "" : b.getName();
+                return bRaw.compareToIgnoreCase(aRaw);
             });
-        } else if ("Doanh thu 7 ngày giảm".equals(sortMode)) {
-            list.sort((a, b) -> Double.compare(b.getRevenueLast7Days(), a.getRevenueLast7Days()));
         } else {
             list.sort(Comparator.comparingInt(Category::getSortOrder));
         }
+    }
+
+    private String sortNameKey(String rawName) {
+        return removeDiacritics(rawName == null ? "" : rawName)
+                .toLowerCase(Locale.ROOT)
+                .trim();
     }
 
     @Override
@@ -398,18 +529,28 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
             return;
         }
 
-        int foodCount = countFoodsInCategory(category.getId());
-        if (foodCount > 0) {
-            showDeleteWithFoodConstraintDialog(category, foodCount);
+        int activeFoodCount = countActiveFoodsInCategory(category.getId());
+        if (activeFoodCount > 0) {
+            Toast.makeText(this,
+                    "Không thể xóa vì còn " + activeFoodCount + " món đang bán trong danh mục này",
+                    Toast.LENGTH_LONG).show();
             return;
         }
 
         new AlertDialog.Builder(this)
-                .setTitle("Xác nhận xóa")
-                .setMessage("Bạn có chắc chắn muốn xóa danh mục \"" + category.getName() + "\"?")
+                .setTitle("Xác nhận xóa mềm")
+                .setMessage("Danh mục \"" + category.getName() + "\" sẽ được ẩn khỏi hệ thống (không xóa vĩnh viễn).")
                 .setPositiveButton("Xóa", (dialog, which) -> deleteCategoryWithUndo(category))
                 .setNegativeButton("Hủy", null)
                 .show();
+    }
+
+    @Override
+    public void onCategoryClick(Category category) {
+        Intent intent = new Intent(this, AdminCategoryDetailActivity.class);
+        intent.putExtra(AdminCategoryDetailActivity.EXTRA_CATEGORY_ID, category.getId());
+        intent.putExtra(AdminCategoryDetailActivity.EXTRA_CATEGORY_NAME, category.getName());
+        startActivity(intent);
     }
 
     @Override
@@ -453,6 +594,40 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
         }
     }
 
+    @Override
+    public void onMoreOptions(Category category, View anchorView) {
+        if (!canManage) {
+            return;
+        }
+        PopupMenu popupMenu = new PopupMenu(this, anchorView);
+        MenuInflater inflater = popupMenu.getMenuInflater();
+        inflater.inflate(R.menu.menu_admin_category_more, popupMenu.getMenu());
+        popupMenu.setOnMenuItemClickListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.action_edit_category) {
+                onEdit(category);
+                return true;
+            }
+            if (itemId == R.id.action_delete_category) {
+                onDelete(category);
+                return true;
+            }
+            return false;
+        });
+        popupMenu.show();
+    }
+
+    @Override
+    public void onSelectionChanged(int selectedCount) {
+        if (selectedCount > 0) {
+            tvBulkSelectionCount.setText("Đã chọn " + selectedCount + " danh mục");
+            btnSelectAllCategories.setText("Bỏ chọn hết");
+        } else {
+            tvBulkSelectionCount.setText("Chưa chọn danh mục (tick ô vuông để chọn)");
+            btnSelectAllCategories.setText("Chọn hết");
+        }
+    }
+
     private void persistCurrentOrder() {
         List<Category> ordered = adapter.getCategories();
         for (int i = 0; i < ordered.size(); i++) {
@@ -467,13 +642,17 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
     }
 
     private void deleteCategoryWithUndo(Category category) {
-        dbService.deleteCategory("eq." + category.getId()).enqueue(new Callback<Void>() {
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("is_deleted", true);
+        updates.put("is_active", false);
+        dbService.updateCategory("eq." + category.getId(), updates).enqueue(new Callback<List<Category>>() {
             @Override
-            public void onResponse(Call<Void> call, Response<Void> response) {
+            public void onResponse(Call<List<Category>> call, Response<List<Category>> response) {
                 if (response.isSuccessful()) {
                     allCategories.remove(category);
                     performSearch();
-                    Snackbar.make(rvCategories, "Đã xóa danh mục", Snackbar.LENGTH_LONG)
+                    adapter.clearSelection();
+                    Snackbar.make(rvCategories, "Đã xóa mềm danh mục", Snackbar.LENGTH_LONG)
                             .setAction("Hoàn tác", v -> restoreDeletedCategory(category))
                             .show();
                 } else {
@@ -482,17 +661,20 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
             }
 
             @Override
-            public void onFailure(Call<Void> call, Throwable t) {
+            public void onFailure(Call<List<Category>> call, Throwable t) {
                 Toast.makeText(AdminCategoryActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private void restoreDeletedCategory(Category category) {
-        dbService.createCategory(category).enqueue(new Callback<List<Category>>() {
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("is_deleted", false);
+        updates.put("is_active", true);
+        dbService.updateCategory("eq." + category.getId(), updates).enqueue(new Callback<List<Category>>() {
             @Override
             public void onResponse(Call<List<Category>> call, Response<List<Category>> response) {
-                if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                if (response.isSuccessful()) {
                     loadDashboardData();
                 }
             }
@@ -701,6 +883,122 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
         }
         return count;
     }
+
+    private int countActiveFoodsInCategory(String categoryId) {
+        int count = 0;
+        for (Food food : allFoods) {
+            if (categoryId != null && categoryId.equals(food.getCategoryId()) && food.isAvailable()) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private void showBulkToggleDialog() {
+        List<Category> selected = adapter.getSelectedCategories();
+        if (selected.isEmpty()) {
+            return;
+        }
+        String[] options = {"Ẩn danh mục đã chọn", "Hiện danh mục đã chọn"};
+        new AlertDialog.Builder(this)
+                .setTitle("Cập nhật hàng loạt")
+                .setItems(options, (dialog, which) -> applyBulkActiveUpdate(selected, which == 1))
+                .setNegativeButton("Hủy", null)
+                .show();
+    }
+
+    private void applyBulkActiveUpdate(List<Category> selected, boolean active) {
+        if (selected.isEmpty()) {
+            return;
+        }
+        AtomicInteger done = new AtomicInteger(0);
+        AtomicInteger success = new AtomicInteger(0);
+        for (Category category : selected) {
+            Map<String, Object> updates = new HashMap<>();
+            updates.put("is_active", active);
+            dbService.updateCategory("eq." + category.getId(), updates).enqueue(new Callback<List<Category>>() {
+                @Override
+                public void onResponse(Call<List<Category>> call, Response<List<Category>> response) {
+                    if (response.isSuccessful()) {
+                        success.incrementAndGet();
+                    }
+                    if (done.incrementAndGet() == selected.size()) {
+                        onBulkFinished("Đã cập nhật " + success.get() + "/" + selected.size() + " danh mục");
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<List<Category>> call, Throwable t) {
+                    if (done.incrementAndGet() == selected.size()) {
+                        onBulkFinished("Đã cập nhật " + success.get() + "/" + selected.size() + " danh mục");
+                    }
+                }
+            });
+        }
+    }
+
+    private void confirmBulkSoftDelete() {
+        List<Category> selected = adapter.getSelectedCategories();
+        if (selected.isEmpty()) {
+            return;
+        }
+
+        List<String> blockedNames = new ArrayList<>();
+        for (Category category : selected) {
+            if (countActiveFoodsInCategory(category.getId()) > 0) {
+                blockedNames.add(category.getName());
+            }
+        }
+        if (!blockedNames.isEmpty()) {
+            Toast.makeText(this,
+                    "Không thể xóa các danh mục còn món đang bán: " + TextUtils.join(", ", blockedNames),
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle("Xóa mềm hàng loạt")
+                .setMessage("Xác nhận xóa mềm " + selected.size() + " danh mục đã chọn?")
+                .setPositiveButton("Xóa", (d, w) -> applyBulkSoftDelete(selected))
+                .setNegativeButton("Hủy", null)
+                .show();
+    }
+
+    private void applyBulkSoftDelete(List<Category> selected) {
+        AtomicInteger done = new AtomicInteger(0);
+        AtomicInteger success = new AtomicInteger(0);
+        for (Category category : selected) {
+            Map<String, Object> updates = new HashMap<>();
+            updates.put("is_deleted", true);
+            updates.put("is_active", false);
+            dbService.updateCategory("eq." + category.getId(), updates).enqueue(new Callback<List<Category>>() {
+                @Override
+                public void onResponse(Call<List<Category>> call, Response<List<Category>> response) {
+                    if (response.isSuccessful()) {
+                        success.incrementAndGet();
+                    }
+                    if (done.incrementAndGet() == selected.size()) {
+                        onBulkFinished("Đã xóa mềm " + success.get() + "/" + selected.size() + " danh mục");
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<List<Category>> call, Throwable t) {
+                    if (done.incrementAndGet() == selected.size()) {
+                        onBulkFinished("Đã xóa mềm " + success.get() + "/" + selected.size() + " danh mục");
+                    }
+                }
+            });
+        }
+    }
+
+    private void onBulkFinished(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        adapter.clearSelection();
+        loadDashboardData();
+    }
+
+    
 
     private List<Category> getTargetCategories(String excludedId) {
         List<Category> targets = new ArrayList<>();

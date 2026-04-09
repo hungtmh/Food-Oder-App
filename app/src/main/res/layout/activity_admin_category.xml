@@ -91,150 +91,132 @@
             android:contentDescription="Tìm" />
     </LinearLayout>
 
-    <HorizontalScrollView
+    <LinearLayout
         android:id="@+id/filterScroll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="10dp"
         android:layout_marginTop="3dp"
-        android:scrollbars="none"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
         app:layout_constraintTop_toBottomOf="@id/categorySearchBar">
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="34dp"
+            android:layout_weight="1">
 
-            <FrameLayout
-                android:layout_width="128dp"
-                android:layout_height="34dp">
+            <Spinner
+                android:id="@+id/spFilterStatus"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/bg_search_bar"
+                android:paddingEnd="22dp"
+                android:spinnerMode="dropdown" />
 
-                <Spinner
-                    android:id="@+id/spFilterStatus"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/bg_search_bar"
-                    android:paddingEnd="22dp"
-                    android:spinnerMode="dropdown" />
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_gravity="end|center_vertical"
+                android:layout_marginEnd="8dp"
+                android:clickable="false"
+                android:focusable="false"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_chevron_down" />
+        </FrameLayout>
 
-                <ImageView
-                    android:layout_width="18dp"
-                    android:layout_height="18dp"
-                    android:layout_gravity="end|center_vertical"
-                    android:layout_marginEnd="8dp"
-                    android:clickable="false"
-                    android:focusable="false"
-                    android:importantForAccessibility="no"
-                    android:src="@drawable/ic_chevron_down" />
-            </FrameLayout>
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="34dp"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1">
 
-            <FrameLayout
-                android:layout_width="150dp"
-                android:layout_height="34dp"
-                android:layout_marginStart="6dp">
+            <Spinner
+                android:id="@+id/spSortMode"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/bg_search_bar"
+                android:paddingEnd="22dp"
+                android:spinnerMode="dropdown" />
 
-                <Spinner
-                    android:id="@+id/spSortMode"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/bg_search_bar"
-                    android:paddingEnd="22dp"
-                    android:spinnerMode="dropdown" />
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_gravity="end|center_vertical"
+                android:layout_marginEnd="8dp"
+                android:clickable="false"
+                android:focusable="false"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_chevron_down" />
+        </FrameLayout>
+    </LinearLayout>
 
-                <ImageView
-                    android:layout_width="18dp"
-                    android:layout_height="18dp"
-                    android:layout_gravity="end|center_vertical"
-                    android:layout_marginEnd="8dp"
-                    android:clickable="false"
-                    android:focusable="false"
-                    android:importantForAccessibility="no"
-                    android:src="@drawable/ic_chevron_down" />
-            </FrameLayout>
-
-        </LinearLayout>
-    </HorizontalScrollView>
-
-    <HorizontalScrollView
-        android:id="@+id/actionLegendScroll"
+    <LinearLayout
+        android:id="@+id/layoutBulkActions"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="10dp"
         android:layout_marginTop="4dp"
-        android:scrollbars="none"
+        android:background="@drawable/bg_search_bar"
+        android:orientation="vertical"
+        android:paddingHorizontal="10dp"
+        android:paddingVertical="8dp"
+        android:visibility="visible"
         app:layout_constraintTop_toBottomOf="@id/filterScroll">
 
-        <LinearLayout
-            android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/tvBulkSelectionCount"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:text="Chưa chọn danh mục (tick ô vuông để chọn)"
+            android:textColor="@color/text_primary"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
             android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingHorizontal="4dp"
-            android:paddingVertical="2dp">
+            android:orientation="horizontal">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Chú thích:"
-                android:textColor="@color/text_hint"
-                android:textSize="11sp"
-                android:textStyle="bold" />
+            <Button
+                android:id="@+id/btnSelectAllCategories"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:minWidth="0dp"
+                android:paddingHorizontal="10dp"
+                android:text="Chọn hết"
+                android:textAllCaps="false"
+                android:textSize="12sp" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+            <Button
+                android:id="@+id/btnBulkToggleActive"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
                 android:layout_marginStart="8dp"
-                android:text="Công tắc = Bật/Tắt"
-                android:textColor="@color/text_hint"
-                android:textSize="11sp" />
+                android:minWidth="0dp"
+                android:paddingHorizontal="10dp"
+                android:text="Ẩn/Hiện"
+                android:textAllCaps="false"
+                android:textSize="12sp" />
 
-            <ImageView
-                android:layout_width="14dp"
-                android:layout_height="14dp"
-                android:layout_marginStart="10dp"
-                android:src="@drawable/ic_edit"
-                app:tint="@color/primary" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:text="Sửa"
-                android:textColor="@color/text_hint"
-                android:textSize="11sp" />
-
-            <ImageView
-                android:layout_width="14dp"
-                android:layout_height="14dp"
-                android:layout_marginStart="10dp"
-                android:src="@drawable/ic_delete"
-                app:tint="@color/error" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
+            <Button
+                android:id="@+id/btnBulkSoftDelete"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:minWidth="0dp"
+                android:paddingHorizontal="10dp"
                 android:text="Xóa"
-                android:textColor="@color/text_hint"
-                android:textSize="11sp" />
-
-            <ImageView
-                android:layout_width="14dp"
-                android:layout_height="14dp"
-                android:layout_marginStart="10dp"
-                android:src="@android:drawable/ic_menu_sort_by_size"
-                app:tint="@color/text_hint" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:text="Kéo sắp xếp"
-                android:textColor="@color/text_hint"
-                android:textSize="11sp" />
+                android:textAllCaps="false"
+                android:textSize="12sp" />
         </LinearLayout>
-    </HorizontalScrollView>
+    </LinearLayout>
 
     <!-- Category List -->
     <androidx.recyclerview.widget.RecyclerView
@@ -244,22 +226,38 @@
         android:layout_marginTop="6dp"
         android:paddingHorizontal="10dp"
         android:clipToPadding="false"
-        app:layout_constraintTop_toBottomOf="@id/actionLegendScroll"
+        app:layout_constraintTop_toBottomOf="@id/layoutBulkActions"
         app:layout_constraintBottom_toBottomOf="parent" />
 
     <!-- Empty State -->
-    <TextView
-        android:id="@+id/tvCategoryEmpty"
+    <LinearLayout
+        android:id="@+id/layoutCategoryEmpty"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Không có danh mục nào"
-        android:textColor="@color/text_hint"
-        android:textSize="16sp"
+        android:gravity="center"
+        android:orientation="vertical"
         android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/actionLegendScroll"
+        app:layout_constraintTop_toBottomOf="@id/layoutBulkActions"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:id="@+id/tvCategoryEmpty"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Không có danh mục nào"
+            android:textColor="@color/text_hint"
+            android:textSize="16sp" />
+
+        <Button
+            android:id="@+id/btnAddCategoryNow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Thêm ngay"
+            android:textAllCaps="false" />
+    </LinearLayout>
 
     <!-- FAB Add -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton

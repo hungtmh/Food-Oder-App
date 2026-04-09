@@ -1,9 +1,11 @@
 package com.example.food_order_app.adapter;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -17,8 +19,10 @@ import com.example.food_order_app.model.Category;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 public class AdminCategoryAdapter extends RecyclerView.Adapter<AdminCategoryAdapter.CategoryViewHolder> {
     private List<Category> categories = new ArrayList<>();
@@ -29,9 +33,14 @@ public class AdminCategoryAdapter extends RecyclerView.Adapter<AdminCategoryAdap
     public interface OnCategoryActionListener {
         void onEdit(Category category);
         void onDelete(Category category);
+        void onCategoryClick(Category category);
         void onToggleActive(Category category, boolean isActive);
         void onStartDrag(RecyclerView.ViewHolder holder);
+        void onMoreOptions(Category category, View anchorView);
+        void onSelectionChanged(int selectedCount);
     }
+
+    private final Set<String> selectedIds = new HashSet<>();
 
     public AdminCategoryAdapter(Context context, OnCategoryActionListener listener) {
         this.context = context;
@@ -40,6 +49,10 @@ public class AdminCategoryAdapter extends RecyclerView.Adapter<AdminCategoryAdap
 
     public void setCategories(List<Category> categories) {
         this.categories = categories;
+        selectedIds.retainAll(extractIds(categories));
+        if (listener != null) {
+            listener.onSelectionChanged(selectedIds.size());
+        }
         notifyDataSetChanged();
     }
 
@@ -49,6 +62,43 @@ public class AdminCategoryAdapter extends RecyclerView.Adapter<AdminCategoryAdap
 
     public void setAllowEdit(boolean allowEdit) {
         this.allowEdit = allowEdit;
+        notifyDataSetChanged();
+    }
+
+    public int getSelectedCount() {
+        return selectedIds.size();
+    }
+
+    public List<Category> getSelectedCategories() {
+        List<Category> selected = new ArrayList<>();
+        for (Category category : categories) {
+            if (category.getId() != null && selectedIds.contains(category.getId())) {
+                selected.add(category);
+            }
+        }
+        return selected;
+    }
+
+    public void clearSelection() {
+        selectedIds.clear();
+        if (listener != null) {
+            listener.onSelectionChanged(0);
+        }
+        notifyDataSetChanged();
+    }
+
+    public void toggleSelectAll(boolean selectAll) {
+        selectedIds.clear();
+        if (selectAll) {
+            for (Category category : categories) {
+                if (category.getId() != null) {
+                    selectedIds.add(category.getId());
+                }
+            }
+        }
+        if (listener != null) {
+            listener.onSelectionChanged(selectedIds.size());
+        }
         notifyDataSetChanged();
     }
 
@@ -71,13 +121,11 @@ public class AdminCategoryAdapter extends RecyclerView.Adapter<AdminCategoryAdap
     @Override
     public void onBindViewHolder(@NonNull CategoryViewHolder holder, int position) {
         Category cat = categories.get(position);
-        holder.tvName.setText(resolveDisplayName(cat));
+        holder.tvName.setText(String.format(Locale.getDefault(), "%s (%d món)", resolveDisplayName(cat), cat.getTotalFoods()));
         
         String status = cat.isActive() ? "Bật" : "Tắt";
         holder.tvInfo.setText("STT:" + cat.getSortOrder() + " | " + status);
-        holder.tvStats.setText(String.format(Locale.getDefault(),
-            "M:%d | B:%d | DT7:%s",
-            cat.getTotalFoods(), cat.getActiveFoods(), formatCompactVnd(cat.getRevenueLast7Days())));
+        holder.tvStats.setVisibility(View.GONE);
 
         if (cat.getIconUrl() != null && !cat.getIconUrl().trim().isEmpty()) {
             Glide.with(context)
@@ -96,20 +144,40 @@ public class AdminCategoryAdapter extends RecyclerView.Adapter<AdminCategoryAdap
             if (listener != null) listener.onToggleActive(cat, isChecked);
         });
 
-        holder.btnEdit.setEnabled(allowEdit);
-        holder.btnDelete.setEnabled(allowEdit);
-        holder.btnDrag.setEnabled(allowEdit);
-        int editTint = allowEdit ? R.color.primary : R.color.text_hint;
-        int deleteTint = allowEdit ? R.color.error : R.color.text_hint;
-        holder.btnEdit.setColorFilter(ContextCompat.getColor(context, editTint));
-        holder.btnDelete.setColorFilter(ContextCompat.getColor(context, deleteTint));
+        boolean isSelected = cat.getId() != null && selectedIds.contains(cat.getId());
+        holder.itemView.setAlpha(isSelected ? 0.82f : 1f);
+        holder.itemView.setBackgroundColor(isSelected ? Color.parseColor("#EAF4FF") : Color.TRANSPARENT);
 
-        holder.btnEdit.setOnClickListener(v -> {
-            if (listener != null) listener.onEdit(cat);
+        holder.cbSelect.setOnCheckedChangeListener(null);
+        holder.cbSelect.setEnabled(allowEdit);
+        holder.cbSelect.setChecked(isSelected);
+        holder.cbSelect.setOnCheckedChangeListener((buttonView, checked) -> {
+            if (!allowEdit || cat.getId() == null) {
+                return;
+            }
+            if (checked) {
+                selectedIds.add(cat.getId());
+            } else {
+                selectedIds.remove(cat.getId());
+            }
+            if (listener != null) {
+                listener.onSelectionChanged(selectedIds.size());
+            }
+            notifyDataSetChanged();
         });
 
-        holder.btnDelete.setOnClickListener(v -> {
-            if (listener != null) listener.onDelete(cat);
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onCategoryClick(cat);
+            }
+        });
+
+        holder.btnDrag.setEnabled(allowEdit);
+        int moreTint = allowEdit ? R.color.text_primary : R.color.text_hint;
+        holder.btnMore.setColorFilter(ContextCompat.getColor(context, moreTint));
+        holder.btnMore.setEnabled(allowEdit);
+        holder.btnMore.setOnClickListener(v -> {
+            if (listener != null) listener.onMoreOptions(cat, holder.btnMore);
         });
 
         holder.btnDrag.setOnTouchListener((v, event) -> {
@@ -126,9 +194,10 @@ public class AdminCategoryAdapter extends RecyclerView.Adapter<AdminCategoryAdap
     }
 
     static class CategoryViewHolder extends RecyclerView.ViewHolder {
-        ImageView imgIcon, btnEdit, btnDelete, btnDrag;
+        ImageView imgIcon, btnMore, btnDrag;
         TextView tvName, tvInfo, tvStats;
         SwitchMaterial switchActive;
+        CheckBox cbSelect;
 
         CategoryViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -136,10 +205,10 @@ public class AdminCategoryAdapter extends RecyclerView.Adapter<AdminCategoryAdap
             tvName = itemView.findViewById(R.id.tvCategoryName);
             tvInfo = itemView.findViewById(R.id.tvCategoryInfo);
             tvStats = itemView.findViewById(R.id.tvCategoryStats);
-            btnEdit = itemView.findViewById(R.id.btnEditCategory);
-            btnDelete = itemView.findViewById(R.id.btnDeleteCategory);
+            btnMore = itemView.findViewById(R.id.btnCategoryMore);
             btnDrag = itemView.findViewById(R.id.btnDragCategory);
             switchActive = itemView.findViewById(R.id.switchCategoryActive);
+            cbSelect = itemView.findViewById(R.id.cbCategorySelect);
         }
     }
 
@@ -159,4 +228,15 @@ public class AdminCategoryAdapter extends RecyclerView.Adapter<AdminCategoryAdap
         }
         return String.format(Locale.getDefault(), "%.0fđ", amount);
     }
+
+    private Set<String> extractIds(List<Category> list) {
+        Set<String> ids = new HashSet<>();
+        for (Category category : list) {
+            if (category.getId() != null) {
+                ids.add(category.getId());
+            }
+        }
+        return ids;
+    }
+
 }

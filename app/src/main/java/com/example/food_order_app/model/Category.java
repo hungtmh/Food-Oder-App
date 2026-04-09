@@ -13,6 +13,8 @@ public class Category {
     private int sortOrder;
     @SerializedName("is_active")
     private boolean isActive;
+    @SerializedName("is_deleted")
+    private boolean isDeleted;
     @SerializedName("name_en")
     private String nameEn;
     @SerializedName("name_ja")
@@ -35,6 +37,8 @@ public class Category {
     public void setSortOrder(int sortOrder) { this.sortOrder = sortOrder; }
     public boolean isActive() { return isActive; }
     public void setActive(boolean active) { isActive = active; }
+    public boolean isDeleted() { return isDeleted; }
+    public void setDeleted(boolean deleted) { isDeleted = deleted; }
 
     public String getNameEn() { return nameEn; }
     public void setNameEn(String nameEn) { this.nameEn = nameEn; }

@@ -59,6 +59,7 @@ CREATE TABLE IF NOT EXISTS public.foods (
     is_popular BOOLEAN DEFAULT FALSE,
     is_recommended BOOLEAN DEFAULT FALSE,
     is_available BOOLEAN DEFAULT TRUE,
+    stock_quantity INT NOT NULL DEFAULT 0,
     avg_rating DECIMAL(2,1) DEFAULT 0,
     total_reviews INT DEFAULT 0,
     created_at TIMESTAMPTZ DEFAULT NOW(),
