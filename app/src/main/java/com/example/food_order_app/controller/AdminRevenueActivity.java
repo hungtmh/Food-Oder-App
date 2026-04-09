@@ -27,6 +27,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.food_order_app.R;
+import com.example.food_order_app.model.Category;
+import com.example.food_order_app.model.Food;
 import com.example.food_order_app.model.Order;
 import com.example.food_order_app.model.OrderItem;
 import com.example.food_order_app.model.User;
@@ -34,6 +36,7 @@ import com.example.food_order_app.network.RetrofitClient;
 import com.example.food_order_app.network.SupabaseDbService;
 import com.example.food_order_app.utils.AdminBottomNavHelper;
 import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
@@ -47,10 +50,12 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -82,6 +87,11 @@ public class AdminRevenueActivity extends AppCompatActivity {
     private TextView tvDashAvgOrderValue, tvDashSuccessRate, tvDashCancelRate;
     private android.widget.TableLayout tableCustomerStats;
     private TextView tvNoCustomerData;
+    private TextView tvCategoryRevenueSummary;
+    private TextView tvCategoryRevenueEmpty;
+    private AutoCompleteTextView atvCategoryRevenueSelector;
+    private android.widget.TableLayout tableCategoryRevenueDetails;
+    private BarChart chartCategoryRevenueDaily;
     private ScrollView scrollRevenue;
     private android.view.View cardDashboardOverview;
     private android.view.View cardRevenueReport;
@@ -96,9 +106,13 @@ public class AdminRevenueActivity extends AppCompatActivity {
     private final SimpleDateFormat displayFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
     private final SimpleDateFormat isoFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
     private final NumberFormat nf = NumberFormat.getInstance(new Locale("vi", "VN"));
+    private final SimpleDateFormat dayDisplayFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
     private double currentRevenueValue = 0;
     private int currentDeliveredCount = 0;
     private final List<TopFoodRecord> currentTopFoods = new ArrayList<>();
+    private final List<Category> revenueCategories = new ArrayList<>();
+    private final List<Order> currentFilteredOrders = new ArrayList<>();
+    private Category selectedRevenueCategory;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,6 +125,7 @@ public class AdminRevenueActivity extends AppCompatActivity {
 
         // Default: today (no comparison on first load)
         setToday();
+        loadRevenueCategories();
         loadRevenue(false);
         loadAllTimeTopFoods();
         handleSectionNavigationIntent();
@@ -163,6 +178,11 @@ public class AdminRevenueActivity extends AppCompatActivity {
         // Customer statistics
         tableCustomerStats = findViewById(R.id.tableCustomerStats);
         tvNoCustomerData = findViewById(R.id.tvNoCustomerData);
+        tvCategoryRevenueSummary = findViewById(R.id.tvCategoryRevenueSummary);
+        tvCategoryRevenueEmpty = findViewById(R.id.tvCategoryRevenueEmpty);
+        atvCategoryRevenueSelector = findViewById(R.id.atvCategoryRevenueSelector);
+        tableCategoryRevenueDetails = findViewById(R.id.tableCategoryRevenueDetails);
+        chartCategoryRevenueDaily = findViewById(R.id.chartCategoryRevenueDaily);
         atvMonthSelector = findViewById(R.id.atvMonthSelector);
         atvYearSelector = findViewById(R.id.atvYearSelector);
         scrollRevenue = findViewById(R.id.scrollRevenue);
@@ -202,6 +222,14 @@ public class AdminRevenueActivity extends AppCompatActivity {
             loadRevenue(true);
         });
         btnExportRevenuePdf.setOnClickListener(v -> exportRevenueReportPdf());
+        if (atvCategoryRevenueSelector != null) {
+            atvCategoryRevenueSelector.setOnItemClickListener((parent, view, position, id) -> {
+                if (position >= 0 && position < revenueCategories.size()) {
+                    selectedRevenueCategory = revenueCategories.get(position);
+                    loadCategoryRevenueDetailForSelection();
+                }
+            });
+        }
     }
 
     private void showDatePicker(boolean isFrom) {
@@ -247,25 +275,542 @@ public class AdminRevenueActivity extends AppCompatActivity {
                                     validOrders.add(o);
                                 }
                             }
+                            currentFilteredOrders.clear();
+                            currentFilteredOrders.addAll(validOrders);
                             processOrders(validOrders);
+                            loadCategoryRevenueDetailForSelection();
                             loadCustomerStatistics();
                             loadDashboardOverview();
 
                             // Load monthly trend data (independent of date filter)
                             loadMonthlyTrend();
                         } else {
+                            currentFilteredOrders.clear();
                             resetStats();
                             resetDashboardOverview();
                             resetCustomerStatistics();
+                            resetCategoryRevenueSection("Không có dữ liệu doanh thu theo danh mục.");
 
                         }
                     }
 
                     @Override
                     public void onFailure(Call<List<Order>> call, Throwable t) {
+                        currentFilteredOrders.clear();
+                        resetCategoryRevenueSection("Lỗi tải dữ liệu danh mục.");
                         Toast.makeText(AdminRevenueActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+
+    private void loadRevenueCategories() {
+        dbService.getAdminCategories("eq.false", "name.asc").enqueue(new Callback<List<Category>>() {
+            @Override
+            public void onResponse(Call<List<Category>> call, Response<List<Category>> response) {
+                if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                    revenueCategories.clear();
+                    revenueCategories.addAll(response.body());
+                    setupCategoryRevenueDropdown();
+                    return;
+                }
+                loadRevenueCategoriesFallback();
+            }
+
+            @Override
+            public void onFailure(Call<List<Category>> call, Throwable t) {
+                loadRevenueCategoriesFallback();
+            }
+        });
+    }
+
+    private void loadRevenueCategoriesFallback() {
+        dbService.getCategories("eq.true", "name.asc").enqueue(new Callback<List<Category>>() {
+            @Override
+            public void onResponse(Call<List<Category>> call, Response<List<Category>> response) {
+                revenueCategories.clear();
+                if (response.isSuccessful() && response.body() != null) {
+                    revenueCategories.addAll(response.body());
+                }
+                setupCategoryRevenueDropdown();
+                if (revenueCategories.isEmpty()) {
+                    resetCategoryRevenueSection("Không lấy được danh mục từ database.");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Category>> call, Throwable t) {
+                revenueCategories.clear();
+                setupCategoryRevenueDropdown();
+                resetCategoryRevenueSection("Lỗi tải danh mục từ database.");
+            }
+        });
+    }
+
+    private void setupCategoryRevenueDropdown() {
+        if (atvCategoryRevenueSelector == null) {
+            return;
+        }
+
+        List<String> names = new ArrayList<>();
+        for (Category category : revenueCategories) {
+            names.add(category.getName() == null ? "(Chưa có tên)" : category.getName());
+        }
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_dropdown_item_1line,
+                names);
+        atvCategoryRevenueSelector.setAdapter(adapter);
+
+        if (!revenueCategories.isEmpty()) {
+            if (selectedRevenueCategory == null) {
+                selectedRevenueCategory = revenueCategories.get(0);
+            }
+            atvCategoryRevenueSelector.setText(selectedRevenueCategory.getName(), false);
+            loadCategoryRevenueDetailForSelection();
+        } else {
+            selectedRevenueCategory = null;
+            atvCategoryRevenueSelector.setText("", false);
+            resetCategoryRevenueSection("Không có danh mục để hiển thị.");
+        }
+    }
+
+    private void loadCategoryRevenueDetailForSelection() {
+        if (selectedRevenueCategory == null) {
+            resetCategoryRevenueSection("Chọn danh mục để xem chi tiết doanh thu.");
+            return;
+        }
+
+        if (currentFilteredOrders.isEmpty()) {
+            resetCategoryRevenueSection("Không có đơn hàng trong khoảng thời gian đã chọn.");
+            return;
+        }
+
+        List<Order> servedOrders = new ArrayList<>();
+        for (Order order : currentFilteredOrders) {
+            if ("served".equalsIgnoreCase(order.getStatus())) {
+                servedOrders.add(order);
+            }
+        }
+
+        if (servedOrders.isEmpty()) {
+            resetCategoryRevenueSection("Không có đơn hoàn thành trong khoảng thời gian đã chọn.");
+            return;
+        }
+
+        String select = "id,name";
+        dbService.getFoodsByCategoryFilter("eq." + selectedRevenueCategory.getId(), select, "name.asc")
+                .enqueue(new Callback<List<Food>>() {
+                    @Override
+                    public void onResponse(Call<List<Food>> call, Response<List<Food>> response) {
+                        if (!response.isSuccessful() || response.body() == null || response.body().isEmpty()) {
+                            resetCategoryRevenueSection("Danh mục này chưa có sản phẩm.");
+                            return;
+                        }
+                        loadCategoryOrderItems(servedOrders, response.body());
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<Food>> call, Throwable t) {
+                        resetCategoryRevenueSection("Lỗi tải danh sách sản phẩm của danh mục.");
+                    }
+                });
+    }
+
+    private void loadCategoryOrderItems(List<Order> servedOrders, List<Food> foodsInCategory) {
+        List<String> orderIds = new ArrayList<>();
+        for (Order order : servedOrders) {
+            if (order.getId() != null && !order.getId().isEmpty()) {
+                orderIds.add(order.getId());
+            }
+        }
+
+        if (orderIds.isEmpty()) {
+            resetCategoryRevenueSection("Không có đơn hợp lệ để thống kê.");
+            return;
+        }
+
+        List<OrderItem> allItems = new ArrayList<>();
+        int batchSize = 30;
+        int totalBatches = (int) Math.ceil((double) orderIds.size() / batchSize);
+        final int[] completedBatches = { 0 };
+
+        for (int i = 0; i < totalBatches; i++) {
+            int start = i * batchSize;
+            int end = Math.min(start + batchSize, orderIds.size());
+            List<String> batchIds = orderIds.subList(start, end);
+
+            StringBuilder sb = new StringBuilder("in.(");
+            for (int j = 0; j < batchIds.size(); j++) {
+                if (j > 0) {
+                    sb.append(",");
+                }
+                sb.append(batchIds.get(j));
+            }
+            sb.append(")");
+
+            dbService.getOrderItems(sb.toString(), "order_id,food_id,quantity,subtotal")
+                    .enqueue(new Callback<List<OrderItem>>() {
+                        @Override
+                        public void onResponse(Call<List<OrderItem>> call, Response<List<OrderItem>> response) {
+                            completedBatches[0]++;
+                            if (response.isSuccessful() && response.body() != null) {
+                                allItems.addAll(response.body());
+                            }
+                            if (completedBatches[0] == totalBatches) {
+                                renderCategoryRevenueDetails(servedOrders, foodsInCategory, allItems);
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<List<OrderItem>> call, Throwable t) {
+                            completedBatches[0]++;
+                            if (completedBatches[0] == totalBatches) {
+                                renderCategoryRevenueDetails(servedOrders, foodsInCategory, allItems);
+                            }
+                        }
+                    });
+        }
+    }
+
+    private void renderCategoryRevenueDetails(List<Order> servedOrders, List<Food> foodsInCategory, List<OrderItem> allItems) {
+        Map<String, String> orderDateMap = new HashMap<>();
+        for (Order order : servedOrders) {
+            if (order.getId() != null) {
+                String date = extractDateFromTimestamp(order.getCreatedAt());
+                if (!date.isEmpty()) {
+                    orderDateMap.put(order.getId(), date);
+                }
+            }
+        }
+
+        Map<String, String> foodNameMap = new HashMap<>();
+        Set<String> foodIds = new HashSet<>();
+        for (Food food : foodsInCategory) {
+            if (food.getId() != null && !food.getId().isEmpty()) {
+                foodIds.add(food.getId());
+                foodNameMap.put(food.getId(), food.getName() == null ? "(Chưa có tên)" : food.getName());
+            }
+        }
+
+        Map<String, CategoryRevenueDetailRow> rowsByFood = new HashMap<>();
+        for (Food food : foodsInCategory) {
+            String foodId = food.getId();
+            if (foodId == null || foodId.isEmpty()) {
+                continue;
+            }
+            rowsByFood.put(foodId, new CategoryRevenueDetailRow("-", foodNameMap.getOrDefault(foodId, "(Không rõ món)"), 0, 0d));
+        }
+
+        int totalQuantity = 0;
+        double totalRevenue = 0d;
+
+        for (OrderItem item : allItems) {
+            String orderId = item.getOrderId();
+            String foodId = item.getFoodId();
+            if (orderId == null || foodId == null || !foodIds.contains(foodId) || !orderDateMap.containsKey(orderId)) {
+                continue;
+            }
+
+            CategoryRevenueDetailRow row = rowsByFood.get(foodId);
+            if (row == null) {
+                row = new CategoryRevenueDetailRow("-", foodNameMap.getOrDefault(foodId, "(Không rõ món)"), 0, 0d);
+                rowsByFood.put(foodId, row);
+            }
+
+            row.quantity += item.getQuantity();
+            row.revenue += item.getSubtotal();
+            String soldDate = orderDateMap.get(orderId);
+            if (row.date.equals("-") || soldDate.compareTo(row.date) > 0) {
+                row.date = soldDate;
+            }
+
+            totalQuantity += item.getQuantity();
+            totalRevenue += item.getSubtotal();
+        }
+
+        List<CategoryRevenueDetailRow> rows = new ArrayList<>(rowsByFood.values());
+        Collections.sort(rows, (a, b) -> {
+            int revenueCompare = Double.compare(b.revenue, a.revenue);
+            if (revenueCompare != 0) {
+                return revenueCompare;
+            }
+            int qtyCompare = Integer.compare(b.quantity, a.quantity);
+            if (qtyCompare != 0) {
+                return qtyCompare;
+            }
+            return a.productName.compareToIgnoreCase(b.productName);
+        });
+
+        if (tableCategoryRevenueDetails != null) {
+            int count = tableCategoryRevenueDetails.getChildCount();
+            if (count > 1) {
+                tableCategoryRevenueDetails.removeViews(1, count - 1);
+            }
+        }
+
+        if (rows.isEmpty()) {
+            resetCategoryRevenueSection("Danh mục này chưa có sản phẩm.");
+            return;
+        }
+
+        for (CategoryRevenueDetailRow row : rows) {
+            addCategoryRevenueTableRow(formatDisplayDate(row.date), row.productName,
+                    String.valueOf(row.quantity), nf.format(row.revenue) + "đ");
+        }
+
+        if (tvCategoryRevenueEmpty != null) {
+            tvCategoryRevenueEmpty.setVisibility(android.view.View.GONE);
+        }
+
+        if (tvCategoryRevenueSummary != null) {
+            String categoryName = selectedRevenueCategory.getName() == null ? "(Chưa có tên)" : selectedRevenueCategory.getName();
+            tvCategoryRevenueSummary.setText(categoryName
+                    + " | Doanh thu: " + nf.format(totalRevenue) + "đ"
+                    + " | Số lượng bán: " + totalQuantity
+                    + " | Tổng sản phẩm: " + rows.size());
+        }
+
+        drawCategoryProductRevenueChart(rows);
+    }
+
+    private LinkedHashMap<String, Double> initializeDateRangeBuckets() {
+        LinkedHashMap<String, Double> buckets = new LinkedHashMap<>();
+        Calendar cursor = (Calendar) dateFrom.clone();
+        cursor.set(Calendar.HOUR_OF_DAY, 0);
+        cursor.set(Calendar.MINUTE, 0);
+        cursor.set(Calendar.SECOND, 0);
+        cursor.set(Calendar.MILLISECOND, 0);
+
+        Calendar end = (Calendar) dateTo.clone();
+        end.set(Calendar.HOUR_OF_DAY, 0);
+        end.set(Calendar.MINUTE, 0);
+        end.set(Calendar.SECOND, 0);
+        end.set(Calendar.MILLISECOND, 0);
+
+        while (!cursor.after(end)) {
+            String key = isoFormat.format(cursor.getTime());
+            buckets.put(key, 0d);
+            cursor.add(Calendar.DAY_OF_MONTH, 1);
+        }
+        return buckets;
+    }
+
+    private void drawCategoryProductRevenueChart(List<CategoryRevenueDetailRow> rows) {
+        if (chartCategoryRevenueDaily == null) {
+            return;
+        }
+
+        chartCategoryRevenueDaily.clear();
+        configureDailyBarChart(chartCategoryRevenueDaily);
+        chartCategoryRevenueDaily.setScaleYEnabled(false);
+        chartCategoryRevenueDaily.setScaleXEnabled(true);
+        chartCategoryRevenueDaily.setDragEnabled(true);
+        chartCategoryRevenueDaily.setPinchZoom(false);
+        chartCategoryRevenueDaily.setDoubleTapToZoomEnabled(false);
+        chartCategoryRevenueDaily.getLegend().setEnabled(false);
+        chartCategoryRevenueDaily.setExtraBottomOffset(14f);
+
+        List<BarEntry> entries = new ArrayList<>();
+        List<String> labels = new ArrayList<>();
+        int index = 0;
+
+        for (CategoryRevenueDetailRow row : rows) {
+            entries.add(new BarEntry(index, (float) row.revenue));
+            labels.add(shortenLabel(row.productName));
+            index++;
+        }
+
+        BarDataSet dataSet = new BarDataSet(entries, "Doanh thu theo sản phẩm");
+        dataSet.setColor(Color.parseColor("#1976D2"));
+        dataSet.setValueTextSize(9f);
+        dataSet.setValueTextColor(Color.parseColor("#333333"));
+        dataSet.setValueFormatter(new ValueFormatter() {
+            @Override
+            public String getFormattedValue(float value) {
+                return value <= 0f ? "" : formatCompactCurrency(value);
+            }
+        });
+
+        BarData barData = new BarData(dataSet);
+        barData.setBarWidth(0.55f);
+        chartCategoryRevenueDaily.setData(barData);
+
+        XAxis xAxis = chartCategoryRevenueDaily.getXAxis();
+        xAxis.setValueFormatter(new ValueFormatter() {
+            @Override
+            public String getAxisLabel(float value, AxisBase axis) {
+                int idx = Math.round(value);
+                if (idx < 0 || idx >= labels.size()) {
+                    return "";
+                }
+                return labels.get(idx);
+            }
+        });
+        xAxis.setLabelRotationAngle(0f);
+        xAxis.setLabelCount(Math.min(labels.size(), 4), false);
+        xAxis.setGranularity(1f);
+        xAxis.setGranularityEnabled(true);
+        xAxis.setCenterAxisLabels(false);
+        xAxis.setAvoidFirstLastClipping(true);
+        xAxis.setAxisMinimum(-0.5f);
+        xAxis.setAxisMaximum(Math.max(0f, labels.size() - 0.5f));
+        xAxis.setTextSize(10f);
+
+        if (labels.size() > 4) {
+            chartCategoryRevenueDaily.setVisibleXRangeMinimum(3f);
+            chartCategoryRevenueDaily.setVisibleXRangeMaximum(4f);
+            chartCategoryRevenueDaily.moveViewToX(0f);
+        } else {
+            chartCategoryRevenueDaily.fitScreen();
+        }
+        chartCategoryRevenueDaily.invalidate();
+    }
+
+    private void addCategoryRevenueTableRow(String date, String productName, String qty, String revenue) {
+        if (tableCategoryRevenueDetails == null) {
+            return;
+        }
+
+        android.widget.TableRow row = new android.widget.TableRow(this);
+        row.setGravity(android.view.Gravity.CENTER_VERTICAL);
+
+        int pad = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics());
+
+        android.widget.TextView tvDate = new android.widget.TextView(this);
+        tvDate.setText(date);
+        tvDate.setTextColor(Color.parseColor("#333333"));
+        tvDate.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
+        tvDate.setPadding(pad, pad, pad, pad);
+        tvDate.setGravity(android.view.Gravity.CENTER);
+        tvDate.setLayoutParams(new android.widget.TableRow.LayoutParams(0,
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT, 0.8f));
+
+        android.view.View vLine1 = createVerticalLine();
+
+        android.widget.TextView tvProduct = new android.widget.TextView(this);
+        tvProduct.setText(productName);
+        tvProduct.setTextColor(Color.parseColor("#333333"));
+        tvProduct.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
+        tvProduct.setPadding(pad, pad, pad, pad);
+        tvProduct.setLayoutParams(new android.widget.TableRow.LayoutParams(0,
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT, 1.4f));
+
+        android.view.View vLine2 = createVerticalLine();
+
+        android.widget.TextView tvQty = new android.widget.TextView(this);
+        tvQty.setText(qty);
+        tvQty.setTextColor(Color.parseColor("#333333"));
+        tvQty.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
+        tvQty.setPadding(pad, pad, pad, pad);
+        tvQty.setGravity(android.view.Gravity.CENTER);
+        tvQty.setLayoutParams(new android.widget.TableRow.LayoutParams(0,
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT, 0.7f));
+
+        android.view.View vLine3 = createVerticalLine();
+
+        android.widget.TextView tvRevenue = new android.widget.TextView(this);
+        tvRevenue.setText(revenue);
+        tvRevenue.setTextColor(Color.parseColor("#1976D2"));
+        tvRevenue.setTypeface(null, android.graphics.Typeface.BOLD);
+        tvRevenue.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
+        tvRevenue.setPadding(pad, pad, pad, pad);
+        tvRevenue.setGravity(android.view.Gravity.CENTER);
+        tvRevenue.setLayoutParams(new android.widget.TableRow.LayoutParams(0,
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+
+        row.addView(tvDate);
+        row.addView(vLine1);
+        row.addView(tvProduct);
+        row.addView(vLine2);
+        row.addView(tvQty);
+        row.addView(vLine3);
+        row.addView(tvRevenue);
+
+        tableCategoryRevenueDetails.addView(row);
+
+        android.view.View divider = new android.view.View(this);
+        divider.setBackgroundColor(Color.parseColor("#CCCCCC"));
+        android.widget.TableLayout.LayoutParams lpDiv = new android.widget.TableLayout.LayoutParams(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT, 1);
+        tableCategoryRevenueDetails.addView(divider, lpDiv);
+    }
+
+    private android.view.View createVerticalLine() {
+        android.view.View line = new android.view.View(this);
+        line.setBackgroundColor(Color.parseColor("#CCCCCC"));
+        line.setLayoutParams(new android.widget.TableRow.LayoutParams(1,
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT));
+        return line;
+    }
+
+    private void resetCategoryRevenueSection(String message) {
+        if (tableCategoryRevenueDetails != null) {
+            int count = tableCategoryRevenueDetails.getChildCount();
+            if (count > 1) {
+                tableCategoryRevenueDetails.removeViews(1, count - 1);
+            }
+        }
+
+        if (tvCategoryRevenueSummary != null) {
+            tvCategoryRevenueSummary.setText(message);
+        }
+
+        if (tvCategoryRevenueEmpty != null) {
+            tvCategoryRevenueEmpty.setVisibility(android.view.View.VISIBLE);
+            tvCategoryRevenueEmpty.setText(message);
+        }
+
+        if (chartCategoryRevenueDaily != null) {
+            chartCategoryRevenueDaily.clear();
+            chartCategoryRevenueDaily.invalidate();
+        }
+    }
+
+    private String formatDisplayDate(String isoDate) {
+        if (isoDate == null || isoDate.isEmpty() || "-".equals(isoDate)) {
+            return "-";
+        }
+        try {
+            java.util.Date date = isoFormat.parse(isoDate);
+            if (date != null) {
+                return dayDisplayFormat.format(date);
+            }
+        } catch (Exception ignored) {
+        }
+        return isoDate;
+    }
+
+    private String formatLabelDate(String isoDate) {
+        if (isoDate == null || isoDate.length() < 10) {
+            return isoDate == null ? "" : isoDate;
+        }
+        return isoDate.substring(8, 10) + "/" + isoDate.substring(5, 7);
+    }
+
+    private String shortenLabel(String text) {
+        if (text == null) {
+            return "";
+        }
+        String trimmed = text.trim();
+        if (trimmed.length() <= 8) {
+            return trimmed;
+        }
+        return trimmed.substring(0, 7) + "…";
+    }
+
+    private static class CategoryRevenueDetailRow {
+        String date;
+        String productName;
+        int quantity;
+        double revenue;
+
+        CategoryRevenueDetailRow(String date, String productName, int quantity, double revenue) {
+            this.date = date;
+            this.productName = productName;
+            this.quantity = quantity;
+            this.revenue = revenue;
+        }
     }
 
     // Removed isThisMonthRange() as comparison is now dynamic
@@ -1615,6 +2160,7 @@ public class AdminRevenueActivity extends AppCompatActivity {
         llDailyRevenueChart.removeAllViews();
         tvDailyRevenueEmpty.setVisibility(android.view.View.VISIBLE);
         resetMonthlyTrend();
+        resetCategoryRevenueSection("Chọn danh mục để xem chi tiết doanh thu");
         resetDashboardOverview();
         resetCustomerStatistics();
     }
