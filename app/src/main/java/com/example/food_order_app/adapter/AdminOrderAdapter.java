@@ -22,6 +22,7 @@ import com.example.food_order_app.model.Order;
 import com.example.food_order_app.model.OrderItem;
 import com.example.food_order_app.network.RetrofitClient;
 import com.example.food_order_app.network.SupabaseDbService;
+import com.example.food_order_app.network.SupabaseFunctionsService;
 
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -41,6 +42,7 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Vi
     private final Context context;
     private final OnOrderClickListener listener;
     private final SupabaseDbService dbService;
+    private final SupabaseFunctionsService functionsService;
 
     public interface OnOrderClickListener {
         void onOrderClick(Order order);
@@ -51,6 +53,7 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Vi
         this.context = context;
         this.listener = listener;
         this.dbService = RetrofitClient.getDbService();
+        this.functionsService = RetrofitClient.getFunctionsService();
     }
 
     public void setOrders(List<Order> orders) {
@@ -128,7 +131,7 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Vi
 
     private void sendNotification(Order order, String newStatus) {
         String title = "Cập nhật đơn hàng " + order.getOrderCode();
-        String message = "";
+        String message;
         
         switch (newStatus) {
             case "processing":
@@ -147,22 +150,57 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Vi
                 return;
         }
 
+        final String finalMessage = message;
+
         Map<String, Object> notif = new HashMap<>();
         notif.put("user_id", order.getUserId());
         notif.put("order_id", order.getId());
         notif.put("order_code", order.getOrderCode());
         notif.put("title", title);
-        notif.put("message", message);
+        notif.put("message", finalMessage);
         notif.put("is_read", false);
 
         dbService.createNotification(notif).enqueue(new Callback<List<com.example.food_order_app.model.Notification>>() {
             @Override
             public void onResponse(Call<List<com.example.food_order_app.model.Notification>> call, Response<List<com.example.food_order_app.model.Notification>> response) {
-                // Silently succeed
+                if (response.isSuccessful()) {
+                    String notificationId = null;
+                    if (response.body() != null && !response.body().isEmpty()) {
+                        notificationId = response.body().get(0).getId();
+                    }
+                    triggerPush(order.getUserId(), order.getId(), order.getOrderCode(), title, finalMessage, notificationId);
+                }
             }
 
             @Override
             public void onFailure(Call<List<com.example.food_order_app.model.Notification>> call, Throwable t) {
+                // Silently fail
+            }
+        });
+    }
+
+    private void triggerPush(String userId, String orderId, String orderCode, String title, String message, String notificationId) {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("user_id", userId);
+        payload.put("title", title);
+        payload.put("body", message);
+        if (notificationId != null && !notificationId.trim().isEmpty()) {
+            payload.put("notification_id", notificationId);
+        }
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("order_id", orderId);
+        data.put("order_code", orderCode);
+        payload.put("data", data);
+
+        functionsService.sendPush(payload).enqueue(new Callback<Map<String, Object>>() {
+            @Override
+            public void onResponse(Call<Map<String, Object>> call, Response<Map<String, Object>> response) {
+                // Silently succeed
+            }
+
+            @Override
+            public void onFailure(Call<Map<String, Object>> call, Throwable t) {
                 // Silently fail
             }
         });

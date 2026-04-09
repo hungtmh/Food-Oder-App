@@ -10,6 +10,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.food_order_app.controller.AdminHomeActivity;
 import com.example.food_order_app.controller.HomeActivity;
 import com.example.food_order_app.controller.LoginActivity;
+import com.example.food_order_app.utils.NotificationHelper;
+import com.example.food_order_app.utils.PushRegistrationManager;
 import com.example.food_order_app.utils.SessionManager;
 
 /**
@@ -25,11 +27,15 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        NotificationHelper.createNotificationChannel(this);
+
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
             SessionManager sessionManager = new SessionManager(this);
 
             Intent intent;
             if (sessionManager.isLoggedIn() && sessionManager.isRememberMe()) {
+                PushRegistrationManager.requestCurrentTokenAndSync(this);
+
                 // Đã đăng nhập và ghi nhớ -> vào trang chính
                 if (sessionManager.isAdmin()) {
                     intent = new Intent(MainActivity.this, AdminHomeActivity.class);
