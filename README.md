@@ -1,71 +1,414 @@
-# WEEKLY REPORT
-**Week 9, 29/03/2026 – 04/04/2026**
+# 📋 NỘI DUNG CÔNG VIỆC — ỨNG DỤNG ĐẶT MÓN ĂN
 
-## I. GROUP INFORMATION:
-*   **Group 06**
-*   **Project name:** Food Application
-*   **Prepared by:** Trần Mạnh Hùng
-*   **Members:**
-    *   23127033 – Bùi Dương Duy Cường
-    *   23127391 – Nguyễn Anh Khoa
-    *   23127195 – Trần Mạnh Hùng
-    *   23127060 – Ninh Văn Khải
-    *   23127259 – Nguyễn Tấn Thắng
-*   **Meeting date:** 03/04/2026
-*   **All member are present.**
+> **Tổng hợp toàn bộ công việc nhóm đã thực hiện** — Dựa trên lịch sử commit Git từ ngày **16/02/2026** đến **16/04/2026**
 
-## II. ACHIEVEMENTS SINCE LAST WEEK:
-Dưới đây là bảng tổng hợp tiến độ và các chức năng đã được lập trình, thiết kế trong tuần qua, dựa trên dữ liệu commit và phân công của dự án:
+---
 
-| STT | Tính năng | Mô tả chi tiết các công việc đã hoàn thành | Người phụ trách | Tiến độ | Hạn hoàn thành |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| 1 | AI Prediction & Sentiment | Thay đổi logic rule-based dự đoán xu hướng dựa trên truy xuất order thực tế (thay vì gán cứng). Chuyển hoàn toàn mô hình AI từ Gemini sang Qwen & Hugging Face. Cập nhật UI cho AI Insight và tính năng bộ lọc (filter). | Ninh Văn Khải | 100% | 04/04/2026 |
-| 2 | Phân tích Push Notifications | Dùng AI phân tích và hệ thống hóa luồng xử lý thông báo ngoài ứng dụng (out-app). Đề xuất kiến trúc tích hợp hệ thống Supabase hiện tại với các nền tảng gửi push messages (FCM, OneSignal). | Bùi Dương Duy Cường | 100% | 04/04/2026 |
-| 3 | Quản lý Admin Categories | Hoàn thiện giao diện Admin Category List dạng Grid 2 cột có tính năng Search bar và đếm số lượng món. Xây dựng Form thêm/sửa danh mục có validation, hỗ trợ chọn ảnh và pre-fill dữ liệu mode Edit. | Nguyễn Tấn Thắng | 100% | 04/04/2026 |
-| 4 | Flow Order, Navbar & Seminar | Bổ sung trạng thái "Đang giao" cho các đơn hàng mang về (bỏ qua bước này nếu ăn tại quán). Fix dứt điểm lỗi navbar admin (ấn nhiều lần nhảy quyền sang user). Cấu hình bảo mật khóa API, thiết kế Slide Reveal.js từ Script chuẩn bị Thuyết trình. | Trần Mạnh Hùng | 100% | 04/04/2026 |
-| 5 | Merge Logic Sepay/Voucher | Hoàn thiện công tác merge code luồng hệ thống branch main, giữ nguyên các tính năng mới đã thử nghiệm đối với webhook thanh toán (Sepay) và Voucher. | Nguyễn Anh Khoa | 100% | 04/04/2026 |
+## 👥 Thành viên nhóm
 
-## III. ISSUES AND IMPACTS:
-*   Việc chuyển đổi mô hình AI (qua Qwen và thư viện Hugging Face) để giải quyết các hạn chế API cũ tốn một chút thời gian tinh chỉnh thông số và thay đổi giao diện (UI Insight). 
-*   Xung đột code (conflict) khi tiến hành Merge các branch lớn (Khoa, Thắng, Khải) đòi hỏi sự cẩn trọng để không ghi đè các tính năng hoặc file config quan trọng. 
-*   Rule-based cần độ khó cao hơn khi tiến hành truy xuất thật từng order trên hệ thống, tốn công lập pseudo-code logic để AI xử lý code chính xác nhất, tránh bugs sai phân luồng dữ liệu.
+| STT | Thành viên | GitHub Username | Vai trò   | Phụ trách chính | Số commit |
+| --- | ---------- | --------------- | --------- | --------------- | --------- |
+| 1   | **Hùng**   | hungtmh         | Developer | Phần User       | 37        |
+| 2   | **Cường**  | Dicun           | Developer | Phần User       | 7         |
+| 3   | **Khoa**   | wokovn          | Developer | Phần User       | 3         |
+| 4   | **Thắng**  | thangak18       | Developer | Phần Admin      | 26        |
+| 5   | **Khải**   | nvkhai238       | Developer | Phần Admin      | 25        |
 
-## IV. GOALS FOR NEXT WEEK
-| Hạng mục (Item) | Mô tả chi tiết (Description) | Hạn hoàn thành (Due Date) | Người phụ trách (Responsibility) |
-| :--- | :--- | :--- | :--- |
-| **Hoàn thiện AI** | Huấn luyện mô hình AI và áp dụng hợp lý vào các tính năng trọng tâm bên trong dự án. | 11/04/2026 | Ninh Văn Khải, Trần Mạnh Hùng |
-| **Thông báo out-app** | Cài đặt hệ thống thông báo ngoài ứng dụng (Push Notification) để người dùng nhận được cập nhật tức thì. | 11/04/2026 | Bùi Dương Duy Cường, Nguyễn Anh Khoa |
-| **Tăng độ UI/UX** | Cải thiện trải nghiệm người dùng thông qua thiết kế giao diện hiện đại, dễ sử dụng ở các màn hình con. | 11/04/2026 | Nguyễn Tấn Thắng |
+---
 
-## V. SUMMARY:
-Trọng tâm hoạt động của cả nhóm trong tuần thứ 9 là nâng cấp quản trị ứng dụng và tinh chỉnh hệ thống thay vì xây mới ồ ạt. Tính năng nổi bật nhất trong tuần qua bao gồm quản lý Categories bên phía Admin, tinh chỉnh quy trình các trạng thái bán hàng chuẩn xác cho shipper và ăn tại chỗ, và tái cấu trúc code rule-based cho AI (sử dụng pseudo code thực tiễn truy xuất lịch sử order thật). Việc chuyển dịch các model AI (sang Qwen/Hugging Face) đang chạy rất ổn định. Nhóm cũng đã hoàn thiện các kịch bản báo cáo và slide thuyết trình thông qua Reveal.js chuẩn bị sẵn sàng cho đợt review sắp tới. 
+## 📱 PHẦN USER
 
-## VI. AI REPORT:
+---
 
-**1. Ninh Văn Khải:**
-*   **Bối cảnh:** Hiện tại rule-base đang gán cứng, cần truy xuất theo đơn hàng thực, tiến hành chỉnh lại logic rule-base.
-*   **Prompt sử dụng:** (Đưa ra Pseudo code minh hoạ rõ ràng từng điều kiện MIN_REVIEWS, MIN_ORDERS, các luật "AT RISK", "HOT SELLER",...) kết hợp với câu prompt:
-    *   "Trên đây là pseudo code, Hiện tại rule-base đang gán cứng, tôi cần truy xuất theo đơn hàng thực, hãy chỉnh lại logic rule-base theo hướng pseudo code trên cho tôi."
-*   **Kết quả:** Nhờ sử dụng cách đưa ra pseudo code và hướng AI Agent thực hiện lại logic rule-base theo ý muốn, hệ thống đã tránh được việc AI tự code dẫn đến sai khác, đảm bảo độ chuẩn xác cao dựa trên order thật.
+### 👤 Hùng — Tài khoản, Hồ sơ, Tìm kiếm & Nhiều tính năng bổ sung
 
-**2. Nguyễn Tấn Thắng:**
-*   **Bối cảnh:** Cần code tính năng quản trị Danh mục (Categories) linh hoạt, đẹp mắt trên hệ thống Food Delivery app (front-end UI).
-*   **Prompt sử dụng:**
-    *   "Viết code (React Native/Flutter - tùy bạn chọn) cho màn hình 'Category List' của ứng dụng Food Delivery. Yêu cầu: Giao diện dạng Grid (2 cột). Mỗi item gồm: Hình ảnh danh mục (Bo góc), Tên danh mục bên dưới, và Badge hiển thị số lượng món ăn đang có. Có thanh Search bar ở trên đầu để tìm kiếm nhanh danh mục... Sử dụng dữ liệu mẫu (mock data) là một mảng các object. Style hiện đại, màu sắc chủ đạo là Cam/Trắng."
-    *   "Tạo một component Form trongđể 'Thêm mới hoặc Chỉnh sửa danh mục' món ăn. Các trường thông tin bao gồm: Category Name: Input text có validation (không được để trống). Icon/Image: Một nút chọn ảnh từ thư viện máy điện thoại. Status: Một Switch (Toggle)... Nút 'Save' và 'Cancel'... Yêu cầu: Nếu là mode 'Edit', form phải tự động điền (pre-fill) dữ liệu cũ."
-*   **Kết quả:** AI đã sinh mã front-end form nhập liệu, Grid UI, validation chính xác, đẩy nhanh tốc độ code luồng quản lý danh mục bên Admin.
+#### 1. Quản lý tài khoản
 
-**3. Bùi Dương Duy Cường:**
-*   **Bối cảnh:** Sử dụng AI để research, phân tích và hệ thống hóa kiến trúc Push Notification trước khi nhúng vào code thật, giúp nhóm có cái nhìn kỹ thuật chuẩn xác.
-*   **Prompt sử dụng:**
-    *   "Sử dụng AI để hỗ trợ phân tích và hệ thống hóa nội dung liên quan đến chức năng thông báo trong ứng dụng... Phân tích hiện trạng hệ thống thông báo trong ứng dụng, Xác định các trường hợp có thể phát sinh... Giải thích khái niệm push notification, cách hoạt động khi tắt app. Mô tả luồng xử lý tổng thể... Đề xuất kiến trúc Supabase. Các bước triển khai thực tế. So sánh Push Notification Services như Firebase Cloud Messaging (FCM), OneSignal..."
-*   **Kết quả:** Nhận được bản phân tích kiến trúc Backend rõ ràng. Đóng vai trò là tài liệu thiết kế hệ thống vững chắc làm nền tảng cho việc cài đặt Out-app notification vào tuần sau.
+| Tính năng              | Mô tả                                                          | Ngày commit   | Trạng thái    |
+| ---------------------- | -------------------------------------------------------------- | ------------- | ------------- |
+| Đăng nhập              | Email + mật khẩu, ghi nhớ đăng nhập, phân quyền Admin/User     | 16/02/2026    | ✅ Hoàn thành |
+| Đăng ký                | Họ tên, Email, SĐT, Mật khẩu, đồng ý điều khoản                | 16/02/2026    | ✅ Hoàn thành |
+| Quên mật khẩu          | Gửi mã xác nhận qua email (Gmail SMTP)                         | 16/02/2026    | ✅ Hoàn thành |
+| Đổi mật khẩu           | Nhập mật khẩu cũ để xác thực, đặt mật khẩu mới                 | 16/02/2026    | ✅ Hoàn thành |
+| Fix lỗi đổi mật khẩu   | Sửa lỗi & xóa các categories trùng lặp                        | 07/03/2026    | ✅ Hoàn thành |
+| Hồ sơ cá nhân          | Xem/sửa Tên, SĐT, Địa chỉ, Ảnh đại diện. Email không đổi được | 16/02/2026    | ✅ Hoàn thành |
+| Cập nhật avatar hệ thống | Giao diện avatar mới cho toàn hệ thống                        | 21/03/2026    | ✅ Hoàn thành |
+| Đăng xuất              | Thoát tài khoản, xóa session                                   | 16/02/2026    | ✅ Hoàn thành |
 
-**4. Trần Mạnh Hùng:**
-*   **Bối cảnh:** Xử lý các nghiệp vụ nâng cao ở Navbar Admin bị lỗi phân quyền, flow trạng thái đơn hàng (Đang giao) và kịch bản thuyết trình bảo vệ dự án.
-*   **Prompt sử dụng:**
-    *   "Hiện tại logic đang là Chờ xác nhận -> Chờ chế biến -> Đã phục vụ -> Đã hủy. Tui muốn bạn thêm trạng thái đang giao nữa thành Chờ xác nhận -> Chờ chế biến -> Đang giao -> Đã phục vụ -> Đã hủy. Các đơn hàng mà ăn tại quán thì nhảy thẳng lên đã phục vụ chứ không có đang giao. Sửa code cho admin như vậy luôn."
-    *   "Fix lỗi navbar của admin hiện tại nếu bấm nhiều lần sẽ chuyển qua acc user"
-    *   "Dựa vào dự án source code của tôi hãy tạo cho tôi 1 script thuyết trình gồm các SLIDES đi"
-    *   "Dựng 1 slides bằng Reveal.js đi dựa vào script có sẵn"
-*   **Kết quả:** Sửa triệt để bug nghiêm trọng ở Dashboard. Hoàn thiện đúng nghiệp vụ giao đồ ăn thực tế. Dựng thành công framework bài thuyết trình trên nền HTML/JS Reveal.js một cách nhanh chóng.
+#### 2. Tìm kiếm món ăn
+
+| Tính năng             | Mô tả                                            | Ngày commit | Trạng thái    |
+| --------------------- | ------------------------------------------------- | ----------- | ------------- |
+| Tìm kiếm theo tên     | Ô tìm kiếm, kết quả hiển thị ngay khi gõ         | 16/02/2026  | ✅ Hoàn thành |
+| Lọc theo danh mục     | Tất cả, Món chính, Đồ uống, Tráng miệng, Khai vị | 16/02/2026  | ✅ Hoàn thành |
+| Lưu lịch sử tìm kiếm | Lưu & xóa lịch sử                                | 16/02/2026  | ✅ Hoàn thành |
+| Sắp xếp món ăn        | Giá thấp→cao, cao→thấp, đánh giá cao nhất         | 08/03/2026  | ✅ Hoàn thành |
+
+#### 3. Yêu thích sản phẩm ⭐ *(Tính năng bổ sung)*
+
+| Tính năng                | Mô tả                                      | Ngày commit | Trạng thái    |
+| ------------------------ | ------------------------------------------ | ----------- | ------------- |
+| Lưu món yêu thích        | Click icon trái tim để lưu/bỏ yêu thích    | 08/03/2026  | ✅ Hoàn thành |
+| Xem danh sách yêu thích  | Xem tất cả món đã lưu, thêm nhanh vào giỏ  | 08/03/2026  | ✅ Hoàn thành |
+
+#### 4. Liên hệ với quán ⭐ *(Tính năng bổ sung)*
+
+| Tính năng                | Mô tả                                            | Ngày commit | Trạng thái    |
+| ------------------------ | ------------------------------------------------ | ----------- | ------------- |
+| Liên hệ với quán         | Facebook, Skype, Gọi điện, YouTube, Zalo, Email   | 08/03/2026  | ✅ Hoàn thành |
+| Chỉnh sửa giao diện liên hệ | Gắn cố định navbar ở dưới, UI trang liên hệ mới | 01/04/2026  | ✅ Hoàn thành |
+
+#### 5. Đánh giá & Nhận xét sản phẩm ⭐ *(Tính năng bổ sung)*
+
+| Tính năng                    | Mô tả                                                             | Ngày commit | Trạng thái    |
+| ---------------------------- | ----------------------------------------------------------------- | ----------- | ------------- |
+| Đánh giá chi tiết sản phẩm   | UI đánh giá đẹp, hỗ trợ gửi ảnh kèm đánh giá                     | 22/03/2026  | ✅ Hoàn thành |
+| Fix đánh giá & thêm nhiều ảnh | Fix trung bình số sao, tách trang viết đánh giá riêng             | 24/03/2026  | ✅ Hoàn thành |
+
+#### 6. Chat với Admin ⭐ *(Tính năng bổ sung)*
+
+| Tính năng              | Mô tả                                                               | Ngày commit | Trạng thái    |
+| ---------------------- | ------------------------------------------------------------------- | ----------- | ------------- |
+| Chat với admin quán     | Đổi phản hồi thành chat, chat thúc giục món ăn, gọi món nhanh lên   | 25/03/2026  | ✅ Hoàn thành |
+
+#### 7. Quản lý địa chỉ & Đặt hàng tại quán ⭐ *(Tính năng bổ sung)*
+
+| Tính năng                        | Mô tả                                                                               | Ngày commit | Trạng thái    |
+| -------------------------------- | ----------------------------------------------------------------------------------- | ----------- | ------------- |
+| Tách quản lý địa chỉ vào checkout | Tích hợp địa chỉ vào bước thanh toán, Spinner Tỉnh/Thành/Phường/Quận                | 25/03/2026  | ✅ Hoàn thành |
+| Đặt ăn tại quán                  | Chọn chế độ ăn tại quán (điền số bàn), tự động set địa chỉ mặc định                 | 21/03/2026  | ✅ Hoàn thành |
+| Thêm trạng thái "Đang giao"      | Trạng thái giao hàng mới cho đơn delivery                                           | 01/04/2026  | ✅ Hoàn thành |
+
+#### 8. Quản lý đơn hàng (User + Admin) ⭐ *(Tính năng bổ sung)*
+
+| Tính năng                  | Mô tả                                         | Ngày commit | Trạng thái    |
+| -------------------------- | --------------------------------------------- | ----------- | ------------- |
+| Logic quản lý đơn hàng     | Thêm logic đơn hàng cho cả admin và user       | 07/03/2026  | ✅ Hoàn thành |
+
+#### 9. Bảo mật & Cấu hình ⭐ *(Tính năng bổ sung)*
+
+| Tính năng                | Mô tả                                                | Ngày commit | Trạng thái    |
+| ------------------------ | ---------------------------------------------------- | ----------- | ------------- |
+| Giấu API key             | Đổi SupabaseConfig + giấu các API tối mật             | 30/03/2026  | ✅ Hoàn thành |
+| Fix SupabaseConfig        | Sửa lỗi cấu hình Supabase                            | 01/04/2026  | ✅ Hoàn thành |
+
+#### 10. UI/UX & Fix lỗi ⭐ *(Tính năng bổ sung)*
+
+| Tính năng                   | Mô tả                                                     | Ngày commit | Trạng thái    |
+| --------------------------- | --------------------------------------------------------- | ----------- | ------------- |
+| Network error UI             | Giao diện lỗi mạng với nút retry, cải thiện error logging  | 06/03/2026  | ✅ Hoàn thành |
+| Sửa navbar admin             | Fix giao diện bottom navigation admin                      | 31/03/2026  | ✅ Hoàn thành |
+| Fix bottom nav admin         | Fix lỗi bottom nav tự chuyển acc admin sang user           | 03/04/2026  | ✅ Hoàn thành |
+| Gắn cố định navbar           | Cố định navbar ở dưới cho tất cả các trang                 | 01/04/2026  | ✅ Hoàn thành |
+
+#### 11. Tài liệu & Slides
+
+| Tính năng                | Mô tả                                    | Ngày commit | Trạng thái    |
+| ------------------------ | ---------------------------------------- | ----------- | ------------- |
+| README.md                | Tài liệu dự án đầy đủ                    | 16/02/2026  | ✅ Hoàn thành |
+| Phân công công việc       | File phân công nhiệm vụ cho nhóm         | 22/02/2026  | ✅ Hoàn thành |
+| Báo cáo tuần 3           | Cập nhật README cho báo cáo tuần 3       | 21/03/2026  | ✅ Hoàn thành |
+| SLIDES thuyết trình       | Slides seminar thuyết trình dự án         | 01/04/2026  | ✅ Hoàn thành |
+
+---
+
+### 🍕 Cường — Trang chủ, Slider, Gợi ý & Thông báo đẩy
+
+#### 1. Hiển thị món phổ biến (Slideshow)
+
+| Tính năng              | Mô tả                                                  | Ngày commit | Trạng thái    |
+| ---------------------- | ------------------------------------------------------ | ----------- | ------------- |
+| Slideshow món phổ biến | Slide tự động chuyển, hình ảnh đẹp, click xem chi tiết | 16/02/2026  | ✅ Hoàn thành |
+
+#### 2. Gợi ý món ăn
+
+| Tính năng           | Mô tả                                             | Ngày commit | Trạng thái    |
+| ------------------- | ------------------------------------------------- | ----------- | ------------- |
+| Danh sách món gợi ý | Hiển thị grid 2 cột ở trang chủ, cập nhật tự động | 16/02/2026  | ✅ Hoàn thành |
+
+#### 3. Hot Offers & Banner ⭐ *(Tính năng bổ sung)*
+
+| Tính năng           | Mô tả                                                    | Ngày commit | Trạng thái    |
+| ------------------- | -------------------------------------------------------- | ----------- | ------------- |
+| Hot Offers UI        | Giao diện hiển thị ưu đãi hot, chuyển slider sang banners | 20/03/2026  | ✅ Hoàn thành |
+
+#### 4. Personalized Recommendations ⭐ *(Tính năng bổ sung)*
+
+| Tính năng              | Mô tả                                           | Ngày commit | Trạng thái    |
+| ---------------------- | ----------------------------------------------- | ----------- | ------------- |
+| Gợi ý cá nhân hóa      | Gợi ý món ăn theo sở thích, cập nhật UI trang chủ | 20/03/2026  | ✅ Hoàn thành |
+
+#### 5. Push Notification khi thay đổi trạng thái ⭐ *(Tính năng bổ sung)*
+
+| Tính năng                    | Mô tả                                                    | Ngày commit | Trạng thái    |
+| ---------------------------- | -------------------------------------------------------- | ----------- | ------------- |
+| Thông báo đẩy khi đổi status | Tạo push notification khi admin thay đổi trạng thái đơn  | 09/04/2026  | ✅ Hoàn thành |
+
+---
+
+### 🛒 Khoa — Giỏ hàng, Đặt hàng, Thanh toán & Tích hợp QR
+
+#### 1. Giỏ hàng
+
+| Tính năng            | Mô tả                                               | Ngày commit | Trạng thái    |
+| -------------------- | --------------------------------------------------- | ----------- | ------------- |
+| Thêm món vào giỏ     | Chọn số lượng, hiệu ứng thêm thành công             | 16/02/2026  | ✅ Hoàn thành |
+| Xem giỏ hàng         | Danh sách món: Ảnh, Tên, Giá, Số lượng, Tổng tiền   | 16/02/2026  | ✅ Hoàn thành |
+| Thay đổi số lượng    | Tăng/giảm, tổng tiền tự động cập nhật               | 16/02/2026  | ✅ Hoàn thành |
+| Xóa món khỏi giỏ     | Xóa từng món, vuốt trái để xóa, Snackbar Hoàn tác   | 16/02/2026  | ✅ Hoàn thành |
+| Xóa toàn bộ giỏ hàng | Xóa tất cả, Snackbar Hoàn tác, tổng tiền reset về 0 | 16/02/2026  | ✅ Hoàn thành |
+
+#### 2. Đặt hàng
+
+| Tính năng             | Mô tả                                                        | Ngày commit | Trạng thái    |
+| --------------------- | ------------------------------------------------------------ | ----------- | ------------- |
+| Tạo đơn hàng          | Nhập tên, SĐT, địa chỉ, chọn thanh toán, ghi chú             | 16/02/2026  | ✅ Hoàn thành |
+| Xác nhận đặt hàng     | Hiển thị mã đơn, thời gian dự kiến, nút xem đơn/về trang chủ | 16/02/2026  | ✅ Hoàn thành |
+| Lưu địa chỉ giao hàng | Lưu nhiều địa chỉ, đặt mặc định, chọn nhanh khi checkout     | 16/02/2026  | ✅ Hoàn thành |
+
+#### 3. Lịch sử đơn hàng
+
+| Tính năng                | Mô tả                                                            | Ngày commit | Trạng thái    |
+| ------------------------ | ---------------------------------------------------------------- | ----------- | ------------- |
+| Xem danh sách đơn đã đặt | Phân màu theo trạng thái, lọc theo tab (Tất cả/Chờ/Chế biến/Hủy) | 16/02/2026  | ✅ Hoàn thành |
+| Xem chi tiết đơn hàng    | Mã đơn, trạng thái, danh sách món, thông tin giao hàng (expand)  | 16/02/2026  | ✅ Hoàn thành |
+| Hủy đơn hàng             | Hủy khi "Chờ xác nhận", dialog xác nhận                          | 16/02/2026  | ✅ Hoàn thành |
+| Đặt lại đơn hàng         | Thêm tất cả món vào giỏ, chuyển sang CartActivity để sửa & đặt   | 07/03/2026  | ✅ Hoàn thành |
+
+#### 4. Quản lý địa chỉ nâng cao ⭐ *(Tính năng bổ sung)*
+
+| Tính năng                | Mô tả                                                  | Ngày commit | Trạng thái    |
+| ------------------------ | ------------------------------------------------------ | ----------- | ------------- |
+| Quản lý địa chỉ          | Thêm/sửa/xóa nhiều địa chỉ, hoàn tác xóa giỏ hàng     | 07/03/2026  | ✅ Hoàn thành |
+
+#### 5. Thanh toán
+
+| Tính năng          | Mô tả                         | Ngày commit | Trạng thái    |
+| ------------------ | ----------------------------- | ----------- | ------------- |
+| Thanh toán COD     | Trả tiền mặt khi nhận hàng    | 16/02/2026  | ✅ Hoàn thành |
+
+#### 6. Thanh toán SEPay QR ⭐ *(Tính năng bổ sung)*
+
+| Tính năng                   | Mô tả                                                  | Ngày commit | Trạng thái    |
+| --------------------------- | ------------------------------------------------------ | ----------- | ------------- |
+| Tích hợp SEPay QR Payment    | Hỗ trợ quét mã QR thanh toán qua SEPay                 | 26/03/2026  | ✅ Hoàn thành |
+| Voucher & mã giảm giá (User) | Tích hợp áp dụng voucher khi thanh toán                 | 26/03/2026  | ✅ Hoàn thành |
+| Hướng dẫn test webhook SEPay | Tài liệu hướng dẫn test webhook SEPay bằng tiếng Việt  | 26/03/2026  | ✅ Hoàn thành |
+
+---
+
+## 🔧 PHẦN ADMIN
+
+---
+
+### 📦 Thắng — Quản lý món ăn, Đơn hàng, Doanh thu & Thống kê
+
+#### 1. Quản lý món ăn (Admin)
+
+| Tính năng            | Mô tả                                           | Ngày commit | Trạng thái    |
+| -------------------- | ----------------------------------------------- | ----------- | ------------- |
+| Xem danh sách món ăn | Hình ảnh, Tên, Giá, Trạng thái Còn/Hết          | 16/02/2026  | ✅ Hoàn thành |
+| Thêm món ăn mới      | Hình, Tên, Giá, Danh mục, Mô tả, Phổ biến/Gợi ý | 16/02/2026  | ✅ Hoàn thành |
+| Chỉnh sửa món ăn     | Cập nhật thông tin món ăn đã có                 | 16/02/2026  | ✅ Hoàn thành |
+| Xóa món ăn           | Xóa món, có xác nhận trước khi xóa              | 16/02/2026  | ✅ Hoàn thành |
+| Tìm kiếm món ăn      | Tìm nhanh trong danh sách                       | 16/02/2026  | ✅ Hoàn thành |
+
+#### 2. Quản lý danh mục (Admin) ⭐ *(Tính năng bổ sung)*
+
+| Tính năng                     | Mô tả                                                  | Ngày commit | Trạng thái    |
+| ----------------------------- | ------------------------------------------------------ | ----------- | ------------- |
+| Quản lý danh mục cơ bản       | Thêm/sửa/xóa danh mục món ăn cho admin                  | 30/03/2026  | ✅ Hoàn thành |
+| Nâng cấp quản lý danh mục     | Cải thiện UI & thêm màn hình chi tiết danh mục           | 10/04/2026  | ✅ Hoàn thành |
+
+#### 3. Quản lý đơn hàng (Admin)
+
+| Tính năng               | Mô tả                                                    | Ngày commit | Trạng thái    |
+| ----------------------- | -------------------------------------------------------- | ----------- | ------------- |
+| Xem tất cả đơn hàng     | Mã đơn, Tên khách, Tổng tiền, Trạng thái. Lọc & tìm kiếm | 16/02/2026  | ✅ Hoàn thành |
+| Xem chi tiết đơn hàng   | Thông tin khách, danh sách món, ghi chú, tổng tiền       | 16/02/2026  | ✅ Hoàn thành |
+| Cập nhật trạng thái     | Chờ xác nhận → Đang xử lý → Hoàn thành / Đã hủy          | 16/02/2026  | ✅ Hoàn thành |
+
+#### 4. Thống kê đơn hàng ⭐ *(Tính năng bổ sung)*
+
+| Tính năng                 | Mô tả                                                          | Ngày commit | Trạng thái    |
+| ------------------------- | -------------------------------------------------------------- | ----------- | ------------- |
+| Thống kê đơn hàng         | Tổng đơn, đơn theo trạng thái, biểu đồ                        | 06/03/2026  | ✅ Hoàn thành |
+| UI thống kê admin          | Giao diện thống kê cập nhật                                    | 10/03/2026  | ✅ Hoàn thành |
+| Order Statistics nâng cao  | Thống kê đơn hàng chi tiết, cải thiện UI, cập nhật thông báo   | 15/03/2026  | ✅ Hoàn thành |
+| Tách thống kê & doanh thu  | Tách riêng module Statistics khỏi Revenue theo yêu cầu dự án   | 15/03/2026  | ✅ Hoàn thành |
+
+#### 5. Theo dõi doanh thu (Admin)
+
+| Tính năng                       | Mô tả                                              | Ngày commit | Trạng thái    |
+| ------------------------------- | -------------------------------------------------- | ----------- | ------------- |
+| Doanh thu theo ngày             | Chọn ngày, xem tổng tiền, số đơn, món bán chạy     | 16/02/2026  | ✅ Hoàn thành |
+| Doanh thu theo khoảng thời gian | Chọn từ ngày - đến ngày                            | 16/02/2026  | ✅ Hoàn thành |
+| Top 10 món bán chạy             | Số lượng đã bán và doanh thu                       | 16/02/2026  | ✅ Hoàn thành |
+
+#### 6. Báo cáo & Thống kê nâng cao ⭐ *(Tính năng bổ sung)*
+
+| Tính năng                       | Mô tả                                                            | Ngày commit | Trạng thái    |
+| ------------------------------- | ---------------------------------------------------------------- | ----------- | ------------- |
+| Module report-statistics         | Thêm module báo cáo và nâng cấp phân tích doanh thu              | 15/03/2026  | ✅ Hoàn thành |
+| Report/Statistics screens        | Cập nhật màn hình báo cáo/thống kê và custom bottom nav           | 20/03/2026  | ✅ Hoàn thành |
+| Monthly Trend Analysis           | Biểu đồ kép phân tích xu hướng tháng, tích hợp Gemini AI         | 27/03/2026  | ✅ Hoàn thành |
+
+#### 7. Thông báo đơn hàng (Admin) ⭐ *(Tính năng bổ sung)*
+
+| Tính năng             | Mô tả                                                  | Ngày commit | Trạng thái    |
+| --------------------- | ------------------------------------------------------ | ----------- | ------------- |
+| Thông báo đơn hàng     | Thông báo khi có đơn mới, cải thiện UI admin            | 06/03/2026  | ✅ Hoàn thành |
+
+#### 8. Bảo mật & Cấu hình ⭐ *(Tính năng bổ sung)*
+
+| Tính năng                    | Mô tả                                                     | Ngày commit | Trạng thái    |
+| ---------------------------- | --------------------------------------------------------- | ----------- | ------------- |
+| Giấu GeminiAiConfig.java     | Bảo mật file cấu hình AI                                  | 27/03/2026  | ✅ Hoàn thành |
+| Exclude config directory      | Loại toàn bộ thư mục config khỏi Git tracking              | 27/03/2026  | ✅ Hoàn thành |
+| Update AI model               | Cập nhật model lên gemini-3-flash-preview                  | 27/03/2026  | ✅ Hoàn thành |
+| Fix build errors               | Restore constants, navigation IDs, missing imports          | 27/03/2026  | ✅ Hoàn thành |
+
+---
+
+### 💬 Khải — AI, Phản hồi, Voucher & Thông báo đẩy
+
+#### 1. Tính năng AI — Phân tích cảm xúc & Dự đoán
+
+| Tính năng                  | Mô tả                                                                | Ngày commit | Trạng thái    |
+| -------------------------- | -------------------------------------------------------------------- | ----------- | ------------- |
+| Phân tích cảm xúc đánh giá | AI phân tích review: Tích cực / Tiêu cực / Trung tính                | 05/03/2026  | ✅ Hoàn thành |
+| Thống kê cảm xúc           | Tổng số, tỷ lệ %, biểu đồ trực quan cho từng món                     | 05/03/2026  | ✅ Hoàn thành |
+| Dự đoán xu hướng món ăn    | Phân tích lịch sử → dự đoán Hot Seller / Declining / At Risk         | 05/03/2026  | ✅ Hoàn thành |
+| Dashboard AI Insights      | Tổng quan cảm xúc, top yêu thích, top cần cải thiện, dự đoán 30 ngày | 05/03/2026  | ✅ Hoàn thành |
+
+#### 2. Nâng cấp AI liên tục ⭐ *(Tính năng bổ sung)*
+
+| Tính năng                         | Mô tả                                                              | Ngày commit | Trạng thái    |
+| --------------------------------- | ------------------------------------------------------------------ | ----------- | ------------- |
+| Sentiment & Prediction bằng API   | Chuyển sang gọi API cho phân tích cảm xúc và dự đoán               | 28/03/2026  | ✅ Hoàn thành |
+| Thay Gemini bằng Hugging Face      | Đổi API KEY GEMINI sang Hugging Face                                | 02/04/2026  | ✅ Hoàn thành |
+| Sửa UI Sentiment                   | Cập nhật giao diện phân tích cảm xúc                               | 02/04/2026  | ✅ Hoàn thành |
+| Sửa filter + Insight nhận xét AI   | Thêm filter và insight nhận xét từ AI                              | 02/04/2026  | ✅ Hoàn thành |
+| UI AI Insight + Logic Prediction    | Chỉnh sửa UI AI Insight, thêm file logic prediction                | 02/04/2026  | ✅ Hoàn thành |
+| Chuyển Gemini → Qwen                | Đổi mô hình AI sang Qwen                                          | 03/04/2026  | ✅ Hoàn thành |
+| Logic rule-based từ order thực      | Thay đổi logic dự đoán dựa trên dữ liệu đơn hàng thực             | 03/04/2026  | ✅ Hoàn thành |
+| Nâng cấp Dashboard, Sentiment, Prediction | Dashboard mới, cải thiện Sentiment & Prediction, thêm Insight Detail | 06/04/2026  | ✅ Hoàn thành |
+
+#### 3. Quản lý phản hồi (Admin)
+
+| Tính năng              | Mô tả                                                     | Ngày commit | Trạng thái    |
+| ---------------------- | --------------------------------------------------------- | ----------- | ------------- |
+| Xem danh sách phản hồi | Tên khách, Nội dung, Sao, Thời gian. Phân loại Mới/Đã đọc | 05/03/2026  | ✅ Hoàn thành |
+| Xem chi tiết phản hồi  | Đọc đầy đủ nội dung, tự động đánh dấu "Đã đọc"            | 05/03/2026  | ✅ Hoàn thành |
+| Xóa phản hồi           | Xóa phản hồi không phù hợp                                | 05/03/2026  | ✅ Hoàn thành |
+
+#### 4. Thông báo đẩy (Admin)
+
+| Tính năng         | Mô tả                                                     | Ngày commit | Trạng thái    |
+| ----------------- | --------------------------------------------------------- | ----------- | ------------- |
+| Gửi thông báo đẩy | Gửi cho khách khi thay đổi trạng thái đơn, khuyến mãi mới | 21/03/2026  | ✅ Hoàn thành |
+
+#### 5. Quản lý Voucher (Admin) ⭐ *(Tính năng bổ sung)*
+
+| Tính năng                        | Mô tả                                                     | Ngày commit | Trạng thái    |
+| -------------------------------- | --------------------------------------------------------- | ----------- | ------------- |
+| Quản lý Voucher cho Admin         | Tạo/sửa/xóa voucher, phần trăm/số tiền giảm, thời hạn    | 06/04/2026  | ✅ Hoàn thành |
+| Tích hợp Voucher vào Checkout     | Áp dụng voucher khi thanh toán, hiển thị tiền giảm         | 06/04/2026  | ✅ Hoàn thành |
+| Xem số lượt sử dụng               | Thống kê lượt dùng mã                                     | 06/04/2026  | ✅ Hoàn thành |
+| Vô hiệu hóa mã                   | Tắt mã không còn sử dụng                                  | 06/04/2026  | ✅ Hoàn thành |
+| File migration/seed data           | Thêm file migration và seed data cho Voucher                | 06/04/2026  | ✅ Hoàn thành |
+
+#### 6. UI Admin & Navigation ⭐ *(Tính năng bổ sung)*
+
+| Tính năng                       | Mô tả                                                       | Ngày commit | Trạng thái    |
+| ------------------------------- | ----------------------------------------------------------- | ----------- | ------------- |
+| Navigation bar thống nhất        | Sửa navigation bar cho tất cả tab admin                     | 04/04/2026  | ✅ Hoàn thành |
+| Admin Drawer menu                | Cập nhật giao diện menu Admin Drawer, cấu hình Manifest      | 06/04/2026  | ✅ Hoàn thành |
+
+#### 7. Bảo mật ⭐ *(Tính năng bổ sung)*
+
+| Tính năng       | Mô tả                                    | Ngày commit | Trạng thái    |
+| --------------- | ---------------------------------------- | ----------- | ------------- |
+| Xóa file env bị lộ | Xóa file chứa biến môi trường bị push lên | 28/03/2026  | ✅ Hoàn thành |
+
+---
+
+## 📊 TỔNG HỢP KẾT QUẢ
+
+### Theo thành viên
+
+| Thành viên | Tính năng gốc (kế hoạch) | Tính năng bổ sung | Tổng tính năng đã làm | Số commit | Giai đoạn hoạt động         |
+| ---------- | ------------------------ | ----------------- | --------------------- | --------- | --------------------------- |
+| **Hùng**   | 10                       | 15                | 25                    | 37        | 16/02/2026 – 03/04/2026     |
+| **Cường**  | 3                        | 3                 | 6                     | 7         | 20/03/2026 – 09/04/2026     |
+| **Khoa**   | 11                       | 3                 | 14                    | 3         | 07/03/2026 – 26/03/2026     |
+| **Thắng**  | 9                        | 12                | 21                    | 26        | 06/03/2026 – 10/04/2026     |
+| **Khải**   | 7                        | 15                | 22                    | 25        | 05/03/2026 – 06/04/2026     |
+| **Tổng**   | **40**                   | **48**            | **88**                | **98**    | **16/02/2026 – 10/04/2026** |
+
+### Theo nhóm tính năng
+
+| Nhóm          | Tên                                    | Người phụ trách | Trạng thái             |
+| ------------- | -------------------------------------- | --------------- | ---------------------- |
+| 1             | Quản lý tài khoản                      | Hùng            | ✅ Hoàn thành          |
+| 2             | Quản lý món ăn (Admin)                 | Thắng           | ✅ Hoàn thành          |
+| 3             | Quản lý phản hồi (Admin)              | Khải            | ✅ Hoàn thành          |
+| 4             | Quản lý đơn hàng (Admin)              | Thắng           | ✅ Hoàn thành          |
+| 5             | Theo dõi doanh thu (Admin)            | Thắng           | ✅ Hoàn thành          |
+| 6             | Hiển thị món phổ biến                  | Cường           | ✅ Hoàn thành          |
+| 7             | Gợi ý món ăn                          | Cường           | ✅ Hoàn thành          |
+| 8             | Tìm kiếm món ăn                       | Hùng            | ✅ Hoàn thành          |
+| 9             | Chi tiết món ăn                        | Cường           | ✅ Hoàn thành          |
+| 10            | Giỏ hàng                              | Khoa            | ✅ Hoàn thành          |
+| 11            | Đặt hàng                              | Khoa            | ✅ Hoàn thành          |
+| 12            | Lịch sử đơn hàng                      | Khoa            | ✅ Hoàn thành          |
+| 13            | Phản hồi & Đánh giá (User)            | Hùng            | ✅ Hoàn thành          |
+| 14            | Thông tin liên hệ                     | Hùng            | ✅ Hoàn thành          |
+| 15            | Tính năng AI                          | Khải            | ✅ Hoàn thành          |
+| 16            | Thông báo                             | Cường + Khải    | ✅ Hoàn thành          |
+| 17            | Yêu thích                             | Hùng            | ✅ Hoàn thành          |
+| 18            | Khuyến mãi & Mã giảm giá             | Khoa + Khải     | ✅ Hoàn thành          |
+| 19            | Báo cáo & Thống kê (Admin)           | Thắng           | ✅ Hoàn thành          |
+| 20            | Thanh toán                            | Khoa            | ✅ Hoàn thành (COD + SEPay QR) |
+| **Bổ sung**   | Quản lý danh mục (Admin)              | Thắng           | ✅ Hoàn thành          |
+| **Bổ sung**   | Chat User ↔ Admin                     | Hùng            | ✅ Hoàn thành          |
+| **Bổ sung**   | Đặt ăn tại quán                       | Hùng            | ✅ Hoàn thành          |
+| **Bổ sung**   | Trạng thái "Đang giao"               | Hùng            | ✅ Hoàn thành          |
+| **Bổ sung**   | Hot Offers & Banner                   | Cường           | ✅ Hoàn thành          |
+| **Bổ sung**   | Personalized Recommendations          | Cường           | ✅ Hoàn thành          |
+| **Bổ sung**   | Thanh toán QR (SEPay)                 | Khoa            | ✅ Hoàn thành          |
+| **Bổ sung**   | Quản lý Voucher (Admin + User)        | Khải            | ✅ Hoàn thành          |
+| **Bổ sung**   | Nâng cấp AI (Hugging Face → Qwen)    | Khải            | ✅ Hoàn thành          |
+| **Bổ sung**   | Monthly Trend Analysis + Gemini AI    | Thắng           | ✅ Hoàn thành          |
+| **Bổ sung**   | Địa chỉ Tỉnh/Quận/Phường Spinner     | Hùng            | ✅ Hoàn thành          |
+| **Bổ sung**   | Bảo mật API keys & Config             | Hùng + Thắng + Khải | ✅ Hoàn thành     |
+
+---
+
+## 🛠️ CÔNG NGHỆ SỬ DỤNG
+
+| Công nghệ                        | Mục đích                    |
+| -------------------------------- | --------------------------- |
+| Java 11 + Android XML            | Ngôn ngữ chính & giao diện  |
+| Supabase (PostgreSQL + REST API) | Backend & Database           |
+| Retrofit 2.9.0 + OkHttp 4.12.0   | Gọi API                     |
+| Gson 2.10.1                      | Xử lý JSON                  |
+| Glide 4.16.0                     | Tải & cache hình ảnh        |
+| Material Design 1.13.0           | UI Components                |
+| JavaMail 1.6.7                   | Gửi email reset mật khẩu    |
+| ViewPager2 + CardView            | Slider & Card UI             |
+| Gemini AI / Qwen / Hugging Face  | Phân tích cảm xúc & dự đoán |
+| SEPay QR Payment                 | Thanh toán quét mã QR        |
+| Firebase Cloud Messaging (FCM)   | Push Notification            |
+
+---
+
+## 📝 GHI CHÚ
+
+- **Kiến trúc**: MVC (Model - View - Controller)
+- **Xác thực**: Custom Auth (SHA-256 hashing, SharedPreferences session)
+- **Database schema**: File [`supabase_schema.sql`](supabase_schema.sql)
+- **GitHub**: [https://github.com/hungtmh/Food-Oder-App](https://github.com/hungtmh/Food-Oder-App)
+- **Tổng thời gian phát triển**: ~2 tháng (16/02/2026 – 10/04/2026)
+- **Tổng số commit**: 98 commits
+- Các tính năng đánh dấu ⭐ là **tính năng bổ sung** ngoài kế hoạch phân công ban đầu, do các thành viên chủ động thêm vào.
