@@ -24,6 +24,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import com.bumptech.glide.Glide;
 import com.example.food_order_app.R;
 import com.example.food_order_app.adapter.ReviewAdapter;
@@ -65,6 +67,7 @@ public class FoodDetailActivity extends AppCompatActivity {
     private TextView tvDetailQuantity, tvWriteReview, tvNoReviews, tvViewAllReviews;
     private ImageButton btnDetailMinus, btnDetailPlus;
     private Button btnAddToCart;
+    private FloatingActionButton fabQuickCart;
     private RecyclerView rvReviews;
 
     private SupabaseDbService dbService;
@@ -138,6 +141,7 @@ public class FoodDetailActivity extends AppCompatActivity {
         btnDetailMinus = findViewById(R.id.btnDetailMinus);
         btnDetailPlus = findViewById(R.id.btnDetailPlus);
         btnAddToCart = findViewById(R.id.btnAddToCart);
+        fabQuickCart = findViewById(R.id.fabQuickCart);
         rvReviews = findViewById(R.id.rvReviews);
 
         layoutReviewHeader = findViewById(R.id.layoutReviewHeader);
@@ -164,6 +168,11 @@ public class FoodDetailActivity extends AppCompatActivity {
         });
 
         btnAddToCart.setOnClickListener(v -> addToCart());
+
+        fabQuickCart.setOnClickListener(v -> {
+            Intent intent = new Intent(this, CartActivity.class);
+            startActivity(intent);
+        });
 
         layoutReviewHeader.setOnClickListener(v -> {
             Intent intent = new Intent(this, FoodReviewsActivity.class);
