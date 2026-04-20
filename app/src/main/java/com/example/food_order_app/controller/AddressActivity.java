@@ -170,7 +170,6 @@ public class AddressActivity extends AppCompatActivity
                                     @Override
                                     public void onResponse(Call<List<Address>> c, Response<List<Address>> r) {
                                         if (r.isSuccessful()) {
-                                            address.setDefault(true);
                                             adapter.refreshDefaults(address.getId());
                                             Toast.makeText(AddressActivity.this,
                                                     "Đã đặt mặc định", Toast.LENGTH_SHORT).show();

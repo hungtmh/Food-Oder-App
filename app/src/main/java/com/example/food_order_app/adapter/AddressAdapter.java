@@ -62,7 +62,8 @@ public class AddressAdapter extends RecyclerView.Adapter<AddressAdapter.AddressV
     public void refreshDefaults(String newDefaultId) {
         for (int i = 0; i < addresses.size(); i++) {
             boolean wasDefault = addresses.get(i).isDefault();
-            boolean shouldBeDefault = addresses.get(i).getId().equals(newDefaultId);
+            String currentId = addresses.get(i).getId();
+            boolean shouldBeDefault = newDefaultId != null && newDefaultId.equals(currentId);
             if (wasDefault != shouldBeDefault) {
                 addresses.get(i).setDefault(shouldBeDefault);
                 notifyItemChanged(i);
