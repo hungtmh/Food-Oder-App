@@ -310,6 +310,14 @@ public interface SupabaseDbService {
             @Query("order_id") String orderIdFilter,
             @Query("select") String select);
 
+    @GET("order_items")
+    Call<List<OrderItem>> getFoodQuantityInDateRange(
+            @Query("select") String select,
+            @Query("food_id") String foodIdFilter,
+            @Query("orders.status") String orderStatusFilter,
+            @Query("orders.created_at") String createdAtGteFilter,
+            @Query("orders.created_at") String createdAtLteFilter);
+
     // ==================== NOTIFICATIONS ====================
     @Headers("Prefer: return=representation")
     @POST("notifications")

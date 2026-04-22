@@ -2,6 +2,7 @@ package com.example.food_order_app.controller;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -41,6 +42,7 @@ public class FoodTrendPredictionActivity extends AppCompatActivity {
     // Minimum data thresholds to avoid unreliable predictions.
     private static final int MIN_REVIEWS = 5;
     private static final int MIN_ORDERS = 10;
+    private static final String TAG = "FoodTrendPrediction";
 
     private ImageView btnBack;
     private Button btnGeneratePredictions;
@@ -282,6 +284,11 @@ public class FoodTrendPredictionActivity extends AppCompatActivity {
         Calendar prevTo = (Calendar) now.clone();
         prevTo.add(Calendar.DAY_OF_MONTH, -30);
 
+        Log.d(TAG, "predictFoodTrend START | foodId=" + food.getId()
+                + " | foodName=" + food.getName()
+                + " | currentRange=" + formatDateTime(currentFrom, true) + " -> " + formatDateTime(currentTo, false)
+                + " | prevRange=" + formatDateTime(prevFrom, true) + " -> " + formatDateTime(prevTo, false));
+
         fetchSentimentStats(food.getId(),
                 sentimentStats -> getOrderCountByFoodInRange(food.getId(), currentFrom, currentTo,
                         currentSales -> getOrderCountByFoodInRange(food.getId(), prevFrom, prevTo, prevSales -> {
@@ -296,30 +303,51 @@ public class FoodTrendPredictionActivity extends AppCompatActivity {
                             String trendType;
                             double confidenceScore;
                             String reason = "Rule based result";
+                            String matchedRule;
+
+                            Log.d(TAG, "predictFoodTrend METRICS | foodId=" + food.getId()
+                                    + " | currentSales=" + currentSales
+                                    + " | prevSales=" + prevSales
+                                    + " | actualSalesTrend=" + actualSalesTrend
+                                    + " | totalReviews=" + totalReviews
+                                    + " | positivePercent=" + positivePercent
+                                    + " | negativePercent=" + negativePercent
+                                    + " | avgSentimentScore=" + avgSentimentScore);
 
                             if (totalReviews < MIN_REVIEWS && currentSales < MIN_ORDERS
                                     && prevSales < MIN_ORDERS) {
+                                matchedRule = "rule_1_not_enough_data";
                                 trendType = "stable";
                                 confidenceScore = 0.40;
                                 reason = "Not enough data to predict";
                             } else if (negativePercent >= 50.0 || actualSalesTrend <= -30.0) {
+                                matchedRule = "rule_2_at_risk";
                                 trendType = "at_risk";
                                 confidenceScore = totalReviews > 20 ? 0.90 : 0.75;
                                 reason = "High negative sentiment or severe sales drop";
                             } else if ((positivePercent >= 70.0 && actualSalesTrend >= 5.0 && currentSales >= 20)
                                     || (actualSalesTrend >= 20.0 && currentSales >= 20)) {
+                                matchedRule = "rule_3_hot_seller";
                                 trendType = "hot_seller";
                                 confidenceScore = 0.85;
                                 reason = "Strong positive sentiment or sharp sales growth";
                             } else if (negativePercent >= 30.0 || actualSalesTrend <= -10.0) {
+                                matchedRule = "rule_4_declining";
                                 trendType = "declining";
                                 confidenceScore = 0.70;
                                 reason = "Moderate risk from sentiment or sales decline";
                             } else {
+                                matchedRule = "rule_5_stable_default";
                                 trendType = "stable";
                                 confidenceScore = 0.80;
                                 reason = "Stable within current rule thresholds";
                             }
+
+                            Log.d(TAG, "predictFoodTrend RESULT | foodId=" + food.getId()
+                                    + " | matchedRule=" + matchedRule
+                                    + " | trendType=" + trendType
+                                    + " | confidenceScore=" + confidenceScore
+                                    + " | reason=" + reason);
 
                             saveFoodTrend(
                                     food.getId(),
@@ -394,66 +422,50 @@ public class FoodTrendPredictionActivity extends AppCompatActivity {
         String fromStr = formatDateTime(from, true);
         String toStr = formatDateTime(to, false);
 
-        Map<String, String> filters = new HashMap<>();
-        filters.put("and", "(created_at.gte." + fromStr + ",created_at.lte." + toStr + ")");
-        filters.put("status", "eq.served");
+        Log.d(TAG, "getOrderCountByFoodInRange START | foodId=" + foodId
+                + " | from=" + fromStr + " | to=" + toStr);
 
-        dbService.getOrdersByDateRange(filters, "id,created_at,status").enqueue(new Callback<List<Order>>() {
-            @Override
-            public void onResponse(Call<List<Order>> call, Response<List<Order>> response) {
-                if (!response.isSuccessful() || response.body() == null || response.body().isEmpty()) {
-                    callback.onResult(0);
-                    return;
-                }
+        String select = "quantity,orders!inner(status,created_at)";
+        dbService.getFoodQuantityInDateRange(
+                select,
+                "eq." + foodId,
+                "eq.served",
+                "gte." + fromStr,
+                "lte." + toStr)
+                .enqueue(new Callback<List<OrderItem>>() {
+                    @Override
+                    public void onResponse(Call<List<OrderItem>> call, Response<List<OrderItem>> response) {
+                        int itemCount = response.body() != null ? response.body().size() : 0;
+                        Log.d(TAG, "getFoodQuantityInDateRange RESPONSE | foodId=" + foodId
+                                + " | code=" + response.code()
+                                + " | success=" + response.isSuccessful()
+                                + " | bodySize=" + itemCount);
 
-                List<String> orderIds = new ArrayList<>();
-                for (Order order : response.body()) {
-                    if (order.getId() == null || order.getCreatedAt() == null) {
-                        continue;
+                        if (!response.isSuccessful() || response.body() == null || response.body().isEmpty()) {
+                            Log.w(TAG, "getFoodQuantityInDateRange EMPTY/FAILED | foodId=" + foodId
+                                    + " | code=" + response.code());
+                            callback.onResult(0);
+                            return;
+                        }
+
+                        int totalQuantity = 0;
+                        for (OrderItem item : response.body()) {
+                            totalQuantity += item.getQuantity();
+                        }
+
+                        Log.d(TAG, "getOrderCountByFoodInRange RESULT | foodId=" + foodId
+                                + " | totalQuantity=" + totalQuantity);
+                        callback.onResult(totalQuantity);
                     }
 
-                    // Keep a local safety check for API time filtering.
-                    if (order.getCreatedAt().compareTo(fromStr) >= 0 && order.getCreatedAt().compareTo(toStr) <= 0
-                            && "served".equals(order.getStatus())) {
-                        orderIds.add(order.getId());
+                    @Override
+                    public void onFailure(Call<List<OrderItem>> call, Throwable t) {
+                        Log.e(TAG, "getFoodQuantityInDateRange FAILURE | foodId=" + foodId
+                                + " | from=" + fromStr + " | to=" + toStr
+                                + " | message=" + t.getMessage(), t);
+                        callback.onResult(0);
                     }
-                }
-
-                if (orderIds.isEmpty()) {
-                    callback.onResult(0);
-                    return;
-                }
-
-                dbService.getOrderItems(buildInFilter(orderIds), "food_id,quantity")
-                        .enqueue(new Callback<List<OrderItem>>() {
-                            @Override
-                            public void onResponse(Call<List<OrderItem>> call, Response<List<OrderItem>> response) {
-                                if (!response.isSuccessful() || response.body() == null || response.body().isEmpty()) {
-                                    callback.onResult(0);
-                                    return;
-                                }
-
-                                int totalQuantity = 0;
-                                for (OrderItem item : response.body()) {
-                                    if (foodId.equals(item.getFoodId())) {
-                                        totalQuantity += item.getQuantity();
-                                    }
-                                }
-                                callback.onResult(totalQuantity);
-                            }
-
-                            @Override
-                            public void onFailure(Call<List<OrderItem>> call, Throwable t) {
-                                callback.onResult(0);
-                            }
-                        });
-            }
-
-            @Override
-            public void onFailure(Call<List<Order>> call, Throwable t) {
-                callback.onResult(0);
-            }
-        });
+                });
     }
 
     private double calculateSalesTrendPercent(int currentSales, int previousSales) {
