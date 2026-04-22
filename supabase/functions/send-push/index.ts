@@ -57,7 +57,21 @@ Deno.serve(async (req: Request) => {
       }, 500);
     }
 
-    const payload = (await req.json()) as PushRequest;
+    const rawPayload = await req.json();
+    
+    // Support Postgres Webhook payload format
+    let payload: PushRequest;
+    if (rawPayload.type === "INSERT" && rawPayload.table === "notifications" && rawPayload.record) {
+      payload = {
+        user_id: rawPayload.record.user_id,
+        title: rawPayload.record.title,
+        body: rawPayload.record.message,
+        notification_id: rawPayload.record.id
+      };
+    } else {
+      payload = rawPayload as PushRequest;
+    }
+
     if (!payload?.user_id || !payload?.title || !payload?.body) {
       return json({ error: "user_id, title, body are required" }, 400);
     }
@@ -103,11 +117,21 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    const { data: tokens, error: tokenError } = await supabase
-      .from("device_tokens")
-      .select("id, fcm_token")
-      .eq("user_id", payload.user_id)
-      .eq("is_active", true);
+    let tokensResult;
+    if (payload.user_id === "all") {
+      tokensResult = await supabase
+        .from("device_tokens")
+        .select("id, fcm_token")
+        .eq("is_active", true);
+    } else {
+      tokensResult = await supabase
+        .from("device_tokens")
+        .select("id, fcm_token")
+        .eq("user_id", payload.user_id)
+        .eq("is_active", true);
+    }
+    
+    const { data: tokens, error: tokenError } = tokensResult;
 
     if (tokenError) {
       return json({ error: tokenError.message }, 500);

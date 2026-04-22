@@ -28,6 +28,7 @@ public final class PushRegistrationManager {
     }
 
     public static void requestCurrentTokenAndSync(Context context) {
+        final Context appContext = context.getApplicationContext();
         FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
             if (!task.isSuccessful()) {
                 Log.w(TAG, "Failed to get FCM token", task.getException());
@@ -41,7 +42,7 @@ public final class PushRegistrationManager {
             }
 
             Log.d(TAG, "FCM token obtained: " + maskToken(token));
-            syncToken(context, token);
+            syncToken(appContext, token);
         });
     }
 
