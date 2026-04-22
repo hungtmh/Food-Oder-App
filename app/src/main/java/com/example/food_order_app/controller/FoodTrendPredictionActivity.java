@@ -297,7 +297,8 @@ public class FoodTrendPredictionActivity extends AppCompatActivity {
                             double confidenceScore;
                             String reason = "Rule based result";
 
-                            if (totalReviews < MIN_REVIEWS && currentSales < MIN_ORDERS) {
+                            if (totalReviews < MIN_REVIEWS && currentSales < MIN_ORDERS
+                                    && prevSales < MIN_ORDERS) {
                                 trendType = "stable";
                                 confidenceScore = 0.40;
                                 reason = "Not enough data to predict";
@@ -305,10 +306,11 @@ public class FoodTrendPredictionActivity extends AppCompatActivity {
                                 trendType = "at_risk";
                                 confidenceScore = totalReviews > 20 ? 0.90 : 0.75;
                                 reason = "High negative sentiment or severe sales drop";
-                            } else if (positivePercent >= 70.0 && actualSalesTrend >= 5.0 && currentSales >= 20) {
+                            } else if ((positivePercent >= 70.0 && actualSalesTrend >= 5.0 && currentSales >= 20)
+                                    || (actualSalesTrend >= 20.0 && currentSales >= 20)) {
                                 trendType = "hot_seller";
                                 confidenceScore = 0.85;
-                                reason = "Strong positive sentiment and growing sales";
+                                reason = "Strong positive sentiment or sharp sales growth";
                             } else if (negativePercent >= 30.0 || actualSalesTrend <= -10.0) {
                                 trendType = "declining";
                                 confidenceScore = 0.70;
