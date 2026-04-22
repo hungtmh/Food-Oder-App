@@ -22,6 +22,7 @@ import com.example.food_order_app.model.Food;
 import com.example.food_order_app.network.RetrofitClient;
 import com.example.food_order_app.network.SupabaseDbService;
 import com.example.food_order_app.utils.AdminDrawerHelper;
+import com.example.food_order_app.utils.PushRegistrationManager;
 import com.example.food_order_app.utils.SessionManager;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
@@ -62,6 +63,8 @@ public class AdminHomeActivity extends AppCompatActivity implements AdminFoodAda
 
         initViews();
         setupListeners();
+        
+        PushRegistrationManager.requestCurrentTokenAndSync(this);
     }
 
     @Override

@@ -392,12 +392,16 @@ public class AdminOrderDetailActivity extends AppCompatActivity {
         functionsService.sendPush(payload).enqueue(new Callback<Map<String, Object>>() {
             @Override
             public void onResponse(Call<Map<String, Object>> call, Response<Map<String, Object>> response) {
-                // Silently succeed
+                if (response.isSuccessful()) {
+                    Log.d("AdminOrderDetail", "triggerPush Success: " + response.body());
+                } else {
+                    Log.e("AdminOrderDetail", "triggerPush Failed HTTP " + response.code() + ": " + response.errorBody());
+                }
             }
 
             @Override
             public void onFailure(Call<Map<String, Object>> call, Throwable t) {
-                // Silently fail
+                Log.e("AdminOrderDetail", "triggerPush Exception: " + t.getMessage(), t);
             }
         });
     }
