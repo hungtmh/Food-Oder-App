@@ -294,32 +294,40 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
 
     private void deleteItemWithUndo(CartItem item, int position) {
         String itemName = item.getFood() != null ? item.getFood().getName() : "món ăn";
+        
+        // Remove locally 
         cartAdapter.removeItem(position);
         updateTotal();
         if (cartAdapter.getCartItems().isEmpty()) showEmptyState();
+        
+        // Execute IMMEDIATE DELETE on database to avoid race conditions with Checkout
+        dbService.deleteCartItem("eq." + item.getId())
+                .enqueue(new Callback<Void>() {
+                    @Override
+                    public void onResponse(Call<Void> call, Response<Void> response) {}
+                    @Override
+                    public void onFailure(Call<Void> call, Throwable t) {
+                        Log.e(TAG, "deleteItem failed: " + t.getMessage());
+                    }
+                });
 
         Snackbar.make(findViewById(android.R.id.content),
                 "Dã xóa: " + itemName, Snackbar.LENGTH_LONG)
                 .setAction("Hoàn tác", v -> {
-                    cartAdapter.addItemAt(position, item);
-                    updateTotal();
-                    showCartItems();
-                })
-                .addCallback(new Snackbar.Callback() {
-                    @Override
-                    public void onDismissed(Snackbar sb, int event) {
-                        if (event != DISMISS_EVENT_ACTION) {
-                            dbService.deleteCartItem("eq." + item.getId())
-                                    .enqueue(new Callback<Void>() {
-                                        @Override
-                                        public void onResponse(Call<Void> call, Response<Void> response) {}
-                                        @Override
-                                        public void onFailure(Call<Void> call, Throwable t) {
-                                            Log.e(TAG, "deleteItem failed: " + t.getMessage());
-                                        }
-                                    });
+                    // Re-POST item to DB
+                    Map<String, Object> req = new HashMap<>();
+                    req.put("cart_id", cartId);
+                    req.put("food_id", item.getFoodId());
+                    req.put("quantity", item.getQuantity());
+                    
+                    dbService.addCartItem(req).enqueue(new Callback<Void>() {
+                        @Override
+                        public void onResponse(Call<Void> call, Response<Void> response) {
+                            loadCartItems();
                         }
-                    }
+                        @Override
+                        public void onFailure(Call<Void> call, Throwable t) {}
+                    });
                 }).show();
     }
 
@@ -331,27 +339,40 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
         showEmptyState();
         updateTotal();
 
+        // 1. DELETE FROM DATABASE IMMEDIATELY
+        dbService.clearCart("eq." + cartId)
+                .enqueue(new Callback<Void>() {
+                    @Override
+                    public void onResponse(Call<Void> call, Response<Void> response) {}
+                    @Override
+                    public void onFailure(Call<Void> call, Throwable t) {
+                        Log.e(TAG, "clearCart failed: " + t.getMessage());
+                    }
+                });
+
         Snackbar.make(findViewById(android.R.id.content),
                 "Dã xóa toàn bộ giỏ hàng", Snackbar.LENGTH_LONG)
                 .setAction("Hoàn tác", v -> {
-                    cartAdapter.setCartItems(backup);
-                    showCartItems();
-                    updateTotal();
-                })
-                .addCallback(new Snackbar.Callback() {
-                    @Override
-                    public void onDismissed(Snackbar sb, int event) {
-                        if (event != DISMISS_EVENT_ACTION) {
-                            dbService.clearCart("eq." + cartId)
-                                    .enqueue(new Callback<Void>() {
-                                        @Override
-                                        public void onResponse(Call<Void> call, Response<Void> response) {}
-                                        @Override
-                                        public void onFailure(Call<Void> call, Throwable t) {
-                                            Log.e(TAG, "clearCart failed: " + t.getMessage());
-                                        }
-                                    });
-                        }
+                    // Re-POST all backup
+                    int[] done = {0};
+                    int total = backup.size();
+                    for (CartItem item : backup) {
+                        Map<String, Object> req = new HashMap<>();
+                        req.put("cart_id", cartId);
+                        req.put("food_id", item.getFoodId());
+                        req.put("quantity", item.getQuantity());
+                        dbService.addCartItem(req).enqueue(new Callback<Void>() {
+                            @Override
+                            public void onResponse(Call<Void> call, Response<Void> response) {
+                                done[0]++;
+                                if (done[0] == total) loadCartItems();
+                            }
+                            @Override
+                            public void onFailure(Call<Void> call, Throwable t) {
+                                done[0]++;
+                                if (done[0] == total) loadCartItems();
+                            }
+                        });
                     }
                 }).show();
     }
