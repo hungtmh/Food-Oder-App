@@ -21,6 +21,11 @@
         android:title="Chat" />
 
     <item
+        android:id="@+id/navAdminFeedback"
+        android:icon="@drawable/ic_feedback"
+        android:title="Phản hồi" />
+
+    <item
         android:id="@+id/navAdminOrders"
         android:icon="@drawable/ic_cart"
         android:title="Đơn hàng" />
