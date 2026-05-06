@@ -95,8 +95,8 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
     private static final int PAGE_SIZE = 12;
     private List<Category> currentFiltered = new ArrayList<>();
 
-    private static final String[] STATUS_OPTIONS = {"Tất cả trạng thái", "Đang hoạt động", "Đang ẩn"};
-    private static final String[] SORT_OPTIONS = {"Thứ tự tăng", "Thứ tự giảm", "Tên A-Z", "Tên Z-A"};
+    private static final String[] STATUS_OPTIONS = { "Tất cả trạng thái", "Đang hoạt động", "Đang ẩn" };
+    private static final String[] SORT_OPTIONS = { "Thứ tự tăng", "Thứ tự giảm", "Tên A-Z", "Tên Z-A" };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -642,26 +642,38 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
     }
 
     private void deleteCategoryWithUndo(Category category) {
-        Map<String, Object> updates = new HashMap<>();
-        updates.put("is_deleted", true);
-        updates.put("is_active", false);
-        dbService.updateCategory("eq." + category.getId(), updates).enqueue(new Callback<List<Category>>() {
+        dbService.deleteFoodsByCategory("eq." + category.getId()).enqueue(new Callback<Void>() {
             @Override
-            public void onResponse(Call<List<Category>> call, Response<List<Category>> response) {
+            public void onResponse(Call<Void> call, Response<Void> response) {
                 if (response.isSuccessful()) {
-                    allCategories.remove(category);
-                    performSearch();
-                    adapter.clearSelection();
-                    Snackbar.make(rvCategories, "Đã xóa mềm danh mục", Snackbar.LENGTH_LONG)
-                            .setAction("Hoàn tác", v -> restoreDeletedCategory(category))
-                            .show();
+                    dbService.deleteCategory("eq." + category.getId()).enqueue(new Callback<Void>() {
+                        @Override
+                        public void onResponse(Call<Void> innerCall, Response<Void> innerResponse) {
+                            if (innerResponse.isSuccessful()) {
+                                allCategories.remove(category);
+                                performSearch();
+                                adapter.clearSelection();
+                                Toast.makeText(AdminCategoryActivity.this, "Đã xóa danh mục", Toast.LENGTH_SHORT)
+                                        .show();
+                            } else {
+                                Toast.makeText(AdminCategoryActivity.this, "Xóa danh mục thất bại", Toast.LENGTH_SHORT)
+                                        .show();
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<Void> innerCall, Throwable t) {
+                            Toast.makeText(AdminCategoryActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                        }
+                    });
                 } else {
-                    Toast.makeText(AdminCategoryActivity.this, "Xóa thất bại", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(AdminCategoryActivity.this, "Không thể dọn dẹp các món ăn", Toast.LENGTH_SHORT)
+                            .show();
                 }
             }
 
             @Override
-            public void onFailure(Call<List<Category>> call, Throwable t) {
+            public void onFailure(Call<Void> call, Throwable t) {
                 Toast.makeText(AdminCategoryActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
             }
         });
@@ -788,11 +800,11 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
             }
 
             if (category == null) {
-                Category newCat = new Category();
-                newCat.setName(name);
-                newCat.setIconUrl(icon);
-                newCat.setSortOrder(sort);
-                newCat.setActive(active);
+                Map<String, Object> newCat = new HashMap<>();
+                newCat.put("name", name);
+                newCat.put("icon_url", icon);
+                newCat.put("sort_order", sort);
+                newCat.put("is_active", active);
 
                 dbService.createCategory(newCat).enqueue(new Callback<List<Category>>() {
                     @Override
@@ -899,7 +911,7 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
         if (selected.isEmpty()) {
             return;
         }
-        String[] options = {"Ẩn danh mục đã chọn", "Hiện danh mục đã chọn"};
+        String[] options = { "Ẩn danh mục đã chọn", "Hiện danh mục đã chọn" };
         new AlertDialog.Builder(this)
                 .setTitle("Cập nhật hàng loạt")
                 .setItems(options, (dialog, which) -> applyBulkActiveUpdate(selected, which == 1))
@@ -957,8 +969,8 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
         }
 
         new AlertDialog.Builder(this)
-                .setTitle("Xóa mềm hàng loạt")
-                .setMessage("Xác nhận xóa mềm " + selected.size() + " danh mục đã chọn?")
+                .setTitle("Xóa hàng loạt")
+                .setMessage("Xác nhận xóa " + selected.size() + " danh mục đã chọn?")
                 .setPositiveButton("Xóa", (d, w) -> applyBulkSoftDelete(selected))
                 .setNegativeButton("Hủy", null)
                 .show();
@@ -968,24 +980,37 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
         AtomicInteger done = new AtomicInteger(0);
         AtomicInteger success = new AtomicInteger(0);
         for (Category category : selected) {
-            Map<String, Object> updates = new HashMap<>();
-            updates.put("is_deleted", true);
-            updates.put("is_active", false);
-            dbService.updateCategory("eq." + category.getId(), updates).enqueue(new Callback<List<Category>>() {
+            dbService.deleteFoodsByCategory("eq." + category.getId()).enqueue(new Callback<Void>() {
                 @Override
-                public void onResponse(Call<List<Category>> call, Response<List<Category>> response) {
+                public void onResponse(Call<Void> call, Response<Void> response) {
                     if (response.isSuccessful()) {
-                        success.incrementAndGet();
-                    }
-                    if (done.incrementAndGet() == selected.size()) {
-                        onBulkFinished("Đã xóa mềm " + success.get() + "/" + selected.size() + " danh mục");
+                        dbService.deleteCategory("eq." + category.getId()).enqueue(new Callback<Void>() {
+                            @Override
+                            public void onResponse(Call<Void> innerCall, Response<Void> innerResponse) {
+                                if (innerResponse.isSuccessful()) {
+                                    success.incrementAndGet();
+                                }
+                                checkBulkDone();
+                            }
+
+                            @Override
+                            public void onFailure(Call<Void> innerCall, Throwable t) {
+                                checkBulkDone();
+                            }
+                        });
+                    } else {
+                        checkBulkDone();
                     }
                 }
 
                 @Override
-                public void onFailure(Call<List<Category>> call, Throwable t) {
+                public void onFailure(Call<Void> call, Throwable t) {
+                    checkBulkDone();
+                }
+
+                private void checkBulkDone() {
                     if (done.incrementAndGet() == selected.size()) {
-                        onBulkFinished("Đã xóa mềm " + success.get() + "/" + selected.size() + " danh mục");
+                        onBulkFinished("Đã xóa " + success.get() + "/" + selected.size() + " danh mục");
                     }
                 }
             });
@@ -997,8 +1022,6 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
         adapter.clearSelection();
         loadDashboardData();
     }
-
-    
 
     private List<Category> getTargetCategories(String excludedId) {
         List<Category> targets = new ArrayList<>();

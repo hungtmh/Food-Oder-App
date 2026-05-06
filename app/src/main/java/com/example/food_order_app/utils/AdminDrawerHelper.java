@@ -12,6 +12,7 @@ import com.example.food_order_app.R;
 import com.example.food_order_app.controller.AIDashboardActivity;
 import com.example.food_order_app.controller.AdminCategoryActivity;
 import com.example.food_order_app.controller.AdminChatListActivity;
+import com.example.food_order_app.controller.AdminFeedbackActivity;
 import com.example.food_order_app.controller.AdminHomeActivity;
 import com.example.food_order_app.controller.AdminOrdersActivity;
 import com.example.food_order_app.controller.AdminRevenueActivity;
@@ -71,6 +72,9 @@ public final class AdminDrawerHelper {
         }
         if (itemId == R.id.navAdminChat) {
             return AdminChatListActivity.class;
+        }
+        if (itemId == R.id.navAdminFeedback) {
+            return AdminFeedbackActivity.class;
         }
         if (itemId == R.id.navAdminOrders) {
             return AdminOrdersActivity.class;

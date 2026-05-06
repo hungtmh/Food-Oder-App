@@ -4,10 +4,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -16,7 +18,8 @@ import com.example.food_order_app.adapter.AdminFeedbackAdapter;
 import com.example.food_order_app.model.Feedback;
 import com.example.food_order_app.network.RetrofitClient;
 import com.example.food_order_app.network.SupabaseDbService;
-import com.example.food_order_app.utils.AdminBottomNavHelper;
+import com.example.food_order_app.utils.AdminDrawerHelper;
+import com.google.android.material.navigation.NavigationView;
 
 import java.util.List;
 
@@ -26,6 +29,9 @@ import retrofit2.Response;
 
 public class AdminFeedbackActivity extends AppCompatActivity implements AdminFeedbackAdapter.OnFeedbackClickListener {
 
+    private ImageView btnMenuDrawer;
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
     private RecyclerView rvFeedbacks;
     private TextView tvEmpty;
     private Button btnFilterAll, btnFilterUnread, btnFilterRead;
@@ -41,17 +47,20 @@ public class AdminFeedbackActivity extends AppCompatActivity implements AdminFee
 
         dbService = RetrofitClient.getDbService();
         initViews();
+        AdminDrawerHelper.setupDrawer(this, drawerLayout, navigationView, btnMenuDrawer, R.id.navAdminFeedback);
         setupListeners();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        AdminBottomNavHelper.setup(this, 0);
         loadFeedbacks();
     }
 
     private void initViews() {
+        drawerLayout = findViewById(R.id.adminDrawerLayout);
+        navigationView = findViewById(R.id.adminNavigationView);
+        btnMenuDrawer = findViewById(R.id.btnMenuDrawerFeedback);
         rvFeedbacks = findViewById(R.id.rvFeedbacks);
         tvEmpty = findViewById(R.id.tvFeedbackEmpty);
         btnFilterAll = findViewById(R.id.btnFilterAll);
@@ -82,12 +91,18 @@ public class AdminFeedbackActivity extends AppCompatActivity implements AdminFee
     }
 
     private void updateFilterUI() {
-        btnFilterAll.setBackgroundResource(currentFilter.equals("all") ? R.drawable.bg_category_selected : R.drawable.bg_category_normal);
-        btnFilterAll.setTextColor(getResources().getColor(currentFilter.equals("all") ? R.color.white : R.color.text_primary));
-        btnFilterUnread.setBackgroundResource(currentFilter.equals("unread") ? R.drawable.bg_category_selected : R.drawable.bg_category_normal);
-        btnFilterUnread.setTextColor(getResources().getColor(currentFilter.equals("unread") ? R.color.white : R.color.text_primary));
-        btnFilterRead.setBackgroundResource(currentFilter.equals("read") ? R.drawable.bg_category_selected : R.drawable.bg_category_normal);
-        btnFilterRead.setTextColor(getResources().getColor(currentFilter.equals("read") ? R.color.white : R.color.text_primary));
+        btnFilterAll.setBackgroundResource(
+                currentFilter.equals("all") ? R.drawable.bg_category_selected : R.drawable.bg_category_normal);
+        btnFilterAll.setTextColor(
+                getResources().getColor(currentFilter.equals("all") ? R.color.white : R.color.text_primary));
+        btnFilterUnread.setBackgroundResource(
+                currentFilter.equals("unread") ? R.drawable.bg_category_selected : R.drawable.bg_category_normal);
+        btnFilterUnread.setTextColor(
+                getResources().getColor(currentFilter.equals("unread") ? R.color.white : R.color.text_primary));
+        btnFilterRead.setBackgroundResource(
+                currentFilter.equals("read") ? R.drawable.bg_category_selected : R.drawable.bg_category_normal);
+        btnFilterRead.setTextColor(
+                getResources().getColor(currentFilter.equals("read") ? R.color.white : R.color.text_primary));
     }
 
     private void loadFeedbacks() {
@@ -120,9 +135,12 @@ public class AdminFeedbackActivity extends AppCompatActivity implements AdminFee
     public void onFeedbackClick(Feedback feedback) {
         Intent intent = new Intent(this, AdminFeedbackDetailActivity.class);
         intent.putExtra("feedback_id", feedback.getId());
-        intent.putExtra("feedback_user_name", feedback.getUser() != null ?
-                (feedback.getUser().getFullName() != null && !feedback.getUser().getFullName().isEmpty()
-                        ? feedback.getUser().getFullName() : feedback.getUser().getEmail()) : "Khách hàng");
+        intent.putExtra("feedback_user_name",
+                feedback.getUser() != null
+                        ? (feedback.getUser().getFullName() != null && !feedback.getUser().getFullName().isEmpty()
+                                ? feedback.getUser().getFullName()
+                                : feedback.getUser().getEmail())
+                        : "Khách hàng");
         intent.putExtra("feedback_user_email", feedback.getUser() != null ? feedback.getUser().getEmail() : "");
         intent.putExtra("feedback_user_avatar", feedback.getUser() != null ? feedback.getUser().getAvatarUrl() : "");
         intent.putExtra("feedback_content", feedback.getContent());
