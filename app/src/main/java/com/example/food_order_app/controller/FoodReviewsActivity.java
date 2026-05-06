@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ScrollView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -56,6 +57,8 @@ public class FoodReviewsActivity extends AppCompatActivity {
     private TextView btnBack, tvToolbarTitle, tvAvgRating, tvTotalReviews, tvNoReviews, tvTotalReviewsLabel;
     private RatingBar rbAvgRating;
     private RecyclerView rvReviews;
+    private ScrollView svContent;
+    private Button btnScrollTop;
 
     private ProgressBar[] pbStars = new ProgressBar[5];
     private TextView[] tvCounts = new TextView[5];
@@ -68,9 +71,17 @@ public class FoodReviewsActivity extends AppCompatActivity {
     private ProgressDialog progressDialog;
 
     private List<Review> allReviews = new ArrayList<>();
+    private List<Review> filteredAllReviews = new ArrayList<>(); // Toàn bộ reviews sau khi filter
+    private List<Review> displayedReviews = new ArrayList<>();
     private String foodId;
     private String foodName;
     private int currentFilter = 0; // 0 = all
+    
+    // Pagination
+    private static final int PAGE_SIZE = 5;
+    private int currentOffset = 0;
+    private boolean isLoadingMore = false;
+    private boolean hasMoreReviews = true;
 
     // WriteReviewLauncher to refresh reviews
     private ActivityResultLauncher<Intent> writeReviewLauncher;
@@ -105,6 +116,10 @@ public class FoodReviewsActivity extends AppCompatActivity {
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == RESULT_OK) {
+                        currentFilter = 0; // Reset filter to "Tất cả"
+                        currentOffset = 0;
+                        displayedReviews.clear();
+                        filteredAllReviews.clear();
                         loadAllReviews();
                     }
                 }
@@ -143,6 +158,22 @@ public class FoodReviewsActivity extends AppCompatActivity {
         rvReviews.setLayoutManager(new LinearLayoutManager(this));
         rvReviews.setAdapter(reviewAdapter);
 
+        svContent = findViewById(R.id.svContent);
+        btnScrollTop = findViewById(R.id.btnScrollTop);
+        btnScrollTop.setOnClickListener(v -> {
+            if (svContent != null) svContent.smoothScrollTo(0, 0);
+        });
+
+        // Show/hide scroll-to-top button on scroll
+        if (svContent != null) {
+            svContent.getViewTreeObserver().addOnScrollChangedListener(() -> {
+                int scrollY = svContent.getScrollY();
+                if (btnScrollTop != null) {
+                    btnScrollTop.setVisibility(scrollY > 300 ? View.VISIBLE : View.GONE);
+                }
+            });
+        }
+
         btnBack.setOnClickListener(v -> finish());
         btnWriteReview.setOnClickListener(v -> openWriteReviewActivity());
         tvFilterStar.setOnClickListener(v -> showFilterDialog());
@@ -150,14 +181,30 @@ public class FoodReviewsActivity extends AppCompatActivity {
     }
 
     private void loadAllReviews() {
+        // Load ALL reviews at once (không pagination từ API, vì cần toàn bộ data cho filter)
+        currentOffset = 0;
+        displayedReviews.clear();
+        filteredAllReviews.clear();
+        
         dbService.getReviews("eq." + foodId, "*,users(full_name,avatar_url)", "created_at.desc")
                 .enqueue(new Callback<List<Review>>() {
                     @Override
                     public void onResponse(Call<List<Review>> call, Response<List<Review>> response) {
                         if (response.isSuccessful() && response.body() != null) {
                             allReviews = response.body();
+                            filteredAllReviews = new ArrayList<>(allReviews);
+                            
+                            // Display ALL reviews (no local pagination)
+                            filteredAllReviews = new java.util.ArrayList<>(allReviews);
+                            displayedReviews = new java.util.ArrayList<>(filteredAllReviews);
+                            currentOffset = displayedReviews.size();
+                            hasMoreReviews = false;
+
+                            // Cập nhật rating summary
                             updateRatingSummary();
-                            applyFilter(currentFilter);
+
+                            // Update adapter to show all
+                            reviewAdapter.updateData(new java.util.ArrayList<>(displayedReviews), false, null);
                         }
                     }
 
@@ -166,6 +213,33 @@ public class FoodReviewsActivity extends AppCompatActivity {
                         Log.e(TAG, "loadAllReviews failed: " + t.getMessage());
                     }
                 });
+    }
+
+    private void loadMoreReviewsForFilter() {
+        if (isLoadingMore || !hasMoreReviews) return;
+        
+        isLoadingMore = true;
+        
+        // Load từ filtered list (local, không call API)
+        int nextBatch = Math.min(currentOffset + PAGE_SIZE, filteredAllReviews.size());
+        Log.d(TAG, "loadMoreReviewsForFilter: currentOffset=" + currentOffset + ", nextBatch=" + nextBatch + ", filteredSize=" + filteredAllReviews.size());
+        for (int i = currentOffset; i < nextBatch; i++) {
+            displayedReviews.add(filteredAllReviews.get(i));
+        }
+
+        currentOffset = nextBatch;
+        hasMoreReviews = currentOffset < filteredAllReviews.size();
+
+        Log.d(TAG, "afterLoadMore: displayed=" + displayedReviews.size() + ", hasMore=" + hasMoreReviews + ", currentOffset=" + currentOffset);
+
+        isLoadingMore = false;
+        // Use a defensive copy when passing to adapter to avoid shared-reference mutations
+        reviewAdapter.updateData(new java.util.ArrayList<>(displayedReviews), hasMoreReviews, () -> loadMoreReviewsForFilter());
+    }
+
+    private void loadMoreReviews() {
+        // Gọi loadMoreReviewsForFilter vì toàn bộ data đã được load từ đầu
+        loadMoreReviewsForFilter();
     }
 
     private void updateRatingSummary() {
@@ -229,26 +303,32 @@ public class FoodReviewsActivity extends AppCompatActivity {
         String filterText = (starFilter == 0) ? "Lọc theo sao ↓" : starFilter + " Sao ↓";
         tvFilterStar.setText(filterText);
 
-        // Filter reviews
-        List<Review> filtered;
+        // Filter reviews từ allReviews (toàn bộ data, không phải displayedReviews)
         if (starFilter == 0) {
-            filtered = allReviews;
+            filteredAllReviews = new ArrayList<>(allReviews);
         } else {
-            filtered = new ArrayList<>();
+            filteredAllReviews = new ArrayList<>();
             for (Review r : allReviews) {
                 if (r.getRating() == starFilter) {
-                    filtered.add(r);
+                    filteredAllReviews.add(r);
                 }
             }
         }
 
-        if (filtered.isEmpty()) {
+        // Show full filtered list (no pagination)
+        displayedReviews = new java.util.ArrayList<>(filteredAllReviews);
+        currentOffset = displayedReviews.size();
+        hasMoreReviews = false;
+
+        Log.d(TAG, "applyFilter: filtered=" + filteredAllReviews.size() + ", displayed=" + displayedReviews.size() + ", hasMore=" + hasMoreReviews);
+
+        if (displayedReviews.isEmpty()) {
             tvNoReviews.setVisibility(View.VISIBLE);
             rvReviews.setVisibility(View.GONE);
         } else {
             tvNoReviews.setVisibility(View.GONE);
             rvReviews.setVisibility(View.VISIBLE);
-            reviewAdapter.setReviews(filtered);
+            reviewAdapter.updateData(new java.util.ArrayList<>(displayedReviews), false, null);
         }
     }
 
