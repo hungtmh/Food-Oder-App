@@ -299,6 +299,9 @@ public class FoodTrendPredictionActivity extends AppCompatActivity {
                             double negativePercent = sentimentStats != null ? sentimentStats.getNegativePercent() : 0.0;
                             double avgSentimentScore = sentimentStats != null ? sentimentStats.getAvgSentimentScore()
                                     : 0.5;
+                                double sentimentImpact = calculateSentimentImpact(totalReviews, positivePercent,
+                                    negativePercent, avgSentimentScore);
+                                String sentimentLabel = classifySentimentLabel(totalReviews, sentimentImpact);
 
                             String trendType;
                             double confidenceScore;
@@ -312,7 +315,9 @@ public class FoodTrendPredictionActivity extends AppCompatActivity {
                                     + " | totalReviews=" + totalReviews
                                     + " | positivePercent=" + positivePercent
                                     + " | negativePercent=" + negativePercent
-                                    + " | avgSentimentScore=" + avgSentimentScore);
+                                    + " | avgSentimentScore=" + avgSentimentScore
+                                    + " | sentimentImpact=" + sentimentImpact
+                                    + " | sentimentLabel=" + sentimentLabel);
 
                             if (totalReviews < MIN_REVIEWS && currentSales < MIN_ORDERS
                                     && prevSales < MIN_ORDERS) {
@@ -341,6 +346,23 @@ public class FoodTrendPredictionActivity extends AppCompatActivity {
                                 trendType = "stable";
                                 confidenceScore = 0.80;
                                 reason = "Stable within current rule thresholds";
+                            }
+
+                            if (!"no_data".equals(sentimentLabel)) {
+                                if (sentimentImpact <= -0.65 && !"at_risk".equals(trendType)) {
+                                    trendType = "declining".equals(trendType) ? "at_risk" : "declining";
+                                    reason = reason + " | AI sentiment signal: " + sentimentLabel;
+                                } else if (sentimentImpact >= 0.65
+                                        && "stable".equals(trendType)
+                                        && actualSalesTrend >= 0
+                                        && currentSales >= MIN_ORDERS) {
+                                    trendType = "hot_seller";
+                                    reason = reason + " | AI sentiment boost: " + sentimentLabel;
+                                } else {
+                                    reason = reason + " | AI sentiment: " + sentimentLabel;
+                                }
+
+                                confidenceScore = clampConfidence(confidenceScore + (sentimentImpact * 0.08));
                             }
 
                             Log.d(TAG, "predictFoodTrend RESULT | foodId=" + food.getId()
@@ -473,6 +495,44 @@ public class FoodTrendPredictionActivity extends AppCompatActivity {
             return currentSales > 0 ? 100.0 : 0.0;
         }
         return ((double) (currentSales - previousSales) / previousSales) * 100.0;
+    }
+
+    private double calculateSentimentImpact(int totalReviews, double positivePercent,
+            double negativePercent, double avgSentimentScore) {
+        if (totalReviews <= 0) {
+            return 0.0;
+        }
+
+        double reviewWeight = Math.min(1.0, totalReviews / 30.0);
+        double percentBias = (positivePercent - negativePercent) / 100.0;
+        double scoreBias = (avgSentimentScore - 0.5) * 2.0;
+
+        double impact = ((percentBias * 0.6) + (scoreBias * 0.4)) * reviewWeight;
+        return Math.max(-1.0, Math.min(1.0, impact));
+    }
+
+    private String classifySentimentLabel(int totalReviews, double sentimentImpact) {
+        if (totalReviews <= 0) {
+            return "no_data";
+        }
+
+        if (sentimentImpact >= 0.75) {
+            return "very_positive";
+        }
+        if (sentimentImpact >= 0.35) {
+            return "positive";
+        }
+        if (sentimentImpact <= -0.75) {
+            return "very_negative";
+        }
+        if (sentimentImpact <= -0.35) {
+            return "negative";
+        }
+        return totalReviews < MIN_REVIEWS ? "low_confidence" : "neutral";
+    }
+
+    private double clampConfidence(double score) {
+        return Math.max(0.40, Math.min(0.99, score));
     }
 
     private String formatDateTime(Calendar calendar, boolean startOfDay) {
