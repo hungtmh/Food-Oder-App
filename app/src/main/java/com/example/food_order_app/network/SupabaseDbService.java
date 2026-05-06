@@ -124,8 +124,16 @@ public interface SupabaseDbService {
                         @Query("select") String select,
                         @Query("order") String order);
 
+        @GET("reviews")
+        Call<List<Review>> getReviewsWithPagination(
+                        @Query("food_id") String foodIdFilter,
+                        @Query("select") String select,
+                        @Query("order") String order,
+                        @Header("Range") String range);
+
+        @Headers("Prefer: return=representation")
         @POST("reviews")
-        Call<Void> createReview(@Body Map<String, Object> review);
+        Call<List<Review>> createReview(@Body Map<String, Object> review);
 
         // ==================== CARTS ====================
         @GET("carts")

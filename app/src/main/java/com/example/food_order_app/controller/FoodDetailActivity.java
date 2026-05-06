@@ -271,8 +271,13 @@ public class FoodDetailActivity extends AppCompatActivity {
         Glide.with(this).load(currentFood.getImageUrl()).into(imgFoodDetail);
 
         // Rating
-        tvDetailRating.setText(String.format(Locale.getDefault(), "%.1f", currentFood.getAvgRating()));
-        tvDetailReviewCount.setText("(" + currentFood.getTotalReviews() + " đánh giá)");
+        if (currentFood.getTotalReviews() == 0) {
+            tvDetailRating.setText("Chưa có review");
+            tvDetailReviewCount.setText("");
+        } else {
+            tvDetailRating.setText(String.format(Locale.getDefault(), "%.1f", currentFood.getAvgRating()));
+            tvDetailReviewCount.setText("(" + currentFood.getTotalReviews() + " đánh giá)");
+        }
 
         // Price
         double discountedPrice = currentFood.getDiscountedPrice();
@@ -293,7 +298,11 @@ public class FoodDetailActivity extends AppCompatActivity {
         // Review Header
         tvDetailReviewHeaderTitle.setText("Đánh giá (" + currentFood.getTotalReviews() + ")");
         rbDetailReviewHeader.setRating((float) currentFood.getAvgRating());
-        tvDetailReviewHeaderScore.setText(String.format(Locale.getDefault(), "%.1f", currentFood.getAvgRating()));
+        if (currentFood.getTotalReviews() == 0) {
+            tvDetailReviewHeaderScore.setText("Chưa có review");
+        } else {
+            tvDetailReviewHeaderScore.setText(String.format(Locale.getDefault(), "%.1f", currentFood.getAvgRating()));
+        }
     }
 
     private void loadReviews() {
