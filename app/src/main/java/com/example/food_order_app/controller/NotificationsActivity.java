@@ -1,5 +1,6 @@
 package com.example.food_order_app.controller;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
@@ -85,9 +86,22 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
 
     @Override
     public void onNotificationClick(Notification notification) {
+        openOrderHistory(notification);
+
         if (!notification.isRead()) {
             markAsRead(notification);
         }
+    }
+
+    private void openOrderHistory(Notification notification) {
+        Intent intent = new Intent(NotificationsActivity.this, OrderHistoryActivity.class);
+        if (notification.getOrderId() != null && !notification.getOrderId().isEmpty()) {
+            intent.putExtra("order_id", notification.getOrderId());
+        }
+        if (notification.getOrderCode() != null && !notification.getOrderCode().isEmpty()) {
+            intent.putExtra("order_code", notification.getOrderCode());
+        }
+        startActivity(intent);
     }
 
     private void markAsRead(Notification notification) {

@@ -86,8 +86,12 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.FavV
             NumberFormat nf = NumberFormat.getInstance(new Locale("vi", "VN"));
             tvFavPrice.setText(nf.format(food.getDiscountedPrice()) + " VNĐ");
 
-            tvFavRating.setText(String.format(Locale.getDefault(), "%.1f (%d đánh giá)",
-                    food.getAvgRating(), food.getTotalReviews()));
+            if (food.getTotalReviews() == 0) {
+                tvFavRating.setText("Chưa có review");
+            } else {
+                tvFavRating.setText(String.format(Locale.getDefault(), "%.1f (%d đánh giá)",
+                        food.getAvgRating(), food.getTotalReviews()));
+            }
 
             Glide.with(context).load(food.getImageUrl())
                     .placeholder(R.drawable.bg_button_primary)

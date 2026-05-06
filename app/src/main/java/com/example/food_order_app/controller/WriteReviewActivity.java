@@ -269,23 +269,30 @@ public class WriteReviewActivity extends AppCompatActivity {
             reviewData.put("image_url", imageUrl);
         }
 
-        dbService.createReview(reviewData).enqueue(new Callback<Void>() {
+        dbService.createReview(reviewData).enqueue(new Callback<List<Review>>() {
             @Override
-            public void onResponse(Call<Void> call, Response<Void> response) {
+            public void onResponse(Call<List<Review>> call, Response<List<Review>> response) {
                 if (response.isSuccessful()) {
                     // Review submitted! Now fetch all reviews to update the average rating on food table
                     updateFoodAverageRating();
                 } else {
                     progressDialog.dismiss();
-                    Toast.makeText(WriteReviewActivity.this, "Lỗi gửi đánh giá", Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "submitReviewToDb error: " + response.code() + " " + response.message());
+                    try {
+                        Log.e(TAG, "Error body: " + response.errorBody().string());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    Toast.makeText(WriteReviewActivity.this, "Lỗi gửi đánh giá: " + response.code(), Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
-            public void onFailure(Call<Void> call, Throwable t) {
+            public void onFailure(Call<List<Review>> call, Throwable t) {
                 progressDialog.dismiss();
                 Log.e(TAG, "submitReviewToDb failed: " + t.getMessage());
-                Toast.makeText(WriteReviewActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                t.printStackTrace();
+                Toast.makeText(WriteReviewActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
