@@ -482,6 +482,11 @@ public interface SupabaseDbService {
                         @Query("voucher_id") String voucherIdFilter,
                         @Query("select") String select);
 
+        @Headers("Prefer: return=representation")
+        @POST("user_voucher_usage")
+        Call<List<com.example.food_order_app.model.UserVoucherUsage>> createUserVoucherUsage(
+                        @Body Map<String, Object> usage);
+
         @GET("vouchers")
         Call<List<com.example.food_order_app.model.Voucher>> getAdminVouchers(
                         @Query("select") String select,
