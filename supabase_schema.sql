@@ -89,6 +89,7 @@ CREATE TABLE IF NOT EXISTS public.reviews (
     user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
     rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
     comment TEXT DEFAULT '',
+    image_url TEXT DEFAULT '',
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
