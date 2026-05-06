@@ -1,6 +1,7 @@
 package com.example.food_order_app.controller;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -15,6 +16,7 @@ import com.example.food_order_app.R;
 import com.example.food_order_app.model.Notification;
 import com.example.food_order_app.network.RetrofitClient;
 import com.example.food_order_app.network.SupabaseDbService;
+import com.example.food_order_app.network.SupabaseFunctionsService;
 import com.example.food_order_app.utils.AdminDrawerHelper;
 import com.google.android.material.navigation.NavigationView;
 
@@ -36,6 +38,7 @@ public class AdminSendNotificationActivity extends AppCompatActivity {
     private TextView tvCharCount, tvStatus;
 
     private SupabaseDbService dbService;
+    private SupabaseFunctionsService functionsService;
     private boolean isSending = false;
 
     @Override
@@ -44,6 +47,7 @@ public class AdminSendNotificationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_admin_send_notification);
 
         dbService = RetrofitClient.getDbService();
+        functionsService = RetrofitClient.getFunctionsService();
         initViews();
     }
 
@@ -141,6 +145,10 @@ public class AdminSendNotificationActivity extends AppCompatActivity {
                             String successMsg = "Gửi thành công đến " + count + " khách hàng!";
                             showStatus(successMsg, true);
                             Toast.makeText(AdminSendNotificationActivity.this, successMsg, Toast.LENGTH_SHORT).show();
+
+                            // Gửi push notification đến tất cả user
+                            triggerBroadcastPush(title, message);
+
                             clearForm();
                         } else {
                             showStatus("Gửi thất bại: HTTP " + response.code(), false);
@@ -158,6 +166,29 @@ public class AdminSendNotificationActivity extends AppCompatActivity {
                                 .show();
                     }
                 });
+    }
+
+    private void triggerBroadcastPush(String title, String message) {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("title", title);
+        payload.put("body", message);
+        payload.put("is_broadcast", true);
+
+        functionsService.sendPush(payload).enqueue(new Callback<Map<String, Object>>() {
+            @Override
+            public void onResponse(Call<Map<String, Object>> call, Response<Map<String, Object>> response) {
+                if (response.isSuccessful()) {
+                    Log.d("AdminSendNotif", "triggerBroadcastPush success: " + response.body());
+                } else {
+                    Log.e("AdminSendNotif", "triggerBroadcastPush failed HTTP " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Map<String, Object>> call, Throwable t) {
+                Log.e("AdminSendNotif", "triggerBroadcastPush exception: " + t.getMessage(), t);
+            }
+        });
     }
 
     private void showStatus(String text, boolean success) {
