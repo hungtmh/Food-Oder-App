@@ -86,11 +86,18 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
 
     @Override
     public void onNotificationClick(Notification notification) {
-        openOrderHistory(notification);
+        if (isOrderStatusNotification(notification)) {
+            openOrderHistory(notification);
+        }
 
         if (!notification.isRead()) {
             markAsRead(notification);
         }
+    }
+
+    private boolean isOrderStatusNotification(Notification notification) {
+        String title = notification.getTitle();
+        return title != null && title.startsWith("Cập nhật đơn hàng");
     }
 
     private void openOrderHistory(Notification notification) {
