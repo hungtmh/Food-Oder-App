@@ -174,7 +174,7 @@ public class FoodReviewsActivity extends AppCompatActivity {
         tvTotalReviewsLabel.setText(total + " Nhận xét");
 
         if (total == 0) {
-            tvAvgRating.setText("0.0");
+            tvAvgRating.setText("Chưa có review");
             rbAvgRating.setRating(0);
             for (int i = 0; i < 5; i++) {
                 pbStars[i].setProgress(0);
