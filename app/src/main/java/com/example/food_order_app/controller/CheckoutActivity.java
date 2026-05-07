@@ -36,6 +36,7 @@ import com.example.food_order_app.utils.SessionManager;
 
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.HashMap;
@@ -81,6 +82,7 @@ public class CheckoutActivity extends AppCompatActivity {
     private String cartId;
     private double totalAmount;
     private List<CartItem> cartItems;
+    private ArrayList<String> allowedFoodIds;
 
     // Voucher fields
     private EditText etVoucherCode;
@@ -103,6 +105,7 @@ public class CheckoutActivity extends AppCompatActivity {
 
         cartId = getIntent().getStringExtra("cart_id");
         totalAmount = getIntent().getDoubleExtra("total_amount", 0);
+        allowedFoodIds = getIntent().getStringArrayListExtra("cart_food_ids");
 
         initViews();
         loadDefaultAddress();
@@ -206,7 +209,18 @@ public class CheckoutActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<List<CartItem>> call, Response<List<CartItem>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    cartItems = response.body();
+                    List<CartItem> fetched = response.body();
+                    if (allowedFoodIds != null) {
+                        List<CartItem> filtered = new ArrayList<>();
+                        for (CartItem item : fetched) {
+                            if (item != null && allowedFoodIds.contains(item.getFoodId())) {
+                                filtered.add(item);
+                            }
+                        }
+                        cartItems = filtered;
+                    } else {
+                        cartItems = fetched;
+                    }
                     // Recalculate totals
                     double subtotal = 0;
                     for (CartItem item : cartItems) {
