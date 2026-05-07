@@ -51,6 +51,7 @@ public class AdminOrderDetailActivity extends AppCompatActivity {
     private String orderId;
     private String currentStatus;
     private String orderType;
+    private String orderAddress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -141,14 +142,17 @@ public class AdminOrderDetailActivity extends AppCompatActivity {
         orderId = getIntent().getStringExtra("order_id");
         currentStatus = getIntent().getStringExtra("order_status");
         orderType = getIntent().getStringExtra("order_type");
-        if (orderType == null || orderType.isEmpty()) {
+        orderAddress = getIntent().getStringExtra("order_address");
+        if (isDineInOrder(orderType, orderAddress)) {
+            orderType = "dine_in";
+        } else if (orderType == null || orderType.isEmpty()) {
             orderType = "delivery"; // mặc định cho đơn cũ
         }
 
         tvOrderCode.setText(getIntent().getStringExtra("order_code"));
         tvCustomer.setText("Tên: " + getIntent().getStringExtra("order_customer"));
         tvPhone.setText("SĐT: " + getIntent().getStringExtra("order_phone"));
-        tvAddress.setText("Địa chỉ: " + getIntent().getStringExtra("order_address"));
+        tvAddress.setText("Địa chỉ: " + orderAddress);
 
         String payment = getIntent().getStringExtra("order_payment");
         tvPayment.setText("Thanh toán: " + ("cod".equals(payment) ? "Tiền mặt (COD)" : "Chuyển khoản"));
@@ -291,18 +295,24 @@ public class AdminOrderDetailActivity extends AppCompatActivity {
         btnServeOrder.setEnabled(false);
         btnCancelOrder.setEnabled(false);
 
+        String resolvedStatus = newStatus;
+        if (isDineInOrder(orderType, orderAddress) && "delivering".equals(resolvedStatus)) {
+            resolvedStatus = "served";
+        }
+        final String finalStatus = resolvedStatus;
+
         Map<String, Object> updates = new HashMap<>();
-        updates.put("status", newStatus);
+        updates.put("status", finalStatus);
 
         dbService.updateOrderStatus("eq." + orderId, updates).enqueue(new Callback<List<Order>>() {
             @Override
             public void onResponse(Call<List<Order>> call, Response<List<Order>> response) {
                 if (response.isSuccessful()) {
-                    currentStatus = newStatus;
+                    currentStatus = finalStatus;
                     updateStatusUI();
                     
                     // Send notification
-                    sendNotification(newStatus);
+                    sendNotification(finalStatus);
                     
                     Toast.makeText(AdminOrderDetailActivity.this,
                             "Đã cập nhật: " + getStatusText(newStatus),
@@ -411,5 +421,15 @@ public class AdminOrderDetailActivity extends AppCompatActivity {
         btnDeliverOrder.setEnabled(true);
         btnServeOrder.setEnabled(true);
         btnCancelOrder.setEnabled(true);
+    }
+
+    private boolean isDineInOrder(String type, String address) {
+        if ("dine_in".equals(type)) {
+            return true;
+        }
+        if (type == null || type.trim().isEmpty()) {
+            return address != null && address.trim().startsWith("Ăn tại quán");
+        }
+        return false;
     }
 }

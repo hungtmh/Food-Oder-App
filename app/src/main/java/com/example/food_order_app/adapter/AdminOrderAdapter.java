@@ -101,18 +101,23 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Vi
     }
 
     private void updateOrderStatus(Order order, String newStatus, String actionName) {
+        String resolvedStatus = newStatus;
+        if (isDineInOrder(order.getOrderType(), order.getAddress()) && "delivering".equals(resolvedStatus)) {
+            resolvedStatus = "served";
+        }
+        final String finalStatus = resolvedStatus;
         Map<String, Object> updates = new HashMap<>();
-        updates.put("status", newStatus);
+        updates.put("status", finalStatus);
 
         dbService.updateOrderStatus("eq." + order.getId(), updates).enqueue(new Callback<List<Order>>() {
             @Override
             public void onResponse(Call<List<Order>> call, Response<List<Order>> response) {
                 if (response.isSuccessful()) {
-                    order.setStatus(newStatus);
+                    order.setStatus(finalStatus);
                     Toast.makeText(context, actionName + " thành công!", Toast.LENGTH_SHORT).show();
                     
                     // Send notification to user
-                    sendNotification(order, newStatus);
+                    sendNotification(order, finalStatus);
                     
                     if (listener != null) {
                         listener.onOrderStatusChanged();
@@ -177,6 +182,16 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Vi
                 // Silently fail
             }
         });
+    }
+
+    private static boolean isDineInOrder(String type, String address) {
+        if ("dine_in".equals(type)) {
+            return true;
+        }
+        if (type == null || type.trim().isEmpty()) {
+            return address != null && address.trim().startsWith("Ăn tại quán");
+        }
+        return false;
     }
 
     private void triggerPush(String userId, String orderId, String orderCode, String title, String message, String notificationId) {
@@ -376,10 +391,9 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Vi
                     btnQuickServe.setVisibility(View.VISIBLE);
                     btnQuickCancel.setVisibility(View.VISIBLE);
 
-                    String orderType = order.getOrderType();
-                    if (orderType == null || orderType.isEmpty()) orderType = "delivery";
+                    boolean isDineIn = isDineInOrder(order.getOrderType(), order.getAddress());
 
-                    if ("delivery".equals(orderType)) {
+                    if (!isDineIn) {
                         btnQuickServe.setText("Giao hàng");
                         btnQuickServe.setOnClickListener(v -> {
                             new AlertDialog.Builder(context)
