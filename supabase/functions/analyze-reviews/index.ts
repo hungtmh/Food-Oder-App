@@ -137,7 +137,6 @@ serve(async (req: Request) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    // ĐÂY LÀ ĐOẠN LÚC NÃY BẠN BỊ COPY THIẾU NÀY:
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error("LỖI CHI TIẾT:", errorMessage);
 

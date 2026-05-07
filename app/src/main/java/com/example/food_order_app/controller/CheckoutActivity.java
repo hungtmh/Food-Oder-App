@@ -36,6 +36,7 @@ import com.example.food_order_app.utils.SessionManager;
 
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.HashMap;
@@ -81,6 +82,7 @@ public class CheckoutActivity extends AppCompatActivity {
     private String cartId;
     private double totalAmount;
     private List<CartItem> cartItems;
+    private ArrayList<String> allowedFoodIds;
 
     // Voucher fields
     private EditText etVoucherCode;
@@ -89,6 +91,7 @@ public class CheckoutActivity extends AppCompatActivity {
     private double discountAmount = 0;
     private String appliedVoucherId = null;
     private String appliedVoucherCode = null;
+    private Voucher appliedVoucher = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,6 +105,7 @@ public class CheckoutActivity extends AppCompatActivity {
 
         cartId = getIntent().getStringExtra("cart_id");
         totalAmount = getIntent().getDoubleExtra("total_amount", 0);
+        allowedFoodIds = getIntent().getStringArrayListExtra("cart_food_ids");
 
         initViews();
         loadDefaultAddress();
@@ -205,7 +209,18 @@ public class CheckoutActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<List<CartItem>> call, Response<List<CartItem>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    cartItems = response.body();
+                    List<CartItem> fetched = response.body();
+                    if (allowedFoodIds != null) {
+                        List<CartItem> filtered = new ArrayList<>();
+                        for (CartItem item : fetched) {
+                            if (item != null && allowedFoodIds.contains(item.getFoodId())) {
+                                filtered.add(item);
+                            }
+                        }
+                        cartItems = filtered;
+                    } else {
+                        cartItems = fetched;
+                    }
                     // Recalculate totals
                     double subtotal = 0;
                     for (CartItem item : cartItems) {
@@ -445,6 +460,7 @@ public class CheckoutActivity extends AppCompatActivity {
                     discountAmount = 0;
                     appliedVoucherCode = null;
                     appliedVoucherId = null;
+                    appliedVoucher = null;
                     updateTotalsUI();
                 }
             }
@@ -453,6 +469,7 @@ public class CheckoutActivity extends AppCompatActivity {
             public void onFailure(Call<List<Voucher>> call, Throwable t) {
                 btnApplyVoucher.setEnabled(true);
                 Toast.makeText(CheckoutActivity.this, "Lỗi kiểm tra mã", Toast.LENGTH_SHORT).show();
+                appliedVoucher = null;
             }
         });
     }
@@ -460,12 +477,14 @@ public class CheckoutActivity extends AppCompatActivity {
     private void validateVoucherUsageBeforeApply(Voucher voucher) {
         if (voucher == null || voucher.getId() == null || voucher.getId().trim().isEmpty()) {
             Toast.makeText(this, "Mã không hợp lệ", Toast.LENGTH_SHORT).show();
+            appliedVoucher = null;
             return;
         }
 
         String userId = sessionManager.getUserId();
         if (userId == null || userId.trim().isEmpty()) {
             Toast.makeText(this, "Không xác định được tài khoản", Toast.LENGTH_SHORT).show();
+            appliedVoucher = null;
             return;
         }
 
@@ -477,15 +496,20 @@ public class CheckoutActivity extends AppCompatActivity {
                         if (!response.isSuccessful()) {
                             Toast.makeText(CheckoutActivity.this, "Không kiểm tra được lịch sử dùng mã",
                                     Toast.LENGTH_SHORT).show();
+                            appliedVoucher = null;
                             return;
                         }
 
-                        if (response.body() != null && !response.body().isEmpty()) {
+                        int usedCount = response.body() == null ? 0 : response.body().size();
+                        int perUserLimit = voucher.getLimitPerUser() != null ? voucher.getLimitPerUser() : 1;
+
+                        if (usedCount >= perUserLimit) {
                             Toast.makeText(CheckoutActivity.this, "Voucher already used by this account",
                                     Toast.LENGTH_SHORT).show();
                             discountAmount = 0;
                             appliedVoucherCode = null;
                             appliedVoucherId = null;
+                            appliedVoucher = null;
                             updateTotalsUI();
                             return;
                         }
@@ -497,6 +521,7 @@ public class CheckoutActivity extends AppCompatActivity {
                     public void onFailure(Call<List<UserVoucherUsage>> call, Throwable t) {
                         Toast.makeText(CheckoutActivity.this, "Lỗi kiểm tra lịch sử dùng mã", Toast.LENGTH_SHORT)
                                 .show();
+                        appliedVoucher = null;
                     }
                 });
     }
@@ -521,6 +546,7 @@ public class CheckoutActivity extends AppCompatActivity {
         discountAmount = calculatedDiscount;
         appliedVoucherCode = voucher.getCode();
         appliedVoucherId = voucher.getId();
+        appliedVoucher = voucher;
 
         updateTotalsUI();
         Toast.makeText(this, "Áp dụng thành công!", Toast.LENGTH_SHORT).show();
@@ -573,7 +599,61 @@ public class CheckoutActivity extends AppCompatActivity {
 
         double finalAmount = Math.max(0, totalAmount - discountAmount);
 
-        createOrderViaEdge(orderCode, note, orderType, paymentMethod, isBanking);
+        if (appliedVoucher != null && appliedVoucherId != null) {
+            verifyVoucherBeforeOrderThenCreate(orderCode, note, orderType, paymentMethod, isBanking);
+        } else {
+            createOrderViaEdge(orderCode, note, orderType, paymentMethod, isBanking);
+        }
+    }
+
+    private void verifyVoucherBeforeOrderThenCreate(String orderCode, String note, String orderType,
+            String paymentMethod, boolean isBanking) {
+        String userId = sessionManager.getUserId();
+        if (userId == null || userId.trim().isEmpty()) {
+            Toast.makeText(this, "Không xác định được tài khoản", Toast.LENGTH_SHORT).show();
+            resetButton();
+            return;
+        }
+
+        dbService.getUserVoucherUsage("eq." + userId, "eq." + appliedVoucherId, "id")
+                .enqueue(new Callback<List<UserVoucherUsage>>() {
+                    @Override
+                    public void onResponse(Call<List<UserVoucherUsage>> call,
+                            Response<List<UserVoucherUsage>> response) {
+                        if (!response.isSuccessful()) {
+                            Toast.makeText(CheckoutActivity.this, "Không kiểm tra được mã giảm giá",
+                                    Toast.LENGTH_SHORT).show();
+                            resetButton();
+                            return;
+                        }
+
+                        int usedCount = response.body() == null ? 0 : response.body().size();
+                        int perUserLimit = appliedVoucher != null && appliedVoucher.getLimitPerUser() != null
+                                ? appliedVoucher.getLimitPerUser()
+                                : 1;
+
+                        if (usedCount >= perUserLimit) {
+                            Toast.makeText(CheckoutActivity.this, "Voucher already used by this account",
+                                    Toast.LENGTH_SHORT).show();
+                            discountAmount = 0;
+                            appliedVoucherCode = null;
+                            appliedVoucherId = null;
+                            appliedVoucher = null;
+                            updateTotalsUI();
+                            resetButton();
+                            return;
+                        }
+
+                        createOrderViaEdge(orderCode, note, orderType, paymentMethod, isBanking);
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<UserVoucherUsage>> call, Throwable t) {
+                        Toast.makeText(CheckoutActivity.this, "Lỗi kiểm tra lịch sử dùng mã", Toast.LENGTH_SHORT)
+                                .show();
+                        resetButton();
+                    }
+                });
     }
 
     private void createOrderViaEdge(String orderCode, String note, String orderType, String paymentMethod,
@@ -633,10 +713,11 @@ public class CheckoutActivity extends AppCompatActivity {
                         resetButton();
                         return;
                     }
-                    createOrderItems(orderId, orderCode, new BankingMeta(qrUrl, transferContent, amount), true,
-                            finalAmount);
+                    recordVoucherUsageIfNeeded(orderId, () -> createOrderItems(orderId, orderCode,
+                            new BankingMeta(qrUrl, transferContent, amount), true, finalAmount));
                 } else {
-                    createOrderItems(orderId, orderCode, null, false, finalAmount);
+                    recordVoucherUsageIfNeeded(orderId, () -> createOrderItems(orderId, orderCode, null, false,
+                            finalAmount));
                 }
             }
 
@@ -806,6 +887,59 @@ public class CheckoutActivity extends AppCompatActivity {
                 navigateToConfirmation(orderCode, finalAmount);
             }
         });
+    }
+
+    private void recordVoucherUsageIfNeeded(String orderId, Runnable onDone) {
+        if (appliedVoucher == null || appliedVoucherId == null) {
+            onDone.run();
+            return;
+        }
+
+        String userId = sessionManager.getUserId();
+        if (userId == null || userId.trim().isEmpty()) {
+            onDone.run();
+            return;
+        }
+
+        dbService.getUserVoucherUsage("eq." + userId, "eq." + appliedVoucherId, "id")
+                .enqueue(new Callback<List<UserVoucherUsage>>() {
+                    @Override
+                    public void onResponse(Call<List<UserVoucherUsage>> call,
+                            Response<List<UserVoucherUsage>> response) {
+                        if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                            onDone.run();
+                            return;
+                        }
+
+                        Map<String, Object> usage = new HashMap<>();
+                        usage.put("user_id", userId);
+                        usage.put("voucher_id", appliedVoucherId);
+                        usage.put("order_id", orderId);
+
+                        dbService.createUserVoucherUsage(usage).enqueue(new Callback<List<UserVoucherUsage>>() {
+                            @Override
+                            public void onResponse(Call<List<UserVoucherUsage>> call,
+                                    Response<List<UserVoucherUsage>> response) {
+                                if (!response.isSuccessful()) {
+                                    Log.e(TAG, "createUserVoucherUsage failed: HTTP " + response.code());
+                                }
+                                onDone.run();
+                            }
+
+                            @Override
+                            public void onFailure(Call<List<UserVoucherUsage>> call, Throwable t) {
+                                Log.e(TAG, "createUserVoucherUsage failed: " + t.getMessage());
+                                onDone.run();
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<UserVoucherUsage>> call, Throwable t) {
+                        Log.e(TAG, "getUserVoucherUsage before create failed: " + t.getMessage());
+                        onDone.run();
+                    }
+                });
     }
 
     private void navigateToConfirmation(String orderCode, double finalAmount) {

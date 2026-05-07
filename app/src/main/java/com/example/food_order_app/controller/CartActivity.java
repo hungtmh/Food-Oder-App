@@ -165,8 +165,15 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
                 Toast.makeText(this, "Giỏ hàng trống", Toast.LENGTH_SHORT).show();
                 return;
             }
+            ArrayList<String> cartFoodIds = new ArrayList<>();
+            for (CartItem item : cartAdapter.getCartItems()) {
+                if (item != null && item.getFoodId() != null) {
+                    cartFoodIds.add(item.getFoodId());
+                }
+            }
             Intent intent = new Intent(this, CheckoutActivity.class);
             intent.putExtra("cart_id", cartId);
+            intent.putStringArrayListExtra("cart_food_ids", cartFoodIds);
             intent.putExtra("total_amount", calculateTotal());
             startActivity(intent);
         });

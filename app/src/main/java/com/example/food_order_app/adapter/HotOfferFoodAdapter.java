@@ -54,7 +54,11 @@ public class HotOfferFoodAdapter extends RecyclerView.Adapter<HotOfferFoodAdapte
         NumberFormat nf = NumberFormat.getInstance(new Locale("vi", "VN"));
         double price = food.getDiscountPercent() > 0 ? food.getDiscountedPrice() : food.getPrice();
         holder.tvFoodPrice.setText(nf.format(price) + "đ");
-        holder.tvFoodRating.setText(String.format(Locale.US, "%.1f", food.getAvgRating()));
+        if (food.getTotalReviews() == 0) {
+            holder.tvFoodRating.setText("Chưa có review");
+        } else {
+            holder.tvFoodRating.setText(String.format(Locale.US, "%.1f", food.getAvgRating()));
+        }
 
         Glide.with(context)
                 .load(food.getImageUrl())
