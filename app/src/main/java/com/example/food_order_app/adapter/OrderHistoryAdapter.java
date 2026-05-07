@@ -117,7 +117,7 @@ public class OrderHistoryAdapter extends RecyclerView.Adapter<OrderHistoryAdapte
         if (status == null) return ctx.getColor(R.color.text_secondary);
         switch (status) {
             case "pending": return ctx.getColor(R.color.white);
-            case "processing": return ctx.getColor(R.color.info);
+            case "processing": return ctx.getColor(R.color.warning);
             case "delivering": return ctx.getColor(R.color.info);
             case "served": return ctx.getColor(R.color.white);
             case "cancelled": return ctx.getColor(R.color.error);

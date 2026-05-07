@@ -100,6 +100,18 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Vi
         }
     }
 
+    public static int getStatusTextColor(Context ctx, String status) {
+        if (status == null) return ctx.getColor(R.color.text_secondary);
+        switch (status) {
+            case "pending": return ctx.getColor(R.color.white);
+            case "processing": return ctx.getColor(R.color.warning);
+            case "delivering": return ctx.getColor(R.color.info);
+            case "served": return ctx.getColor(R.color.white);
+            case "cancelled": return ctx.getColor(R.color.white);
+            default: return ctx.getColor(R.color.white);
+        }
+    }
+
     private void updateOrderStatus(Order order, String newStatus, String actionName) {
         String resolvedStatus = newStatus;
         if (isDineInOrder(order.getOrderType(), order.getAddress()) && "delivering".equals(resolvedStatus)) {
@@ -250,6 +262,7 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Vi
             tvCustomer.setText(order.getReceiverName());
             tvStatus.setText(getStatusText(order.getStatus()));
             tvStatus.setBackgroundResource(getStatusBackground(order.getStatus()));
+            tvStatus.setTextColor(getStatusTextColor(context, order.getStatus()));
 
             NumberFormat nf = NumberFormat.getInstance(new Locale("vi", "VN"));
             tvTotal.setText(nf.format(order.getTotalAmount()) + " VNĐ");

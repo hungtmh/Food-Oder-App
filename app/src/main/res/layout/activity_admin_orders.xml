@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/adminDrawerLayout"
@@ -128,10 +128,10 @@
             android:orientation="horizontal"
             android:padding="8dp">
 
-            <Button
+            <TextView 
                 android:id="@+id/btnStatusAll"
                 android:layout_width="wrap_content"
-                android:layout_height="32dp"
+                android:layout_height="32dp" android:gravity="center"
                 android:layout_marginHorizontal="4dp"
                 android:background="@drawable/bg_category_selected"
                 android:text="Tất cả"
@@ -140,10 +140,10 @@
                 android:textAllCaps="false"
                 android:paddingHorizontal="12dp" />
 
-            <Button
+            <TextView 
                 android:id="@+id/btnStatusPending"
                 android:layout_width="wrap_content"
-                android:layout_height="32dp"
+                android:layout_height="32dp" android:gravity="center"
                 android:layout_marginHorizontal="4dp"
                 android:background="@drawable/bg_category_normal"
                 android:text="Chờ xác nhận"
@@ -152,10 +152,10 @@
                 android:textAllCaps="false"
                 android:paddingHorizontal="12dp" />
 
-            <Button
+            <TextView 
                 android:id="@+id/btnStatusConfirmed"
                 android:layout_width="wrap_content"
-                android:layout_height="32dp"
+                android:layout_height="32dp" android:gravity="center"
                 android:layout_marginHorizontal="4dp"
                 android:background="@drawable/bg_category_normal"
                 android:text="Chờ chế biến"
@@ -164,10 +164,10 @@
                 android:textAllCaps="false"
                 android:paddingHorizontal="12dp" />
 
-            <Button
+            <TextView 
                 android:id="@+id/btnStatusDelivering"
                 android:layout_width="wrap_content"
-                android:layout_height="32dp"
+                android:layout_height="32dp" android:gravity="center"
                 android:layout_marginHorizontal="4dp"
                 android:background="@drawable/bg_category_normal"
                 android:text="Đang giao"
@@ -176,10 +176,10 @@
                 android:textAllCaps="false"
                 android:paddingHorizontal="12dp" />
 
-            <Button
+            <TextView 
                 android:id="@+id/btnStatusDelivered"
                 android:layout_width="wrap_content"
-                android:layout_height="32dp"
+                android:layout_height="32dp" android:gravity="center"
                 android:layout_marginHorizontal="4dp"
                 android:background="@drawable/bg_category_normal"
                 android:text="Đã phục vụ"
@@ -188,10 +188,10 @@
                 android:textAllCaps="false"
                 android:paddingHorizontal="12dp" />
 
-            <Button
+            <TextView 
                 android:id="@+id/btnStatusCancelled"
                 android:layout_width="wrap_content"
-                android:layout_height="32dp"
+                android:layout_height="32dp" android:gravity="center"
                 android:layout_marginHorizontal="4dp"
                 android:background="@drawable/bg_category_normal"
                 android:text="Đã hủy"

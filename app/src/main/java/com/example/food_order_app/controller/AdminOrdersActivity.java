@@ -138,9 +138,8 @@ public class AdminOrdersActivity extends AppCompatActivity implements AdminOrder
         String[] filters = { "all", "pending", "processing", "delivering", "served", "cancelled" };
         for (int i = 0; i < buttons.length; i++) {
             boolean selected = currentFilter.equals(filters[i]);
-            buttons[i]
-                    .setBackgroundResource(selected ? R.drawable.bg_category_selected : R.drawable.bg_category_normal);
-            buttons[i].setTextColor(getResources().getColor(selected ? R.color.white : R.color.text_primary));
+            buttons[i].setBackgroundResource(R.drawable.bg_category_normal);
+            buttons[i].setTextColor(getResources().getColor(selected ? R.color.white : R.color.black));
         }
     }
 
