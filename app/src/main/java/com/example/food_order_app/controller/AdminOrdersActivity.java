@@ -43,7 +43,7 @@ public class AdminOrdersActivity extends AppCompatActivity implements AdminOrder
     private TextView tvEmpty, tvStats;
     private FloatingActionButton fabRevenue;
     private ImageView btnOrderStatistics;
-    private Button btnStatusAll, btnStatusPending, btnStatusConfirmed, btnStatusDelivering, btnStatusDelivered,
+    private TextView btnStatusAll, btnStatusPending, btnStatusConfirmed, btnStatusDelivering, btnStatusDelivered,
             btnStatusCancelled;
 
     private AdminOrderAdapter adapter;
@@ -133,7 +133,7 @@ public class AdminOrdersActivity extends AppCompatActivity implements AdminOrder
     }
 
     private void updateFilterUI() {
-        Button[] buttons = { btnStatusAll, btnStatusPending, btnStatusConfirmed, btnStatusDelivering,
+        TextView[] buttons = { btnStatusAll, btnStatusPending, btnStatusConfirmed, btnStatusDelivering,
                 btnStatusDelivered, btnStatusCancelled };
         String[] filters = { "all", "pending", "processing", "delivering", "served", "cancelled" };
         for (int i = 0; i < buttons.length; i++) {
