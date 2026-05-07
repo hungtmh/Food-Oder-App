@@ -81,7 +81,7 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
     private TextView tvBulkSelectionCount;
     private Button btnSelectAllCategories;
     private Button btnBulkToggleActive;
-    private Button btnBulkSoftDelete;
+    private Button btnBulkDelete;
 
     private AdminCategoryAdapter adapter;
     private SupabaseDbService dbService;
@@ -139,7 +139,7 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
         tvBulkSelectionCount = findViewById(R.id.tvBulkSelectionCount);
         btnSelectAllCategories = findViewById(R.id.btnSelectAllCategories);
         btnBulkToggleActive = findViewById(R.id.btnBulkToggleActive);
-        btnBulkSoftDelete = findViewById(R.id.btnBulkSoftDelete);
+        btnBulkDelete = findViewById(R.id.btnBulkSoftDelete);
     }
 
     private void setupRecycler() {
@@ -198,7 +198,7 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
             }
         });
         btnBulkToggleActive.setOnClickListener(v -> showBulkToggleDialog());
-        btnBulkSoftDelete.setOnClickListener(v -> confirmBulkSoftDelete());
+        btnBulkDelete.setOnClickListener(v -> confirmBulkDelete());
     }
 
     private void setupDragDrop() {
@@ -237,7 +237,7 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
             btnAddNow.setVisibility(View.GONE);
             btnSelectAllCategories.setEnabled(false);
             btnBulkToggleActive.setEnabled(false);
-            btnBulkSoftDelete.setEnabled(false);
+            btnBulkDelete.setEnabled(false);
             Toast.makeText(this, "Bạn chỉ có quyền xem danh mục", Toast.LENGTH_SHORT).show();
         }
     }
@@ -538,9 +538,9 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
         }
 
         new AlertDialog.Builder(this)
-                .setTitle("Xác nhận xóa mềm")
-                .setMessage("Danh mục \"" + category.getName() + "\" sẽ được ẩn khỏi hệ thống (không xóa vĩnh viễn).")
-                .setPositiveButton("Xóa", (dialog, which) -> deleteCategoryWithUndo(category))
+                .setTitle("Xác nhận xóa vĩnh viễn")
+                .setMessage("Danh mục \"" + category.getName() + "\" và tất cả món ăn trong đó sẽ bị XÓA VĨNH VIỄN. Hành động này KHÔNG THỂ hoàn tác!")
+                .setPositiveButton("Xóa vĩnh viễn", (dialog, which) -> deleteCategoryPermanent(category))
                 .setNegativeButton("Hủy", null)
                 .show();
     }
@@ -641,59 +641,30 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
         performSearch();
     }
 
-    private void deleteCategoryWithUndo(Category category) {
-        dbService.deleteFoodsByCategory("eq." + category.getId()).enqueue(new Callback<Void>() {
+    /**
+     * Xóa cứng danh mục bằng 1 API call duy nhất.
+     * Foods liên quan sẽ tự động bị xóa theo nhờ ON DELETE CASCADE được cấu hình ở DB.
+     */
+    private void deleteCategoryPermanent(Category category) {
+        dbService.deleteCategory("eq." + category.getId()).enqueue(new Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
                 if (response.isSuccessful()) {
-                    dbService.deleteCategory("eq." + category.getId()).enqueue(new Callback<Void>() {
-                        @Override
-                        public void onResponse(Call<Void> innerCall, Response<Void> innerResponse) {
-                            if (innerResponse.isSuccessful()) {
-                                allCategories.remove(category);
-                                performSearch();
-                                adapter.clearSelection();
-                                Toast.makeText(AdminCategoryActivity.this, "Đã xóa danh mục", Toast.LENGTH_SHORT)
-                                        .show();
-                            } else {
-                                Toast.makeText(AdminCategoryActivity.this, "Xóa danh mục thất bại", Toast.LENGTH_SHORT)
-                                        .show();
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(Call<Void> innerCall, Throwable t) {
-                            Toast.makeText(AdminCategoryActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                    allCategories.remove(category);
+                    performSearch();
+                    adapter.clearSelection();
+                    Toast.makeText(AdminCategoryActivity.this,
+                            "Đã xóa vĩnh viễn danh mục \"" + category.getName() + "\"",
+                            Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(AdminCategoryActivity.this, "Không thể dọn dẹp các món ăn", Toast.LENGTH_SHORT)
-                            .show();
+                    Toast.makeText(AdminCategoryActivity.this,
+                            "Xóa danh mục thất bại", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<Void> call, Throwable t) {
                 Toast.makeText(AdminCategoryActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    private void restoreDeletedCategory(Category category) {
-        Map<String, Object> updates = new HashMap<>();
-        updates.put("is_deleted", false);
-        updates.put("is_active", true);
-        dbService.updateCategory("eq." + category.getId(), updates).enqueue(new Callback<List<Category>>() {
-            @Override
-            public void onResponse(Call<List<Category>> call, Response<List<Category>> response) {
-                if (response.isSuccessful()) {
-                    loadDashboardData();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<List<Category>> call, Throwable t) {
-                Toast.makeText(AdminCategoryActivity.this, "Hoàn tác thất bại", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -715,7 +686,7 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
                         @Override
                         public void onResponse(Call<Void> call, Response<Void> response) {
                             if (response.isSuccessful()) {
-                                deleteCategoryWithUndo(category);
+                                deleteCategoryPermanent(category);
                             } else {
                                 Toast.makeText(AdminCategoryActivity.this, "Không thể xóa món", Toast.LENGTH_SHORT)
                                         .show();
@@ -742,7 +713,7 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
                     @Override
                     public void onResponse(Call<List<Food>> call, Response<List<Food>> response) {
                         if (response.isSuccessful()) {
-                            deleteCategoryWithUndo(category);
+                            deleteCategoryPermanent(category);
                         } else {
                             Toast.makeText(AdminCategoryActivity.this, "Chuyển món thất bại", Toast.LENGTH_SHORT)
                                     .show();
@@ -949,7 +920,7 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
         }
     }
 
-    private void confirmBulkSoftDelete() {
+    private void confirmBulkDelete() {
         List<Category> selected = adapter.getSelectedCategories();
         if (selected.isEmpty()) {
             return;
@@ -969,48 +940,37 @@ public class AdminCategoryActivity extends AppCompatActivity implements AdminCat
         }
 
         new AlertDialog.Builder(this)
-                .setTitle("Xóa hàng loạt")
-                .setMessage("Xác nhận xóa " + selected.size() + " danh mục đã chọn?")
-                .setPositiveButton("Xóa", (d, w) -> applyBulkSoftDelete(selected))
+                .setTitle("Xóa vĩnh viễn hàng loạt")
+                .setMessage("Xác nhận XÓA VĨNH VIỄN " + selected.size() + " danh mục đã chọn?\nHành động này KHÔNG THỂ hoàn tác!")
+                .setPositiveButton("Xóa vĩnh viễn", (d, w) -> applyBulkDelete(selected))
                 .setNegativeButton("Hủy", null)
                 .show();
     }
 
-    private void applyBulkSoftDelete(List<Category> selected) {
+    /**
+     * Xóa cứng hàng loạt bằng 1 API call / category.
+     * Foods liên quan tự động xóa theo nhờ ON DELETE CASCADE ở DB.
+     */
+    private void applyBulkDelete(List<Category> selected) {
         AtomicInteger done = new AtomicInteger(0);
         AtomicInteger success = new AtomicInteger(0);
         for (Category category : selected) {
-            dbService.deleteFoodsByCategory("eq." + category.getId()).enqueue(new Callback<Void>() {
+            dbService.deleteCategory("eq." + category.getId()).enqueue(new Callback<Void>() {
                 @Override
                 public void onResponse(Call<Void> call, Response<Void> response) {
                     if (response.isSuccessful()) {
-                        dbService.deleteCategory("eq." + category.getId()).enqueue(new Callback<Void>() {
-                            @Override
-                            public void onResponse(Call<Void> innerCall, Response<Void> innerResponse) {
-                                if (innerResponse.isSuccessful()) {
-                                    success.incrementAndGet();
-                                }
-                                checkBulkDone();
-                            }
-
-                            @Override
-                            public void onFailure(Call<Void> innerCall, Throwable t) {
-                                checkBulkDone();
-                            }
-                        });
-                    } else {
-                        checkBulkDone();
+                        success.incrementAndGet();
+                        allCategories.remove(category);
+                    }
+                    if (done.incrementAndGet() == selected.size()) {
+                        onBulkFinished("Đã xóa vĩnh viễn " + success.get() + "/" + selected.size() + " danh mục");
                     }
                 }
 
                 @Override
                 public void onFailure(Call<Void> call, Throwable t) {
-                    checkBulkDone();
-                }
-
-                private void checkBulkDone() {
                     if (done.incrementAndGet() == selected.size()) {
-                        onBulkFinished("Đã xóa " + success.get() + "/" + selected.size() + " danh mục");
+                        onBulkFinished("Đã xóa vĩnh viễn " + success.get() + "/" + selected.size() + " danh mục");
                     }
                 }
             });
