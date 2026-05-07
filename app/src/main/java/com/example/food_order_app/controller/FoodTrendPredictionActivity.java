@@ -299,9 +299,9 @@ public class FoodTrendPredictionActivity extends AppCompatActivity {
                             double negativePercent = sentimentStats != null ? sentimentStats.getNegativePercent() : 0.0;
                             double avgSentimentScore = sentimentStats != null ? sentimentStats.getAvgSentimentScore()
                                     : 0.5;
-                                double sentimentImpact = calculateSentimentImpact(totalReviews, positivePercent,
+                            double sentimentImpact = calculateSentimentImpact(totalReviews, positivePercent,
                                     negativePercent, avgSentimentScore);
-                                String sentimentLabel = classifySentimentLabel(totalReviews, sentimentImpact);
+                            String sentimentLabel = classifySentimentLabel(totalReviews, sentimentImpact);
 
                             String trendType;
                             double confidenceScore;
