@@ -172,9 +172,8 @@ public class AdminSendNotificationActivity extends AppCompatActivity {
         Map<String, Object> payload = new HashMap<>();
         payload.put("title", title);
         payload.put("body", message);
-        payload.put("is_broadcast", true);
 
-        functionsService.sendPush(payload).enqueue(new Callback<Map<String, Object>>() {
+        functionsService.sendBroadcastPush(payload).enqueue(new Callback<Map<String, Object>>() {
             @Override
             public void onResponse(Call<Map<String, Object>> call, Response<Map<String, Object>> response) {
                 if (response.isSuccessful()) {

@@ -1,4 +1,4 @@
-/// <reference path="./globals.d.ts" />
+/// <reference path="../send-push/globals.d.ts" />
 // deno-lint-ignore-file no-explicit-any
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -7,13 +7,10 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-type PushRequest = {
-  user_id: string;
+type BroadcastPushRequest = {
   title: string;
   body: string;
   data?: Record<string, string>;
-  notification_id?: string;
-  is_broadcast?: boolean;
 };
 
 type FcmSendResult = {
@@ -58,78 +55,20 @@ Deno.serve(async (req: Request) => {
       }, 500);
     }
 
-    const rawPayload = await req.json();
-    
-    // Support Postgres Webhook payload format
-    let payload: PushRequest;
-    if (rawPayload.type === "INSERT" && rawPayload.table === "notifications" && rawPayload.record) {
-      payload = {
-        user_id: rawPayload.record.user_id,
-        title: rawPayload.record.title,
-        body: rawPayload.record.message,
-        notification_id: rawPayload.record.id
-      };
-    } else {
-      payload = rawPayload as PushRequest;
-    }
+    const payload = (await req.json()) as BroadcastPushRequest;
 
-    if (!payload?.user_id || !payload?.title || !payload?.body) {
-      return json({ error: "user_id, title, body are required" }, 400);
+    if (!payload?.title || !payload?.body) {
+      return json({ error: "title and body are required" }, 400);
     }
 
     const supabase = createClient(supabaseUrl, serviceRoleKey, {
       auth: { persistSession: false },
     });
 
-    let notificationId = payload.notification_id ?? null;
-    let inboxInsertError: string | null = null;
-    let inboxInsertWarning: string | null = null;
-
-    if (payload.user_id === "all") {
-      return json({ error: "send-push is for single-user notifications only" }, 400);
-    }
-
-    // If caller does not provide notification_id, write a row to in-app inbox table.
-    if (!notificationId) {
-      const notificationPayload: Record<string, unknown> = {
-        user_id: payload.user_id,
-        title: payload.title,
-        message: payload.body,
-        is_read: false,
-      };
-
-      if (payload.data?.order_id) {
-        if (isUuid(payload.data.order_id)) {
-          notificationPayload.order_id = payload.data.order_id;
-        } else {
-          inboxInsertWarning = "order_id in payload is not UUID, skipped order_id field for inbox insert";
-        }
-      }
-      if (payload.data?.order_code) {
-        notificationPayload.order_code = payload.data.order_code;
-      }
-
-      const { data: createdNotifications, error: createNotificationError } = await supabase
-        .from("notifications")
-        .insert(notificationPayload)
-        .select("id")
-        .limit(1);
-
-      if (createNotificationError) {
-        inboxInsertError = createNotificationError.message;
-      } else {
-        notificationId = createdNotifications?.[0]?.id ?? null;
-      }
-    }
-
-    let tokensResult;
-    tokensResult = await supabase
+    const { data: tokens, error: tokenError } = await supabase
       .from("device_tokens")
       .select("id, user_id, fcm_token")
-      .eq("user_id", payload.user_id)
       .eq("is_active", true);
-    
-    const { data: tokens, error: tokenError } = tokensResult;
 
     if (tokenError) {
       return json({ error: tokenError.message }, 500);
@@ -138,9 +77,6 @@ Deno.serve(async (req: Request) => {
     if (!tokens || tokens.length === 0) {
       return json({ success: true, sent: 0, failed: 0, reason: "No active tokens" });
     }
-
-    let sent = 0;
-    let failed = 0;
 
     let serviceAccount: FcmServiceAccount | null = null;
     if (fcmServiceAccountJson) {
@@ -151,6 +87,9 @@ Deno.serve(async (req: Request) => {
       }
     }
 
+    let sent = 0;
+    let failed = 0;
+
     for (const tokenRow of tokens) {
       const fcmResult = await sendToFcm(
         tokenRow.fcm_token,
@@ -160,9 +99,6 @@ Deno.serve(async (req: Request) => {
         fcmServerKey,
         serviceAccount,
       );
-
-      const status = fcmResult.ok ? "sent" : "failed";
-      const errorMessage = fcmResult.error ?? "";
 
       if (fcmResult.ok) {
         sent += 1;
@@ -175,34 +111,17 @@ Deno.serve(async (req: Request) => {
             .eq("id", tokenRow.id);
         }
       }
-
-      await supabase.from("notification_deliveries").insert({
-        notification_id: notificationId,
-        user_id: tokenRow.user_id,
-        fcm_token: tokenRow.fcm_token,
-        provider: "fcm",
-        status,
-        provider_message_id: fcmResult.messageId,
-        error_message: errorMessage || null,
-      });
     }
 
     return json({
       success: true,
       sent,
       failed,
-      notification_id: notificationId,
-      inbox_insert_error: inboxInsertError,
-      inbox_insert_warning: inboxInsertWarning,
     });
   } catch (e: any) {
     return json({ error: e?.message ?? "Unhandled error" }, 500);
   }
 });
-
-function isUuid(value: string): boolean {
-  return /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/.test(value);
-}
 
 async function sendToFcm(
   token: string,
