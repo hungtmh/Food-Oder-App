@@ -560,7 +560,11 @@ public class CheckoutActivity extends AppCompatActivity {
             return;
         }
 
-        String paymentMethod = rgPayment.getCheckedRadioButtonId() == R.id.rbCOD ? "cod" : "banking";
+        int selectedPaymentId = rgPayment.getCheckedRadioButtonId();
+        // Mặc định là COD nếu không chọn gì hoặc lỗi RadioGroup
+        boolean isBanking = selectedPaymentId == R.id.rbBanking;
+        String paymentMethod = isBanking ? "bank_transfer" : "cod";
+        
         String orderType = isDineIn ? "dine_in" : "delivery";
         String orderCode = "ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
 
@@ -569,7 +573,6 @@ public class CheckoutActivity extends AppCompatActivity {
 
         double finalAmount = Math.max(0, totalAmount - discountAmount);
 
-        boolean isBanking = rgPayment.getCheckedRadioButtonId() == R.id.rbBanking;
         createOrderViaEdge(orderCode, note, orderType, paymentMethod, isBanking);
     }
 
