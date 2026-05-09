@@ -30,6 +30,8 @@ import com.bumptech.glide.Glide;
 import com.example.food_order_app.R;
 import com.example.food_order_app.adapter.ReviewAdapter;
 import com.example.food_order_app.config.SupabaseConfig;
+import com.example.food_order_app.database.AppDatabase;
+import com.example.food_order_app.database.RecentView;
 import com.example.food_order_app.model.Cart;
 import com.example.food_order_app.model.CartItem;
 import com.example.food_order_app.model.Favorite;
@@ -107,6 +109,8 @@ public class FoodDetailActivity extends AppCompatActivity {
             return;
         }
 
+        trackRecentView();
+
         initViews();
         loadFoodDetail();
         loadReviews();
@@ -182,6 +186,26 @@ public class FoodDetailActivity extends AppCompatActivity {
         });
 
         btnDetailFavorite.setOnClickListener(v -> toggleFavorite());
+    }
+
+    private void trackRecentView() {
+        if (!sessionManager.isLoggedIn()) {
+            return;
+        }
+        String userId = sessionManager.getUserId();
+        if (userId == null || foodId == null) {
+            return;
+        }
+
+        new Thread(() -> {
+            try {
+                AppDatabase db = AppDatabase.getInstance(this);
+                db.recentViewDao().upsert(new RecentView(userId, foodId, System.currentTimeMillis()));
+                db.recentViewDao().trimToLimit(userId, 10);
+            } catch (Exception e) {
+                Log.e(TAG, "trackRecentView failed: " + e.getMessage());
+            }
+        }).start();
     }
 
     private void checkFavoriteStatus() {

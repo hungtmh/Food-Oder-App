@@ -36,8 +36,10 @@ import com.example.food_order_app.adapter.HotOfferFoodAdapter;
 import com.example.food_order_app.adapter.SliderAdapter;
 import com.example.food_order_app.model.Address;
 import com.example.food_order_app.model.Category;
+import com.example.food_order_app.model.Favorite;
 import com.example.food_order_app.model.Food;
-import com.example.food_order_app.model.SearchHistory;
+import com.example.food_order_app.model.Order;
+import com.example.food_order_app.model.OrderItem;
 import com.example.food_order_app.network.RetrofitClient;
 import com.example.food_order_app.network.SupabaseDbService;
 import com.example.food_order_app.utils.NotificationHelper;
@@ -46,7 +48,6 @@ import com.example.food_order_app.utils.SessionManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,8 +58,15 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.example.food_order_app.database.AppDatabase;
+import com.example.food_order_app.database.OfflineCache;
+import java.lang.reflect.Type;
+
 public class HomeActivity extends AppCompatActivity {
     private static final String TAG = "HomeActivity";
+    private static final long CACHE_TTL_MS = 5 * 60 * 1000L;
 
     private ViewPager2 viewPagerSlider;
     private LinearLayout dotsIndicator;
@@ -187,7 +195,7 @@ public class HomeActivity extends AppCompatActivity {
         btnRetry.setOnClickListener(v -> {
             layoutError.setVisibility(View.GONE);
             scrollView.setVisibility(View.VISIBLE);
-            loadData();
+            forceRefreshData();
         });
 
         bottomNav.setOnItemSelectedListener(item -> {
@@ -271,6 +279,15 @@ public class HomeActivity extends AppCompatActivity {
         return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
     }
 
+    private void saveCache(String key, Object data) {
+        new Thread(() -> {
+            AppDatabase.getInstance(this).offlineCacheDao().insertCache(
+                new OfflineCache(key, new Gson().toJson(data), System.currentTimeMillis())
+            );
+            Log.d(TAG, "💾 Cache saved: " + key);
+        }).start();
+    }
+
     private void showNetworkError() {
         runOnUiThread(() -> {
             scrollView.setVisibility(View.GONE);
@@ -288,11 +305,110 @@ public class HomeActivity extends AppCompatActivity {
 
     private void loadData() {
         loadFailCount = 0;
-        if (!isNetworkAvailable()) {
-            showNetworkError();
-            Toast.makeText(this, "Không có kết nối mạng. Vui lòng kiểm tra WiFi/Data.", Toast.LENGTH_LONG).show();
-            return;
-        }
+        
+        new Thread(() -> {
+            long currentTime = System.currentTimeMillis();
+            
+            // Load cache metadata
+            OfflineCache cachedCat = AppDatabase.getInstance(this).offlineCacheDao().getCacheObject("home_categories");
+            OfflineCache cachedRec = AppDatabase.getInstance(this).offlineCacheDao().getCacheObject("home_recommended");
+            OfflineCache cachedHot = AppDatabase.getInstance(this).offlineCacheDao().getCacheObject("home_hot_offers");
+            
+            // Check TTL and decide if cache is valid
+            boolean cacheValid = true;
+            StringBuilder cacheStatus = new StringBuilder();
+            
+            if (cachedCat != null && (currentTime - cachedCat.getTimestamp()) > CACHE_TTL_MS) {
+                cacheStatus.append("Categories expired ");
+                cacheValid = false;
+                AppDatabase.getInstance(this).offlineCacheDao().deleteCache("home_categories");
+            }
+            if (cachedRec != null && (currentTime - cachedRec.getTimestamp()) > CACHE_TTL_MS) {
+                cacheStatus.append("Foods expired ");
+                cacheValid = false;
+                AppDatabase.getInstance(this).offlineCacheDao().deleteCache("home_recommended");
+            }
+            if (cachedHot != null && (currentTime - cachedHot.getTimestamp()) > CACHE_TTL_MS) {
+                cacheStatus.append("HotOffers expired ");
+                cacheValid = false;
+                AppDatabase.getInstance(this).offlineCacheDao().deleteCache("home_hot_offers");
+            }
+            
+            String cachedCategories = cachedCat != null && cacheValid ? cachedCat.getData() : null;
+            String cachedRecommended = cachedRec != null && cacheValid ? cachedRec.getData() : null;
+            String cachedHotOffers = cachedHot != null && cacheValid ? cachedHot.getData() : null;
+            
+            if (cacheStatus.length() > 0) {
+                Log.d(TAG, "⏰ Cache TTL expired: " + cacheStatus.toString());
+            }
+            
+            runOnUiThread(() -> {
+                Gson gson = new Gson();
+                boolean hasCache = false;
+                
+                if (cachedCategories != null) {
+                    Type type = new TypeToken<List<Category>>(){}.getType();
+                    List<Category> cats = gson.fromJson(cachedCategories, type);
+                    if (cats != null) {
+                        categories = cats;
+                        applyCategoryThumbnails();
+                        hasCache = true;
+                        long age = (currentTime - cachedCat.getTimestamp()) / 1000;
+                        Log.d(TAG, "✓ Loaded categories from cache (" + age + "s old): " + cats.size());
+                    }
+                }
+                
+                if (cachedRecommended != null) {
+                    Type type = new TypeToken<List<Food>>(){}.getType();
+                    List<Food> recs = gson.fromJson(cachedRecommended, type);
+                    if (recs != null) {
+                        recommendedFoodsCache = recs;
+                        foodAdapter.setFoods(recs);
+                        hasCache = true;
+                        long age = (currentTime - cachedRec.getTimestamp()) / 1000;
+                        Log.d(TAG, "✓ Loaded foods from cache (" + age + "s old): " + recs.size());
+                    }
+                }
+                
+                if (cachedHotOffers != null) {
+                    Type type = new TypeToken<List<Food>>(){}.getType();
+                    List<Food> offers = gson.fromJson(cachedHotOffers, type);
+                    if (offers != null) {
+                        applyHotOffersFromList(offers);
+                        long age = (currentTime - cachedHot.getTimestamp()) / 1000;
+                        Log.d(TAG, "✓ Loaded hot offers from cache (" + age + "s old)");
+                    }
+                }
+
+                if (!isNetworkAvailable()) {
+                    if (hasCache) {
+                        Toast.makeText(this, "📦 Dữ liệu cache - Không có mạng", Toast.LENGTH_LONG).show();
+                        loadSystemBanners();
+                    } else {
+                        showNetworkError();
+                        Toast.makeText(this, "❌ Không có mạng và không có cache", Toast.LENGTH_LONG).show();
+                    }
+                    return;
+                }
+                
+                if (hasCache) {
+                    Log.d(TAG, "🔄 Có cache hợp lệ, sẽ fetch dữ liệu mới từ API");
+                } else {
+                    Log.d(TAG, "🔄 Không có cache, fetch dữ liệu từ API");
+                }
+                
+                loadSystemBanners();
+                loadCategories();
+                loadRecommendedFoods();
+                loadMaybeLikeFoods();
+                loadHotOffers();
+            });
+        }).start();
+    }
+
+    private void forceRefreshData() {
+        Log.d(TAG, "🔃 Force Refresh - Bypass cache, gọi API trực tiếp");
+        Toast.makeText(this, "⏳ Đang làm mới dữ liệu...", Toast.LENGTH_SHORT).show();
         loadSystemBanners();
         loadCategories();
         loadRecommendedFoods();
@@ -310,7 +426,9 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<List<Food>> call, Response<List<Food>> response) {
                 if (response.isSuccessful() && response.body() != null) {
+                    Log.d(TAG, "🌐 [API] Fresh hot offers loaded");
                     applyHotOffersFromList(response.body());
+                    saveCache("home_hot_offers", response.body());
                 } else {
                     layoutHotOffers.setVisibility(View.GONE);
                 }
@@ -353,83 +471,207 @@ public class HomeActivity extends AppCompatActivity {
             return;
         }
 
-        dbService.getSearchHistory("eq." + userId, "created_at.desc", 6)
-                .enqueue(new Callback<List<SearchHistory>>() {
-                    @Override
-                    public void onResponse(Call<List<SearchHistory>> call, Response<List<SearchHistory>> response) {
-                        if (!response.isSuccessful() || response.body() == null || response.body().isEmpty()) {
-                            showMaybeLikeFallback();
-                            return;
-                        }
-
-                        List<String> keywords = new ArrayList<>();
-                        Set<String> seen = new HashSet<>();
-                        for (SearchHistory item : response.body()) {
-                            String keyword = item.getKeyword() != null ? item.getKeyword().trim() : "";
-                            if (!keyword.isEmpty() && !seen.contains(keyword)) {
-                                seen.add(keyword);
-                                keywords.add(keyword);
-                            }
-                            if (keywords.size() >= 3) break;
-                        }
-
-                        if (keywords.isEmpty()) {
-                            showMaybeLikeFallback();
-                            return;
-                        }
-
-                        fetchFoodsByKeywords(keywords);
-                    }
-
-                    @Override
-                    public void onFailure(Call<List<SearchHistory>> call, Throwable t) {
-                        Log.e(TAG, "loadMaybeLikeFoods history failed: " + t.getMessage());
+        dbService.getAllFoods("eq.true", "created_at.desc").enqueue(new Callback<List<Food>>() {
+            @Override
+            public void onResponse(Call<List<Food>> call, Response<List<Food>> response) {
+                if (!response.isSuccessful() || response.body() == null || response.body().isEmpty()) {
+                    if (recommendedFoodsCache != null && !recommendedFoodsCache.isEmpty()) {
+                        loadRuleBasedRecommendations(userId, recommendedFoodsCache);
+                    } else {
                         showMaybeLikeFallback();
                     }
-                });
+                    return;
+                }
+
+                recommendedFoodsCache = response.body();
+                saveCache("home_recommended", response.body());
+                loadRuleBasedRecommendations(userId, recommendedFoodsCache);
+            }
+
+            @Override
+            public void onFailure(Call<List<Food>> call, Throwable t) {
+                Log.e(TAG, "loadMaybeLikeFoods getAllFoods failed: " + t.getMessage());
+                if (recommendedFoodsCache != null && !recommendedFoodsCache.isEmpty()) {
+                    loadRuleBasedRecommendations(userId, recommendedFoodsCache);
+                } else {
+                    showMaybeLikeFallback();
+                }
+            }
+        });
     }
 
-    private void fetchFoodsByKeywords(List<String> keywords) {
-        final LinkedHashMap<String, Food> merged = new LinkedHashMap<>();
-        final int[] remaining = {keywords.size()};
-
-        for (String keyword : keywords) {
-            dbService.searchFoods("ilike.*" + keyword + "*", "eq.true")
-                    .enqueue(new Callback<List<Food>>() {
-                        @Override
-                        public void onResponse(Call<List<Food>> call, Response<List<Food>> response) {
-                            if (response.isSuccessful() && response.body() != null) {
-                                for (Food food : response.body()) {
-                                    if (food.getId() != null && !merged.containsKey(food.getId())) {
-                                        merged.put(food.getId(), food);
-                                    }
-                                    if (merged.size() >= 10) break;
-                                }
-                            }
-                            onKeywordDone(merged, remaining);
-                        }
-
-                        @Override
-                        public void onFailure(Call<List<Food>> call, Throwable t) {
-                            Log.e(TAG, "fetchFoodsByKeywords failed: " + t.getMessage());
-                            onKeywordDone(merged, remaining);
-                        }
-                    });
-        }
+    private interface RecentViewedCallback {
+        void onLoaded(List<String> recentIds);
     }
 
-    private void onKeywordDone(LinkedHashMap<String, Food> merged, int[] remaining) {
-        remaining[0]--;
-        if (remaining[0] > 0) return;
+    private void loadRecentViewedIds(String userId, int limit, RecentViewedCallback callback) {
+        new Thread(() -> {
+            List<String> ids = AppDatabase.getInstance(this).recentViewDao().getRecentFoodIds(userId, limit);
+            runOnUiThread(() -> callback.onLoaded(ids != null ? ids : new ArrayList<>()));
+        }).start();
+    }
 
-        List<Food> foods = new ArrayList<>(merged.values());
-        if (foods.isEmpty()) {
+    private void loadRuleBasedRecommendations(String userId, List<Food> sourceFoods) {
+        if (sourceFoods == null || sourceFoods.isEmpty()) {
             showMaybeLikeFallback();
             return;
         }
 
-        maybeLikeAdapter.setFoods(foods);
+        loadRecentViewedIds(userId, 10, recentIds -> {
+            dbService.getFavorites("eq." + userId, "food_id", "created_at.desc").enqueue(new Callback<List<Favorite>>() {
+                @Override
+                public void onResponse(Call<List<Favorite>> call, Response<List<Favorite>> favResponse) {
+                    Set<String> favoriteIds = new HashSet<>();
+                    if (favResponse.isSuccessful() && favResponse.body() != null) {
+                        for (Favorite favorite : favResponse.body()) {
+                            if (favorite.getFoodId() != null) {
+                                favoriteIds.add(favorite.getFoodId());
+                            }
+                        }
+                    }
+
+                    dbService.getOrders("eq." + userId, "id,order_items(food_id,quantity)", "created_at.desc")
+                            .enqueue(new Callback<List<Order>>() {
+                                @Override
+                                public void onResponse(Call<List<Order>> call, Response<List<Order>> orderResponse) {
+                                    Map<String, Integer> orderCountByFoodId = new HashMap<>();
+                                    if (orderResponse.isSuccessful() && orderResponse.body() != null) {
+                                        for (Order order : orderResponse.body()) {
+                                            if (order.getOrderItems() == null) continue;
+                                            for (OrderItem item : order.getOrderItems()) {
+                                                if (item.getFoodId() == null) continue;
+                                                int qty = Math.max(item.getQuantity(), 1);
+                                                int prev = orderCountByFoodId.getOrDefault(item.getFoodId(), 0);
+                                                orderCountByFoodId.put(item.getFoodId(), prev + qty);
+                                            }
+                                        }
+                                    }
+
+                                    applyRuleBasedScores(sourceFoods, orderCountByFoodId, favoriteIds, new HashSet<>(recentIds));
+                                }
+
+                                @Override
+                                public void onFailure(Call<List<Order>> call, Throwable t) {
+                                    Log.e(TAG, "loadRuleBasedRecommendations orders failed: " + t.getMessage());
+                                    applyRuleBasedScores(sourceFoods, new HashMap<>(), favoriteIds, new HashSet<>(recentIds));
+                                }
+                            });
+                }
+
+                @Override
+                public void onFailure(Call<List<Favorite>> call, Throwable t) {
+                    Log.e(TAG, "loadRuleBasedRecommendations favorites failed: " + t.getMessage());
+                    dbService.getOrders("eq." + userId, "id,order_items(food_id,quantity)", "created_at.desc")
+                            .enqueue(new Callback<List<Order>>() {
+                                @Override
+                                public void onResponse(Call<List<Order>> call, Response<List<Order>> orderResponse) {
+                                    Map<String, Integer> orderCountByFoodId = new HashMap<>();
+                                    if (orderResponse.isSuccessful() && orderResponse.body() != null) {
+                                        for (Order order : orderResponse.body()) {
+                                            if (order.getOrderItems() == null) continue;
+                                            for (OrderItem item : order.getOrderItems()) {
+                                                if (item.getFoodId() == null) continue;
+                                                int qty = Math.max(item.getQuantity(), 1);
+                                                int prev = orderCountByFoodId.getOrDefault(item.getFoodId(), 0);
+                                                orderCountByFoodId.put(item.getFoodId(), prev + qty);
+                                            }
+                                        }
+                                    }
+
+                                    applyRuleBasedScores(sourceFoods, orderCountByFoodId, new HashSet<>(), new HashSet<>(recentIds));
+                                }
+
+                                @Override
+                                public void onFailure(Call<List<Order>> call, Throwable t) {
+                                    Log.e(TAG, "loadRuleBasedRecommendations orders fallback failed: " + t.getMessage());
+                                    applyRuleBasedScores(sourceFoods, new HashMap<>(), new HashSet<>(), new HashSet<>(recentIds));
+                                }
+                            });
+                }
+            });
+        });
+    }
+
+    private void applyRuleBasedScores(List<Food> sourceFoods,
+                                      Map<String, Integer> orderCountByFoodId,
+                                      Set<String> favoriteIds,
+                                      Set<String> recentIds) {
+        if (sourceFoods == null || sourceFoods.isEmpty()) {
+            showMaybeLikeFallback();
+            return;
+        }
+
+        int maxOrderCount = 0;
+        int minTotalReviews = Integer.MAX_VALUE;
+        int maxTotalReviews = Integer.MIN_VALUE;
+        double minAvgRating = Double.MAX_VALUE;
+        double maxAvgRating = Double.MIN_VALUE;
+
+        for (Food food : sourceFoods) {
+            if (food.getId() == null) continue;
+            int orderCount = orderCountByFoodId.getOrDefault(food.getId(), 0);
+            maxOrderCount = Math.max(maxOrderCount, orderCount);
+
+            minTotalReviews = Math.min(minTotalReviews, food.getTotalReviews());
+            maxTotalReviews = Math.max(maxTotalReviews, food.getTotalReviews());
+
+            minAvgRating = Math.min(minAvgRating, food.getAvgRating());
+            maxAvgRating = Math.max(maxAvgRating, food.getAvgRating());
+        }
+
+        if (minTotalReviews == Integer.MAX_VALUE) minTotalReviews = 0;
+        if (maxTotalReviews == Integer.MIN_VALUE) maxTotalReviews = 0;
+        if (minAvgRating == Double.MAX_VALUE) minAvgRating = 0;
+        if (maxAvgRating == Double.MIN_VALUE) maxAvgRating = 0;
+
+        List<ScoredFood> scored = new ArrayList<>();
+        for (Food food : sourceFoods) {
+            if (food.getId() == null) continue;
+
+            double orderScore = normalize(orderCountByFoodId.getOrDefault(food.getId(), 0), 0, maxOrderCount) * 0.6;
+            double reviewScore = normalize(food.getTotalReviews(), minTotalReviews, maxTotalReviews) * 0.25
+                    + normalize(food.getAvgRating(), minAvgRating, maxAvgRating) * 0.15;
+            double favoriteBoost = favoriteIds.contains(food.getId()) ? 0.10 : 0.0;
+            double recentBoost = recentIds.contains(food.getId()) ? 0.10 : 0.0;
+
+            double finalScore = orderScore + reviewScore + favoriteBoost + recentBoost;
+            scored.add(new ScoredFood(food, finalScore));
+        }
+
+        scored.sort((a, b) -> Double.compare(b.score, a.score));
+
+        List<Food> topFoods = new ArrayList<>();
+        int limit = Math.min(10, scored.size());
+        for (int i = 0; i < limit; i++) {
+            topFoods.add(scored.get(i).food);
+        }
+
+        if (topFoods.isEmpty()) {
+            showMaybeLikeFallback();
+            return;
+        }
+
+        maybeLikeAdapter.setFoods(topFoods);
         layoutMaybeLike.setVisibility(View.VISIBLE);
+        Log.d(TAG, "rule_based_recommendation: top=" + topFoods.size());
+    }
+
+    private static class ScoredFood {
+        final Food food;
+        final double score;
+
+        ScoredFood(Food food, double score) {
+            this.food = food;
+            this.score = score;
+        }
+    }
+
+    private double normalize(double value, double min, double max) {
+        if (max <= min) return 0.0;
+        double normalized = (value - min) / (max - min);
+        if (normalized < 0) return 0.0;
+        if (normalized > 1) return 1.0;
+        return normalized;
     }
 
     private void showMaybeLikeFallback() {
@@ -486,7 +728,9 @@ public class HomeActivity extends AppCompatActivity {
                         }
                     }
                     Log.d(TAG, "loadCategories: " + categories.size() + " items");
+                    Log.d(TAG, "🌐 [API] Fresh categories loaded");
                     applyCategoryThumbnails();
+                    saveCache("home_categories", categories);
                 } else if (!response.isSuccessful()) {
                     try {
                         String errorBody = response.errorBody() != null ? response.errorBody().string() : "null";
@@ -513,8 +757,10 @@ public class HomeActivity extends AppCompatActivity {
             public void onResponse(Call<List<Food>> call, Response<List<Food>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     Log.d(TAG, "loadAllFoodsForAllCategory: " + response.body().size() + " items");
+                    Log.d(TAG, "🌐 [API] Fresh foods loaded");
                     recommendedFoodsCache = response.body();
                     foodAdapter.setFoods(response.body());
+                    saveCache("home_recommended", response.body());
                     applyCategoryThumbnails();
                     loadHotOffers();
                 } else if (!response.isSuccessful()) {
