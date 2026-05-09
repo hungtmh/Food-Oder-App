@@ -90,109 +90,137 @@ Xuất phát từ nhu cầu thực tế về việc số hóa quy trình kinh do
 
 ## 2 CÁC CHỨC NĂNG ĐÃ THỰC HIỆN
 
-### 2.1 Quản lý tài khoản
-- **Mô tả:** Đăng nhập, đăng ký, quên mật khẩu (gửi mã qua email) và đổi mật khẩu. Phân quyền tự động Admin/User.
-- *(Hình minh họa: Màn hình Đăng nhập / Màn hình Đăng ký / Màn hình Quên mật khẩu)*
+*(Ghi chú: Các chức năng chính về luồng mua hàng và quản trị được đưa lên trước, các chức năng phụ trợ và tài khoản được để ở phần sau)*
 
-### 2.2 Quản lý Hồ sơ cá nhân
-- **Mô tả:** Xem và cập nhật các thông tin cá nhân như Tên, SĐT, Địa chỉ, và ảnh đại diện.
-- *(Hình minh họa: Màn hình Profile cá nhân của người dùng)*
+### 2.1 Hiển thị món phổ biến (Slideshow) và Trang chủ
+- **Mô tả:** Chức năng hiển thị các món ăn nổi bật hoặc phổ biến nhất dưới dạng slideshow ảnh lớn chuyển động trên cùng trang chủ, giúp thu hút sự chú ý của người dùng ngay khi mở app.
+- **Luồng sự kiện chính:** Người dùng mở ứng dụng -> Trang chủ tải danh sách món phổ biến từ database -> Hiển thị trên slideshow tự động trượt ngang sau mỗi 3 giây. Người dùng bấm vào ảnh sẽ chuyển đến chi tiết món.
+- *(Hình minh họa: Màn hình trang chủ với Slideshow đang hiển thị hình ảnh một món ăn bắt mắt, bên dưới là danh sách các danh mục)*
 
-### 2.3 Hiển thị món phổ biến (Slideshow)
-- **Mô tả:** Slideshow hình ảnh các món ăn phổ biến trên cùng trang chủ, tự động chuyển đổi.
-- *(Hình minh họa: Khung Slideshow trên trang chủ)*
+### 2.2 Gợi ý món ăn (Personalized Recommendations)
+- **Mô tả:** Hệ thống tự động gợi ý danh sách món ăn dưới dạng lưới (grid) 2 cột trên trang chủ, mang tính cá nhân hóa để tăng tỷ lệ chuyển đổi.
+- **Luồng sự kiện chính:** Người dùng lướt xuống dưới trên trang chủ -> App gọi API lấy danh sách gợi ý dựa trên lịch sử xem/mua hàng -> Hiển thị danh sách món với tên, giá, ảnh.
+- *(Hình minh họa: Mục "Có thể bạn sẽ thích" hiển thị ít nhất 4 món ăn đa dạng có hình ảnh rõ nét và giá tiền)*
 
-### 2.4 Gợi ý món ăn (Personalized Recommendations)
-- **Mô tả:** Hệ thống gợi ý danh sách món ăn dưới dạng Grid 2 cột ở trang chủ dựa trên sở thích người dùng.
-- *(Hình minh họa: Mục "Có thể bạn sẽ thích" trên trang chủ)*
+### 2.3 Banner ưu đãi (Hot Offers)
+- **Mô tả:** Giao diện chuyên biệt hiển thị các chương trình khuyến mãi, giảm giá hot nhất của quán thông qua các banner quảng cáo trực quan.
+- **Luồng sự kiện chính:** Quản trị viên cập nhật banner -> Người dùng mở app thấy mục Hot Offers -> Bấm vào banner để xem chi tiết danh sách món được giảm giá hoặc copy mã.
+- *(Hình minh họa: Giao diện chứa các banner khuyến mãi như "Giảm 20% cho đơn đầu tiên")*
 
-### 2.5 Banner ưu đãi (Hot Offers & Banner)
-- **Mô tả:** Giao diện hiển thị các ưu đãi hot, banner quảng cáo.
-- *(Hình minh họa: Giao diện Hot Offers ở Trang chủ)*
+### 2.4 Tìm kiếm món ăn Real-time
+- **Mô tả:** Chức năng tìm kiếm món ăn nhanh chóng với kết quả trả về ngay lập tức mỗi khi người dùng gõ thêm một ký tự, giúp tiết kiệm thời gian.
+- **Luồng sự kiện chính:** Người dùng nhập từ khóa "Gà" vào thanh tìm kiếm -> Ứng dụng truy vấn database liên tục -> Hiển thị ngay lập tức danh sách các món có chứa từ "Gà" (VD: Gà rán, Gà xối mỡ).
+- *(Hình minh họa: Màn hình tìm kiếm có sẵn từ khóa "Gà" và danh sách 3-4 món ăn kết quả hiện ra bên dưới)*
 
-### 2.6 Tìm kiếm món ăn
-- **Mô tả:** Ô tìm kiếm trả về kết quả ngay lập tức (real-time) khi người dùng gõ từ khóa. Lưu lịch sử tìm kiếm.
-- *(Hình minh họa: Màn hình Tìm kiếm và kết quả trả về)*
+### 2.5 Lọc và sắp xếp món ăn
+- **Mô tả:** Cung cấp bộ lọc theo danh mục (Món chính, Đồ uống, Tráng miệng) và sắp xếp kết quả theo các tiêu chí như giá tăng/giảm hoặc theo đánh giá sao.
+- **Luồng sự kiện chính:** Tại màn hình danh sách -> Người dùng chọn tab "Đồ uống" và chọn sắp xếp "Giá thấp đến cao" -> Danh sách cập nhật lại chỉ hiện đồ uống, ly rẻ nhất đứng đầu.
+- *(Hình minh họa: Màn hình kết quả đã được lọc theo tab "Đồ uống" và sắp xếp giá tăng dần)*
 
-### 2.7 Lọc và sắp xếp món ăn
-- **Mô tả:** Bộ lọc đa dạng: Tất cả, Món chính, Đồ uống... và tính năng sắp xếp theo giá, theo đánh giá.
-- *(Hình minh họa: Menu lọc và sắp xếp món ăn)*
+### 2.6 Chi tiết món ăn
+- **Mô tả:** Màn hình cung cấp toàn bộ thông tin chi tiết về một món ăn bao gồm hình ảnh phóng to, tên, giá, điểm số đánh giá trung bình và mô tả nguyên liệu.
+- **Luồng sự kiện chính:** Người dùng bấm vào một món ăn -> Ứng dụng truy xuất thông tin chi tiết -> Hiển thị đầy đủ thông tin, người dùng có thể bấm nút (+) hoặc (-) để chỉnh số lượng trước khi "Thêm vào giỏ".
+- *(Hình minh họa: Màn hình chi tiết món "Pizza Hải Sản" với giá tiền, điểm 4.8 sao, đoạn mô tả chi tiết và số lượng đang chọn là 2)*
 
-### 2.8 Chi tiết món ăn
-- **Mô tả:** Hiển thị rõ hình ảnh, Tên món, Giá tiền, Điểm đánh giá, và Mô tả chi tiết trước khi thêm vào giỏ.
-- *(Hình minh họa: Màn hình Chi tiết một món ăn cụ thể)*
+### 2.7 Giỏ hàng
+- **Mô tả:** Quản lý các món ăn khách hàng đã chọn mua, tính toán tổng tiền tạm tính. Tính năng vuốt để xóa tiện lợi.
+- **Luồng sự kiện chính:** Người dùng thêm món từ chi tiết -> Vào Giỏ hàng xem danh sách. Người dùng vuốt một món sang trái -> Món bị xóa khỏi giỏ, hiện thanh Snackbar cho phép "Hoàn tác" (Undo). Tổng tiền lập tức giảm xuống.
+- *(Hình minh họa: Màn hình Giỏ hàng chứa 3 món khác nhau với số lượng cụ thể, hiển thị tổng tiền ở góc dưới cùng)*
 
-### 2.9 Yêu thích sản phẩm (Wishlist)
-- **Mô tả:** Người dùng bấm thả tim để lưu món vào danh sách yêu thích, hỗ trợ thêm nhanh món từ danh sách này vào giỏ.
-- *(Hình minh họa: Màn hình Danh sách món ăn yêu thích)*
+### 2.8 Quản lý địa chỉ giao hàng nâng cao
+- **Mô tả:** Tính năng lưu trữ và quản lý nhiều địa chỉ cho một người dùng. Hỗ trợ chọn nhanh địa chỉ cấp Tỉnh/Quận/Phường qua Spinner.
+- **Luồng sự kiện chính:** Người dùng vào mục Địa chỉ -> Bấm Thêm mới -> Chọn Tỉnh, Quận, Phường từ menu thả xuống (Spinner), nhập số nhà -> Lưu lại để dùng cho các lần đặt sau.
+- *(Hình minh họa: Màn hình Quản lý địa chỉ hiển thị danh sách 2 địa chỉ đã lưu (Nhà riêng, Công ty))*
 
-### 2.10 Giỏ hàng
-- **Mô tả:** Quản lý món trong giỏ: tăng/giảm số lượng, tính tổng tiền. Tính năng vuốt trái để xóa món ăn có hoàn tác.
-- *(Hình minh họa: Màn hình Giỏ hàng với các món ăn đã chọn)*
+### 2.9 Áp dụng Khuyến mãi & Mã giảm giá (Voucher)
+- **Mô tả:** Cho phép khách hàng nhập mã giảm giá hoặc chọn voucher từ danh sách có sẵn để được trừ trực tiếp tiền trong đơn hàng.
+- **Luồng sự kiện chính:** Ở màn hình Checkout -> Người dùng chọn "Áp dụng Voucher" -> Chọn mã giảm 20k -> Hệ thống kiểm tra điều kiện (tổng đơn > 100k) -> Thành công, tổng tiền thanh toán tự động giảm 20k.
+- *(Hình minh họa: Màn hình Checkout hiển thị mục Voucher đã được áp dụng "GIAM20K" và dòng trừ tiền 20.000đ)*
 
-### 2.11 Đặt hàng
-- **Mô tả:** Hỗ trợ nhập Tên, SĐT, chọn phương thức thanh toán, nhập ghi chú đơn hàng. Hỗ trợ đặt ăn tại quán (Dine-in).
-- *(Hình minh họa: Màn hình Checkout chuẩn bị đặt hàng)*
+### 2.10 Đặt hàng (Checkout)
+- **Mô tả:** Quá trình tổng hợp thông tin cuối cùng bao gồm địa chỉ nhận, danh sách món, ghi chú, phương thức thanh toán trước khi gửi yêu cầu lên hệ thống. Hỗ trợ cả đặt ăn tại bàn (Dine-in).
+- **Luồng sự kiện chính:** Người dùng rà soát lại đơn -> Nhập ghi chú "Không hành" -> Bấm "Xác nhận đặt hàng" -> Ứng dụng tạo đơn trên Supabase, trả về thông báo thành công và chuyển đơn sang trạng thái "Chờ xác nhận".
+- *(Hình minh họa: Màn hình Checkout đầy đủ thông tin địa chỉ, món, tổng tiền, ghi chú)*
 
-### 2.12 Quản lý địa chỉ giao hàng nâng cao
-- **Mô tả:** Lưu trữ nhiều địa chỉ cho một người dùng. Spinner chọn Tỉnh/Quận/Phường nhanh chóng khi Checkout.
-- *(Hình minh họa: Màn hình Quản lý địa chỉ và Spinner chọn địa chỉ)*
+### 2.11 Thanh toán QR Code tự động (SEPay)
+- **Mô tả:** Tích hợp thanh toán quét mã QR qua SEPay. Ứng dụng sinh mã QR động chứa sẵn số tài khoản và số tiền cần thanh toán.
+- **Luồng sự kiện chính:** Khách chọn thanh toán QR -> Bấm Đặt hàng -> Màn hình hiện mã QR -> Khách dùng app ngân hàng quét và chuyển tiền -> SEPay webhook gửi thông báo về server -> App tự động chuyển trạng thái đơn thành "Đã thanh toán".
+- *(Hình minh họa: Dialog hiển thị mã QR thanh toán ngân hàng với số tiền chính xác của đơn hàng)*
 
-### 2.13 Thanh toán COD và SEPay QR
-- **Mô tả:** Tích hợp 2 hình thức: Trả tiền mặt (COD) và Quét mã QR thanh toán ngân hàng tự động nhận tiền qua SEPay webhook.
-- *(Hình minh họa: Mã QR thanh toán SEPay hiển thị trên ứng dụng)*
+### 2.12 Lịch sử đơn hàng và Theo dõi trạng thái
+- **Mô tả:** Khách hàng theo dõi tiến độ đơn hàng theo các tab trạng thái rõ ràng: Chờ xác nhận, Đang xử lý, Đang giao, Đã hoàn thành/Hủy.
+- **Luồng sự kiện chính:** Khách hàng mở tab Lịch sử -> Chọn mục "Đang xử lý" -> Ứng dụng hiển thị danh sách các đơn đang được nhà hàng chuẩn bị, kèm theo nút Xem chi tiết.
+- *(Hình minh họa: Tab Lịch sử đơn hàng (mục Đang xử lý) hiển thị 2 đơn hàng với mã đơn và ngày tháng cụ thể)*
 
-### 2.14 Khuyến mãi & Mã giảm giá
-- **Mô tả:** Khách hàng có thể nhập mã voucher hoặc chọn từ danh sách để được trừ trực tiếp tiền trong đơn hàng.
-- *(Hình minh họa: Giao diện chọn và áp dụng Voucher thành công)*
+### 2.13 Quản lý đơn hàng (Admin)
+- **Mô tả:** Bảng điều khiển trung tâm dành cho chủ quán (Admin) để tiếp nhận đơn hàng mới, duyệt đơn và thay đổi trạng thái giao hàng.
+- **Luồng sự kiện chính:** Có đơn mới vào -> Admin xem chi tiết danh sách món -> Bấm "Xác nhận" -> Đơn chuyển sang "Đang chế biến". Tiếp tục bấm "Giao hàng" -> Đơn chuyển sang "Đang giao". Trạng thái được đồng bộ realtime.
+- *(Hình minh họa: Màn hình Danh sách Đơn hàng của Admin có các nhãn màu khác nhau như Vàng (Chờ), Xanh dương (Đang xử lý))*
 
-### 2.15 Lịch sử đơn hàng (User)
-- **Mô tả:** Xem lại đơn hàng đã đặt, phân loại theo tab trạng thái (Chờ xác nhận, Đang xử lý, Đang giao, Đã hoàn thành/hủy). Cho phép hủy đơn.
-- *(Hình minh họa: Tab Lịch sử đơn hàng có phân loại trạng thái)*
+### 2.14 Quản lý món ăn (Admin)
+- **Mô tả:** Chức năng (CRUD) cho phép quản trị viên thêm mới, cập nhật giá, hình ảnh, thay đổi trạng thái còn/hết hàng hoặc đánh dấu món ăn gợi ý.
+- **Luồng sự kiện chính:** Admin bấm Thêm món -> Điền tên "Trà sữa trân châu", giá 30.000, tải ảnh lên từ thư viện điện thoại, chọn danh mục "Đồ uống" -> Bấm Lưu -> Món mới lập tức xuất hiện trên app của khách.
+- *(Hình minh họa: Form Thêm món ăn mới đã được điền đầy đủ dữ liệu ảnh, tên, giá, mô tả)*
 
-### 2.16 Phản hồi & Đánh giá sản phẩm
-- **Mô tả:** Người dùng viết đánh giá sao (1-5), có thể đính kèm hình ảnh thực tế sau khi trải nghiệm.
-- *(Hình minh họa: Màn hình Đánh giá món ăn có up hình ảnh)*
+### 2.15 Quản lý danh mục món ăn (Admin)
+- **Mô tả:** Hỗ trợ Admin tạo và quản lý cấu trúc phân loại món ăn, giúp khách hàng dễ dàng điều hướng tìm kiếm.
+- **Luồng sự kiện chính:** Admin chọn Quản lý Danh mục -> Bấm Sửa danh mục "Tráng miệng" -> Đổi tên thành "Đồ ngọt" kèm theo ảnh icon mới -> Lưu lại.
+- *(Hình minh họa: Màn hình danh sách các danh mục món ăn của Admin)*
 
-### 2.17 Chat trực tiếp User ↔ Admin
-- **Mô tả:** Hệ thống nhắn tin real-time giúp khách hàng trao đổi trực tiếp với quán để hỏi thông tin, giục đồ ăn.
-- *(Hình minh họa: Giao diện Chat trực tiếp giữa Khách và Quán)*
+### 2.16 Quản lý Voucher (Admin)
+- **Mô tả:** Chức năng phát hành và kiểm soát các chiến dịch khuyến mãi: tạo mã giảm theo % hoặc số tiền cố định, vô hiệu hóa mã khi hết hạn.
+- **Luồng sự kiện chính:** Admin nhập mã "TET2026", chọn loại giảm "Phần trăm", mức giảm 10%, thiết lập hạn dùng đến cuối tháng -> Lưu lại. Bảng thống kê hiển thị số lượt mã này đã được khách hàng sử dụng.
+- *(Hình minh họa: Màn hình Quản lý Voucher của Admin hiển thị danh sách các mã đang Active/Inactive)*
 
-### 2.18 Thông tin liên hệ quán
-- **Mô tả:** Các nút liên kết chuyển hướng nhanh tới Facebook, Gọi điện thoại, Zalo của quán.
-- *(Hình minh họa: Màn hình Thông tin Liên hệ)*
+### 2.17 Theo dõi doanh thu và Thống kê (Admin)
+- **Mô tả:** Cung cấp báo cáo tài chính chi tiết với thống kê tổng số đơn, doanh thu theo khoảng thời gian và xếp hạng Top 10 món bán chạy nhất.
+- **Luồng sự kiện chính:** Admin chọn ngày bắt đầu (01/03) và ngày kết thúc (31/03) -> App truy xuất database tính tổng doanh thu -> Hiển thị con số (VD: 50.000.000đ) và danh sách Top món bán chạy nhất.
+- *(Hình minh họa: Màn hình Thống kê hiển thị tổng doanh thu 50 triệu và danh sách 3 món đứng đầu)*
 
-### 2.19 Quản lý danh mục món ăn (Admin)
-- **Mô tả:** Chức năng cho Admin thêm, sửa, xóa, hiển thị danh mục phân loại đồ ăn.
-- *(Hình minh họa: Màn hình Quản lý danh mục Admin)*
+### 2.18 Báo cáo phân tích xu hướng tháng (Admin)
+- **Mô tả:** Biểu đồ kép trực quan (cột và đường) so sánh lượng đơn và doanh thu tháng, kết hợp AI đưa ra lời khuyên chiến lược.
+- **Luồng sự kiện chính:** Admin mở tab Xu hướng -> Hệ thống vẽ biểu đồ doanh thu các tháng gần nhất -> Gửi dữ liệu số tới API AI -> AI trả về văn bản nhận xét (VD: "Tháng này doanh thu tăng 20% so với tháng trước nhờ chiến dịch Voucher").
+- *(Hình minh họa: Màn hình biểu đồ Monthly Trend Analysis với các cột doanh thu cao/thấp và đoạn text nhận xét của AI)*
 
-### 2.20 Quản lý món ăn (Admin)
-- **Mô tả:** Admin thêm món mới, cập nhật giá, thêm hình ảnh, thiết lập món gợi ý và tình trạng còn/hết hàng.
-- *(Hình minh họa: Màn hình Quản lý món ăn Admin)*
+### 2.19 Dashboard AI: Phân tích cảm xúc & Dự đoán (Admin)
+- **Mô tả:** Sử dụng AI (Hugging Face/Qwen) để quét toàn bộ bài đánh giá của khách, phân loại cảm xúc (Tích cực/Tiêu cực) và dự đoán món ăn nào đang "Hot" hoặc có nguy cơ ế (At Risk).
+- **Luồng sự kiện chính:** Admin mở Dashboard AI -> Hệ thống tự động phân tích hàng trăm review -> Vẽ biểu đồ tròn tỷ lệ 80% Positive, 20% Negative. Đưa ra danh sách "Món cần cải thiện" dựa trên các review tiêu cực.
+- *(Hình minh họa: Dashboard AI với biểu đồ tròn phân bố cảm xúc nhiều màu và danh sách "At Risk Foods")*
 
-### 2.21 Quản lý đơn hàng & Trạng thái (Admin)
-- **Mô tả:** Admin theo dõi đơn hàng, thay đổi các trạng thái: Chờ xác nhận → Chờ chế biến → Đang giao → Hoàn thành.
-- *(Hình minh họa: Màn hình Quản lý đơn hàng Admin nhiều màu sắc)*
+### 2.20 Phản hồi & Đánh giá sản phẩm (User)
+- **Mô tả:** Khách hàng viết đánh giá (chấm điểm sao và nhận xét) sau khi nhận được đồ ăn. Có thể đính kèm hình ảnh thực tế.
+- **Luồng sự kiện chính:** Khách hàng vào chi tiết món đã mua -> Bấm Đánh giá -> Chấm 5 sao, viết "Đồ ăn rất ngon", đính kèm ảnh chụp -> Gửi đánh giá. Đánh giá này sẽ hiển thị ở trang món ăn và làm dữ liệu cho AI phân tích.
+- *(Hình minh họa: Màn hình form viết đánh giá đã điền 5 sao, nội dung nhận xét và đính kèm 1 ảnh)*
 
-### 2.22 Quản lý Voucher (Admin)
-- **Mô tả:** Tạo mã giảm giá (giảm % hoặc trừ tiền), set thời gian, vô hiệu hóa mã, thống kê lượt dùng mã.
-- *(Hình minh họa: Màn hình Quản lý Voucher của Admin)*
+### 2.21 Chat trực tiếp User ↔ Admin
+- **Mô tả:** Hệ thống nhắn tin real-time giúp khách hàng trao đổi trực tiếp với quán để hỏi thông tin, giục đồ ăn hoặc phản ánh sự cố.
+- **Luồng sự kiện chính:** Khách hàng mở chat -> Gửi "Quán ơi đơn của em thêm nhiều tương ớt nhé" -> Tin nhắn đẩy ngay lên màn hình quản lý Chat của Admin -> Admin rep "Dạ vâng quán đã ghi nhận" -> Khách hàng thấy ngay lập tức.
+- *(Hình minh họa: Giao diện Chat bong bóng giữa Khách và Quán với lịch sử tin nhắn thực tế)*
 
-### 2.23 Theo dõi doanh thu và Thống kê (Admin)
-- **Mô tả:** Thống kê tổng đơn, doanh thu theo ngày/tháng, danh sách Top 10 món bán chạy nhất.
-- *(Hình minh họa: Màn hình Thống kê doanh thu và Top món)*
+### 2.22 Tính năng Thông báo đẩy (Push Notification)
+- **Mô tả:** Sử dụng Firebase Cloud Messaging để gửi thông báo tự động đến thiết bị của người dùng, giúp họ không bỏ lỡ thông tin đơn hàng.
+- **Luồng sự kiện chính:** Admin đổi trạng thái đơn sang "Đang giao" -> Hệ thống gọi API FCM -> Điện thoại của khách hàng rung và hiển thị popup thông báo "Đơn hàng của bạn đang trên đường giao".
+- *(Hình minh họa: Popup thông báo đẩy (push notification) xuất hiện trên thanh trạng thái của điện thoại)*
 
-### 2.24 Báo cáo phân tích xu hướng tháng (Admin)
-- **Mô tả:** Biểu đồ kép trực quan theo dõi lượng đơn và doanh thu tháng, đưa ra nhận xét dựa trên dữ liệu.
-- *(Hình minh họa: Màn hình biểu đồ Monthly Trend Analysis)*
+### 2.23 Yêu thích sản phẩm (Wishlist)
+- **Mô tả:** Chức năng lưu trữ các món ăn khách hàng quan tâm nhưng chưa muốn mua ngay.
+- **Luồng sự kiện chính:** Khách hàng bấm icon "Trái tim" ở góc món ăn -> Món được lưu vào danh sách Yêu thích. Từ danh sách này khách có thể gạt sang trái để xóa hoặc bấm nút "Thêm vào giỏ" nhanh.
+- *(Hình minh họa: Màn hình danh sách yêu thích chứa 2-3 món)*
 
-### 2.25 Tính năng AI: Phân tích cảm xúc & Dự đoán
-- **Mô tả:** Dùng Hugging Face/Qwen/Gemini quét các bài đánh giá để phân tích cảm xúc (Positive/Negative). Dự đoán món Hot/At Risk.
-- *(Hình minh họa: Dashboard AI tổng quan Insights của quán)*
+### 2.24 Thông tin liên hệ quán
+- **Mô tả:** Cung cấp thông tin và các nút gọi mở ứng dụng bên thứ 3 (Facebook, Điện thoại, Zalo) để kết nối với nhà hàng.
+- **Luồng sự kiện chính:** Người dùng mở màn hình Liên hệ -> Bấm nút "Gọi điện" -> Hệ thống mở app Điện thoại của máy với số hotline điền sẵn.
+- *(Hình minh họa: Màn hình Thông tin Liên hệ có các icon social media và số hotline)*
 
-### 2.26 Tính năng Thông báo đẩy (Push Notification)
-- **Mô tả:** Sử dụng Firebase Cloud Messaging để gửi thông báo lập tức đến người dùng khi đơn hàng đổi trạng thái.
-- *(Hình minh họa: Thông báo đẩy hiển thị trên điện thoại)*
+### 2.25 Quản lý tài khoản (Đăng nhập, Đăng ký)
+- **Mô tả:** Xác thực người dùng, bảo mật thông tin và phân quyền tự động. Có tích hợp khôi phục mật khẩu qua email.
+- **Luồng sự kiện chính:** Người dùng nhập Email và Mật khẩu sai -> Hệ thống báo lỗi. Người dùng chọn "Quên mật khẩu" -> Nhập email -> Hệ thống gửi một mã OTP qua Gmail. Người dùng nhập mã này vào app để tạo mật khẩu mới.
+- *(Hình minh họa: Màn hình điền mã xác nhận OTP vừa được gửi từ email)*
+
+### 2.26 Quản lý Hồ sơ cá nhân
+- **Mô tả:** Cập nhật các thông tin cá nhân như Tên, SĐT, Địa chỉ mặc định và thay đổi ảnh đại diện.
+- **Luồng sự kiện chính:** Người dùng vào Profile -> Đổi Tên thành "Nguyễn Văn A", chọn ảnh mới từ thư viện máy -> Bấm Lưu -> Giao diện toàn app cập nhật avatar mới.
+- *(Hình minh họa: Màn hình Profile cá nhân đã điền đầy đủ thông tin Tên, Email, SĐT và một hình đại diện)*
 
 ---
 
