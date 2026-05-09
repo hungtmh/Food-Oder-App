@@ -19,4 +19,8 @@ public interface SupabaseFunctionsService {
     @Headers("Content-Type: application/json")
     @POST("send-broadcast-push")
     Call<Map<String, Object>> sendBroadcastPush(@Body Map<String, Object> payload);
+
+    @Headers("Content-Type: application/json")
+    @POST("ai-meal-recommend")
+    Call<Map<String, Object>> aiMealRecommend(@Body Map<String, Object> payload);
 }

@@ -1,8 +1,13 @@
 package com.example.food_order_app.controller;
 
 import android.Manifest;
+import android.animation.AnimatorInflater;
+import android.animation.AnimatorSet;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
@@ -10,13 +15,18 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
+import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -35,6 +45,7 @@ import com.example.food_order_app.adapter.FoodAdapter;
 import com.example.food_order_app.adapter.HotOfferFoodAdapter;
 import com.example.food_order_app.adapter.SliderAdapter;
 import com.example.food_order_app.model.Address;
+import com.example.food_order_app.model.AiRecommendationTask;
 import com.example.food_order_app.model.Category;
 import com.example.food_order_app.model.Favorite;
 import com.example.food_order_app.model.Food;
@@ -42,12 +53,15 @@ import com.example.food_order_app.model.Order;
 import com.example.food_order_app.model.OrderItem;
 import com.example.food_order_app.network.RetrofitClient;
 import com.example.food_order_app.network.SupabaseDbService;
+import com.example.food_order_app.network.SupabaseFunctionsService;
 import com.example.food_order_app.utils.NotificationHelper;
 import com.example.food_order_app.utils.PushRegistrationManager;
 import com.example.food_order_app.utils.SessionManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -95,6 +109,25 @@ public class HomeActivity extends AppCompatActivity {
 
     private SupabaseDbService dbService;
     private SessionManager sessionManager;
+
+    // AI Meal Recommendation
+    private FloatingActionButton fabAiMeal;
+    private SupabaseFunctionsService functionsService;
+    private Handler aiPollingHandler = new Handler(Looper.getMainLooper());
+    private Runnable aiPollingRunnable;
+    private static final long AI_POLL_INTERVAL_MS = 3000L;
+    private static final String PREFS_AI_TASK = "ai_meal_task";
+    private static final String KEY_AI_TASK_ID = "task_id";
+    private static final String KEY_AI_TASK_STATUS = "task_status";
+    private static final int FAB_STATE_IDLE = 0;
+    private static final int FAB_STATE_PROCESSING = 1;
+    private static final int FAB_STATE_COMPLETED = 2;
+    private int fabState = FAB_STATE_IDLE;
+    private String currentAiTaskId = null;
+    private int fakeProgress = 0;
+    private Handler fakeProgressHandler = new Handler(Looper.getMainLooper());
+    private Runnable fakeProgressRunnable;
+    private AnimatorSet fabPulseAnim;
 
     private Handler sliderHandler = new Handler(Looper.getMainLooper());
     private Runnable sliderRunnable;
@@ -221,6 +254,13 @@ public class HomeActivity extends AppCompatActivity {
             }
             return false;
         });
+
+        fabAiMeal = findViewById(R.id.fabAiMeal);
+        functionsService = RetrofitClient.getFunctionsService();
+        fabPulseAnim = (AnimatorSet) AnimatorInflater.loadAnimator(this, R.animator.fab_pulse_scale);
+        fabPulseAnim.setTarget(fabAiMeal);
+        restoreAiTaskState();
+        fabAiMeal.setOnClickListener(v -> handleFabAiClick());
     }
 
     private void setupAdapters() {
@@ -971,20 +1011,277 @@ public class HomeActivity extends AppCompatActivity {
         loadDeliveryAddress();
         loadMaybeLikeFoods();
         loadHotOffers();
+
+        SharedPreferences prefs = getSharedPreferences(PREFS_AI_TASK, MODE_PRIVATE);
+        String savedTaskId = prefs.getString(KEY_AI_TASK_ID, null);
+        if (savedTaskId == null && currentAiTaskId != null) {
+            currentAiTaskId = null;
+            setFabState(FAB_STATE_IDLE);
+        }
+
+        if (fabState == FAB_STATE_PROCESSING && currentAiTaskId != null) {
+            startAiPolling();
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         sliderHandler.removeCallbacks(sliderRunnable);
+        stopAiPolling();
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 100 && resultCode == RESULT_OK && data != null) {
-            // Address was selected, refresh the delivery address display
             loadDeliveryAddress();
+        }
+    }
+
+    private void handleFabAiClick() {
+        if (fabState == FAB_STATE_COMPLETED && currentAiTaskId != null) {
+            Intent intent = new Intent(this, AiMealResultActivity.class);
+            intent.putExtra(AiMealResultActivity.EXTRA_TASK_ID, currentAiTaskId);
+            startActivity(intent);
+            return;
+        }
+
+        if (fabState == FAB_STATE_PROCESSING) {
+            Toast.makeText(this, "AI dang phan tich, vui long cho...", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (!sessionManager.isLoggedIn()) {
+            Toast.makeText(this, "Vui long dang nhap de su dung AI goi y", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        showAiMealForm();
+    }
+
+    private void showAiMealForm() {
+        View formView = LayoutInflater.from(this).inflate(R.layout.dialog_ai_meal_form, null);
+        EditText etBudget = formView.findViewById(R.id.etBudget);
+        EditText etPeopleCount = formView.findViewById(R.id.etPeopleCount);
+        Spinner spTaste = formView.findViewById(R.id.spTaste);
+        EditText etDescription = formView.findViewById(R.id.etDescription);
+        Button btnSubmit = formView.findViewById(R.id.btnSubmit);
+
+        String[] tasteOptions = {"Không chọn", "Chua", "Cay", "Mặn", "Ngọt", "Ít đường", "Thanh đạm", "Đậm đà", "Béo", "Chua cay", "Cay ngọt", "Lẩu", "Nướng", "Món canh"};
+        ArrayAdapter<String> tasteAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, tasteOptions);
+        tasteAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spTaste.setAdapter(tasteAdapter);
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(formView)
+                .setCancelable(true)
+                .create();
+
+        btnSubmit.setOnClickListener(v -> {
+            String budgetStr = etBudget.getText().toString().trim();
+            String peopleStr = etPeopleCount.getText().toString().trim();
+            String taste = spTaste.getSelectedItemPosition() > 0 ? spTaste.getSelectedItem().toString() : "";
+            String description = etDescription.getText().toString().trim();
+
+            double budget = 0;
+            int peopleCount = 1;
+            try {
+                if (!budgetStr.isEmpty()) budget = Double.parseDouble(budgetStr);
+            } catch (NumberFormatException e) {
+                Toast.makeText(this, "Ngân sách không hợp lệ", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            try {
+                if (!peopleStr.isEmpty()) peopleCount = Integer.parseInt(peopleStr);
+            } catch (NumberFormatException e) {
+                Toast.makeText(this, "Số người không hợp lệ", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (peopleCount < 1) peopleCount = 1;
+
+            dialog.dismiss();
+            submitAiMealRequest(budget, peopleCount, taste, description);
+        });
+
+        dialog.show();
+    }
+
+    private void submitAiMealRequest(double budget, int peopleCount, String taste, String description) {
+        setFabState(FAB_STATE_PROCESSING);
+        currentAiTaskId = null;
+        fakeProgress = 0;
+
+        Toast.makeText(this, "Dang cho AI xu ly...", Toast.LENGTH_SHORT).show();
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("budget", budget);
+        payload.put("peopleCount", peopleCount);
+        payload.put("taste", taste);
+        payload.put("description", description);
+        payload.put("userId", sessionManager.getUserId());
+
+        functionsService.aiMealRecommend(payload).enqueue(new Callback<Map<String, Object>>() {
+            @Override
+            public void onResponse(Call<Map<String, Object>> call, Response<Map<String, Object>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Object taskIdObj = response.body().get("taskId");
+                    if (taskIdObj != null) {
+                        currentAiTaskId = taskIdObj.toString();
+                        saveAiTaskState(currentAiTaskId, "pending");
+                        startAiPolling();
+                    } else {
+                        Log.e(TAG, "Edge function returned no taskId");
+                        setFabState(FAB_STATE_IDLE);
+                        Toast.makeText(HomeActivity.this, "Loi khoi tao task AI", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Log.e(TAG, "Edge function call failed: " + response.code());
+                    setFabState(FAB_STATE_IDLE);
+                    Toast.makeText(HomeActivity.this, "Loi goi AI. Vui long thu lai.", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Map<String, Object>> call, Throwable t) {
+                Log.e(TAG, "Edge function call failed: " + t.getMessage());
+                setFabState(FAB_STATE_IDLE);
+                Toast.makeText(HomeActivity.this, "Loi ket noi. Vui long thu lai.", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void startAiPolling() {
+        stopAiPolling();
+        startFakeProgress();
+        aiPollingRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (currentAiTaskId == null) {
+                    stopAiPolling();
+                    return;
+                }
+                dbService.getAiTaskById("eq." + currentAiTaskId, "*").enqueue(new Callback<List<AiRecommendationTask>>() {
+                    @Override
+                    public void onResponse(Call<List<AiRecommendationTask>> call, Response<List<AiRecommendationTask>> response) {
+                        if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                            AiRecommendationTask task = response.body().get(0);
+                            String status = task.getStatus();
+                            if ("completed".equals(status)) {
+                                stopAiPolling();
+                                setFabState(FAB_STATE_COMPLETED);
+                                saveAiTaskState(currentAiTaskId, "completed");
+                                Toast.makeText(HomeActivity.this, "AI da phan tich xong! Nhan nut de xem.", Toast.LENGTH_LONG).show();
+                            } else if ("failed".equals(status)) {
+                                stopAiPolling();
+                                setFabState(FAB_STATE_IDLE);
+                                clearAiTaskState();
+                                String errMsg = task.getErrorMessage() != null ? task.getErrorMessage() : "Khong ro loi";
+                                Toast.makeText(HomeActivity.this, "AI goi y that bai: " + errMsg, Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<AiRecommendationTask>> call, Throwable t) {
+                        Log.e(TAG, "AI polling failed: " + t.getMessage());
+                    }
+                });
+                aiPollingHandler.postDelayed(this, AI_POLL_INTERVAL_MS);
+            }
+        };
+        aiPollingHandler.postDelayed(aiPollingRunnable, AI_POLL_INTERVAL_MS);
+    }
+
+    private void stopAiPolling() {
+        if (aiPollingRunnable != null) {
+            aiPollingHandler.removeCallbacks(aiPollingRunnable);
+        }
+        stopFakeProgress();
+    }
+
+    private void startFakeProgress() {
+        fakeProgress = 10;
+        updateFabProgressLabel();
+        fakeProgressRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (fabState != FAB_STATE_PROCESSING) return;
+                if (fakeProgress < 90) {
+                    fakeProgress += 5 + (int)(Math.random() * 10);
+                    if (fakeProgress > 90) fakeProgress = 90;
+                    updateFabProgressLabel();
+                    fakeProgressHandler.postDelayed(this, 800 + (long)(Math.random() * 700));
+                }
+            }
+        };
+        fakeProgressHandler.postDelayed(fakeProgressRunnable, 800);
+    }
+
+    private void stopFakeProgress() {
+        if (fakeProgressRunnable != null) {
+            fakeProgressHandler.removeCallbacks(fakeProgressRunnable);
+        }
+    }
+
+    private void updateFabProgressLabel() {
+        fabAiMeal.setContentDescription("AI dang xu ly " + fakeProgress + "%");
+    }
+
+    private void setFabState(int state) {
+        fabState = state;
+        switch (state) {
+            case FAB_STATE_IDLE:
+                fabAiMeal.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.primary)));
+                fabAiMeal.setImageResource(R.drawable.ic_ai_sparkle);
+                fabAiMeal.setContentDescription("Goi y combo mon an");
+                if (fabPulseAnim != null) fabPulseAnim.start();
+                break;
+            case FAB_STATE_PROCESSING:
+                fabAiMeal.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FFA000")));
+                fabAiMeal.setImageResource(R.drawable.ic_ai_sparkle);
+                if (fabPulseAnim != null) fabPulseAnim.end();
+                updateFabProgressLabel();
+                break;
+            case FAB_STATE_COMPLETED:
+                fabAiMeal.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#4CAF50")));
+                fabAiMeal.setImageResource(R.drawable.ic_ai_sparkle);
+                fabAiMeal.setContentDescription("Xem ket qua goi y AI");
+                if (fabPulseAnim != null) fabPulseAnim.end();
+                break;
+        }
+    }
+
+    private void saveAiTaskState(String taskId, String status) {
+        getSharedPreferences(PREFS_AI_TASK, MODE_PRIVATE).edit()
+                .putString(KEY_AI_TASK_ID, taskId)
+                .putString(KEY_AI_TASK_STATUS, status)
+                .apply();
+    }
+
+    private void clearAiTaskState() {
+        currentAiTaskId = null;
+        getSharedPreferences(PREFS_AI_TASK, MODE_PRIVATE).edit()
+                .remove(KEY_AI_TASK_ID)
+                .remove(KEY_AI_TASK_STATUS)
+                .apply();
+    }
+
+    private void restoreAiTaskState() {
+        SharedPreferences prefs = getSharedPreferences(PREFS_AI_TASK, MODE_PRIVATE);
+        String taskId = prefs.getString(KEY_AI_TASK_ID, null);
+        String status = prefs.getString(KEY_AI_TASK_STATUS, null);
+
+        if (taskId != null && "completed".equals(status)) {
+            currentAiTaskId = taskId;
+            setFabState(FAB_STATE_COMPLETED);
+        } else if (taskId != null && ("processing".equals(status) || "pending".equals(status))) {
+            currentAiTaskId = taskId;
+            setFabState(FAB_STATE_PROCESSING);
+            startAiPolling();
+        } else {
+            clearAiTaskState();
+            setFabState(FAB_STATE_IDLE);
         }
     }
 }

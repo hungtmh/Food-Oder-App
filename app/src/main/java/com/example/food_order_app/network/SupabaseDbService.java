@@ -501,4 +501,31 @@ public interface SupabaseDbService {
         Call<List<com.example.food_order_app.model.Voucher>> updateVoucher(
                         @Query("id") String idFilter,
                         @Body Map<String, Object> updates);
+
+        // ==================== AI RECOMMENDATION TASKS ====================
+        @GET("ai_recommendation_tasks")
+        Call<List<com.example.food_order_app.model.AiRecommendationTask>> getAiTasks(
+                        @Query("user_id") String userIdFilter,
+                        @Query("select") String select,
+                        @Query("order") String order,
+                        @Query("limit") int limit);
+
+        @GET("ai_recommendation_tasks")
+        Call<List<com.example.food_order_app.model.AiRecommendationTask>> getAiTaskById(
+                        @Query("id") String idFilter,
+                        @Query("select") String select);
+
+        @Headers("Prefer: return=representation")
+        @POST("ai_recommendation_tasks")
+        Call<List<com.example.food_order_app.model.AiRecommendationTask>> createAiTask(
+                        @Body Map<String, Object> task);
+
+        @Headers("Prefer: return=representation")
+        @PATCH("ai_recommendation_tasks")
+        Call<List<com.example.food_order_app.model.AiRecommendationTask>> updateAiTask(
+                        @Query("id") String idFilter,
+                        @Body Map<String, Object> updates);
+
+        @DELETE("ai_recommendation_tasks")
+        Call<Void> deleteAiTask(@Query("id") String idFilter);
 }

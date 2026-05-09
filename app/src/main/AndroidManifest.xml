@@ -196,6 +196,11 @@
             android:name=".controller.TrendInsightDetailActivity"
             android:exported="false" />
 
+        <!-- AI gợi ý combo món ăn -->
+        <activity
+            android:name=".controller.AiMealResultActivity"
+            android:exported="false" />
+
         <service
             android:name=".service.AppFirebaseMessagingService"
             android:exported="false">
