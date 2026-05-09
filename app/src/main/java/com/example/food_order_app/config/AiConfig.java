@@ -9,4 +9,5 @@ import com.example.food_order_app.BuildConfig;
 public class AiConfig {
     public static final String GEMINI_API_KEY = BuildConfig.GEMINI_API_KEY;
     public static final String HF_TOKEN = BuildConfig.HF_TOKEN;
+    public static final String DEEPSEEK_API_KEY = BuildConfig.DEEPSEEK_API_KEY;
 }
