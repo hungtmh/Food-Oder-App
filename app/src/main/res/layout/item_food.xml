@@ -45,7 +45,7 @@
                 android:layout_margin="8dp"
                 android:padding="4dp"
                 android:src="@drawable/ic_favorite_border"
-                android:background="@drawable/bg_category_normal"
+                android:background="@drawable/bg_circle_white"
                 android:contentDescription="Yêu thích" />
         </FrameLayout>
 
