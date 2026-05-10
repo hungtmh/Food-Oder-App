@@ -170,6 +170,7 @@ public class AdminSendNotificationActivity extends AppCompatActivity {
 
     private void triggerBroadcastPush(String title, String message) {
         Map<String, Object> payload = new HashMap<>();
+        payload.put("user_id", "all");
         payload.put("title", title);
         payload.put("body", message);
 

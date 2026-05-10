@@ -79,4 +79,13 @@
     <string name="logout_confirm_title">Xác nhận đăng xuất</string>
     <string name="logout_confirm_message">Bạn có chắc chắn muốn đăng xuất?</string>
     <string name="back">Quay lại</string>
+
+    <!-- Gửi phản hồi -->
+    <string name="feedback_title">Gửi Phản Hồi</string>
+    <string name="feedback_subject_hint">Chủ đề (Không bắt buộc)…</string>
+    <string name="feedback_content_hint">Nội dung phản hồi của bạn…</string>
+    <string name="btn_submit_feedback">GỬI PHẢN HỒI</string>
+    <string name="feedback_success">Cảm ơn bạn đã gửi phản hồi!</string>
+    <string name="feedback_error_content">Vui lòng nhập nội dung phản hồi.</string>
+    <string name="feedback_error_rating">Vui lòng chọn số sao đánh giá.</string>
 </resources>

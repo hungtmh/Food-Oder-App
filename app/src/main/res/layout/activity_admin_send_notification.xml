@@ -4,11 +4,12 @@
     android:id="@+id/adminDrawerLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background">
+    android:fitsSystemWindows="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="@color/background">
 
     <!-- Header -->
     <LinearLayout
@@ -23,10 +24,14 @@
 
         <ImageView
             android:id="@+id/btnBackNotifSend"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="10dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
             android:contentDescription="Mở điều hướng"
-            android:padding="6dp"
+            android:focusable="true"
+            android:padding="8dp"
             android:src="@drawable/ic_menu_hamburger"
             android:tint="@color/white" />
 

@@ -150,6 +150,7 @@
         <activity android:name=".controller.NotificationsActivity" android:exported="false" />
         <activity android:name=".controller.OrderHistoryActivity" android:exported="false" />
         <activity android:name=".controller.SentimentStatisticsActivity" android:exported="false" />
+        <activity android:name=".controller.SubmitFeedbackActivity" android:exported="false" />
 
         <!-- ==================== CHAT FEATURE ==================== -->
         <activity android:name=".controller.ChatRoomActivity" android:exported="false" />
