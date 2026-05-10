@@ -14,7 +14,8 @@
 .cxx
 local.properties
 node_modules/
-
+*.pdf
+*.md
 # API Configuration (Private)
 # Bỏ chặn thư mục config để file SupabaseConfig.java (đã an toàn) có thể được git push lên mạng
 # app/src/main/java/com/example/food_order_app/config/

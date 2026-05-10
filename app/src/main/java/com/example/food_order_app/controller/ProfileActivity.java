@@ -81,6 +81,9 @@ public class ProfileActivity extends AppCompatActivity {
     // Favorites section (navigates to FavoritesActivity)
     private LinearLayout sectionFavoritesHeader;
 
+    // Feedback section
+    private LinearLayout sectionFeedbackHeader;
+
     // Action buttons
     private LinearLayout btnChangePassword, btnLogout;
 
@@ -139,6 +142,9 @@ public class ProfileActivity extends AppCompatActivity {
         // Favorites section
         sectionFavoritesHeader = findViewById(R.id.sectionFavoritesHeader);
 
+        // Feedback section
+        sectionFeedbackHeader = findViewById(R.id.sectionFeedbackHeader);
+
         // Action buttons
         btnChangePassword = findViewById(R.id.btnChangePassword);
         btnLogout = findViewById(R.id.btnLogout);
@@ -157,6 +163,7 @@ public class ProfileActivity extends AppCompatActivity {
         if (sessionManager.isAdmin()) {
             sectionOrdersHeader.setVisibility(View.GONE);
             sectionFavoritesHeader.setVisibility(View.GONE);
+            sectionFeedbackHeader.setVisibility(View.GONE);
 
             bottomNavContainer.setVisibility(View.GONE);
             btnMenuDrawerProfile.setVisibility(View.VISIBLE);
@@ -171,7 +178,8 @@ public class ProfileActivity extends AppCompatActivity {
 
     private void loadUserData() {
         String fullName = sessionManager.getFullName();
-        tvProfileName.setText(fullName != null && !fullName.isEmpty() ? fullName : "Người dùng");
+        String defaultName = sessionManager.isAdmin() ? "Admin" : "Người dùng";
+        tvProfileName.setText(fullName != null && !fullName.isEmpty() ? fullName : defaultName);
 
         edtEmail.setText(sessionManager.getEmail());
         edtFullName.setText(fullName);
@@ -221,6 +229,11 @@ public class ProfileActivity extends AppCompatActivity {
         // Favorites: navigate to FavoritesActivity
         sectionFavoritesHeader.setOnClickListener(v -> {
             startActivity(new Intent(ProfileActivity.this, FavoritesActivity.class));
+        });
+
+        // Feedback: navigate to SubmitFeedbackActivity
+        sectionFeedbackHeader.setOnClickListener(v -> {
+            startActivity(new Intent(ProfileActivity.this, SubmitFeedbackActivity.class));
         });
 
         // Save profile
@@ -497,7 +510,8 @@ public class ProfileActivity extends AppCompatActivity {
                 if (response.isSuccessful()) {
                     sessionManager.updateProfile(fullName, phone, sessionManager.getAddress(),
                             sessionManager.getAvatarUrl());
-                    tvProfileName.setText(fullName.isEmpty() ? "Người dùng" : fullName);
+                    String defaultName = sessionManager.isAdmin() ? "Admin" : "Người dùng";
+                    tvProfileName.setText(fullName.isEmpty() ? defaultName : fullName);
                     Toast.makeText(ProfileActivity.this,
                             getString(R.string.success_update_profile),
                             Toast.LENGTH_SHORT).show();
@@ -541,7 +555,8 @@ public class ProfileActivity extends AppCompatActivity {
                                     if (response.isSuccessful()) {
                                         sessionManager.updateProfile(fullName, phone, sessionManager.getAddress(),
                                                 sessionManager.getAvatarUrl());
-                                        tvProfileName.setText(fullName.isEmpty() ? "Người dùng" : fullName);
+                                        String defaultName = sessionManager.isAdmin() ? "Admin" : "Người dùng";
+                                        tvProfileName.setText(fullName.isEmpty() ? defaultName : fullName);
                                         Toast.makeText(ProfileActivity.this,
                                                 getString(R.string.success_update_profile),
                                                 Toast.LENGTH_SHORT).show();

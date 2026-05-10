@@ -41,4 +41,7 @@
     <!-- Radio button -->
     <color name="radio_checked">#4CAF50</color>
     <color name="radio_unchecked">#9E9E9E</color>
+    
+    <!-- Màu sao đánh giá -->
+    <color name="rating_star">#FFB300</color>
 </resources>
