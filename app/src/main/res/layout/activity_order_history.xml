@@ -8,9 +8,11 @@
     <!-- Header -->
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="56dp"
+        android:layout_height="wrap_content"
         android:background="@color/primary"
+        android:fitsSystemWindows="true"
         android:gravity="center_vertical"
+        android:paddingVertical="12dp"
         android:paddingHorizontal="16dp">
 
         <ImageView
