@@ -236,7 +236,7 @@ public class AIDashboardActivity extends AppCompatActivity {
                     List<FoodSentimentStats> topNegative = new ArrayList<>();
 
                     for (FoodSentimentStats stat : allStats) {
-                        if (stat.getTotalReviews() > 0 && stat.getAvgRating() < 2.0) {
+                        if (stat.getTotalReviews() > 0 && stat.getAvgRating() < 3.0) {
                             topNegative.add(stat);
                         }
                     }
